@@ -8,6 +8,3 @@
 .idea/gradle.xml
 .idea/git_toolbox_blame.xml
 .idea/compiler.xml
-
-
-node_modules/*
