@@ -1,5 +1,5 @@
 # NBE2_2_Team8
-Programmers DevCourse BE 2기 8팀 2차 팀 프로젝트
+Programmers DevCourse BE 2기 8팀 3차 팀 프로젝트
 
 ## 0️⃣ 프로젝트 소개
 
@@ -7,10 +7,10 @@ Programmers DevCourse BE 2기 8팀 2차 팀 프로젝트
 개발자 인강 & 커뮤니티 ***Learner***
 
 ### 개발 기간
-**2024/09/23 ~ 2024/10/10**
+**2024/10/29 ~ 2024/11/6**
 
 ## 1️⃣ 기획안
-- [2차 팀 프로젝트 기획안](https://www.canva.com/design/DAGRiEZ7md4/V_fWb5RkDy8iMYuzQ4XufQ/edit)
+- [3차 팀 프로젝트 기획안](https://www.canva.com/design/DAGRiEZ7md4/V_fWb5RkDy8iMYuzQ4XufQ/edit)
 
 ## 2️⃣ 개발 툴
 | Software | 세부 Spec 사양 (Version) |
