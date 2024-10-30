@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.test.context.TestPropertySource
 import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
@@ -30,8 +29,8 @@ class AnswerRepositoryTests {
         val inquiryId = 1L
 
         answerRepository.deleteByInquiryId(inquiryId).run {
-            assertThrows<EmptyResultDataAccessException> {
-                answerRepository.findByInquiryId(inquiryId)
+            assertThrows<NoSuchElementException> {
+                answerRepository.findByInquiryId(inquiryId) ?: throw NoSuchElementException()
             }
         }
     }

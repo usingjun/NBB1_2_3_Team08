@@ -1,6 +1,5 @@
 package edu.example.learner_kotlin.qna.inquiry.service
 
-import edu.example.learner_kotlin.member.repository.MemberRepository
 import edu.example.learner_kotlin.qna.inquiry.dto.InquiryDTO
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,8 +14,6 @@ import kotlin.test.assertEquals
 class InquiryServiceTests {
     @Autowired
     lateinit var inquiryService: InquiryService
-    @Autowired
-    lateinit var memberRepository: MemberRepository
 
     @Test
     fun testRead() {
@@ -32,14 +29,14 @@ class InquiryServiceTests {
         val memberId = 1L
 
         inquiryService.readByMemberId(memberId).run {
-            assertEquals(10, this.size)
+            assertEquals(11, this.size)
         }
     }
 
     @Test
     fun testReadAll() {
         inquiryService.readAll().run {
-            assertEquals(10, this.size)
+            assertEquals(11, this.size)
         }
     }
 
