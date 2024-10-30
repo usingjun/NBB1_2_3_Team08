@@ -27,7 +27,7 @@ class CustomOauth2UserService(private val memberRepository: MemberRepository) : 
 
         val registrationId: String = userRequest.clientRegistration.registrationId
 
-        var oAuth2Response: OAuth2Response? = null
+        val oAuth2Response: OAuth2Response
 
         if (registrationId == "naver") {
             log.info("naver")

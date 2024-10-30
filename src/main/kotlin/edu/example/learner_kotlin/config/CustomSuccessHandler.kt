@@ -23,7 +23,7 @@ class CustomSuccessHandler(private val jwtUtil: JWTUtil) : SimpleUrlAuthenticati
     ) {
         // OAuth2User
         val user: CustomOauth2User = authentication.principal as CustomOauth2User
-        val claims: Map<String, Any> = user.getAttributes()
+        val claims: MutableMap<String?, Any?> = user.attributes
 
         val token: String = jwtUtil.createToken(claims, 30)
         log.info("token: $token")
@@ -31,7 +31,7 @@ class CustomSuccessHandler(private val jwtUtil: JWTUtil) : SimpleUrlAuthenticati
         response.addCookie(createCookie("Authorization", token))
 
         // memberId를 가져와서 리디렉션 URL에 추가
-        val memberId: Long = user.memberId
+        val memberId: Long? = user.memberId
         val redirectUrl = "http://localhost:3000/courses?memberId=$memberId"
 
         response.sendRedirect(redirectUrl)
