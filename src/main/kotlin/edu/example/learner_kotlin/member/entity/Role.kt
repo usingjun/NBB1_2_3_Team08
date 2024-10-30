@@ -1,5 +1,5 @@
-package edu.example.learner_kotlin.member.entity;
+package edu.example.learner_kotlin.member.entity
 
-public enum Role {
-    ADMIN, USER, INSTRUCTOR;
+enum class Role {
+    ADMIN, USER, INSTRUCTOR
 }
