@@ -1,10 +1,8 @@
-package edu.example.learner_kotlin.config;
+package edu.example.learner_kotlin.config
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.context.annotation.Configuration
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 
 @Configuration
 @EnableJpaAuditing
-public class JPAAuditConfig {
-
-}
+class JPAAuditConfig
