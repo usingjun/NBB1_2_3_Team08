@@ -4,6 +4,7 @@ import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.dto.LoginDTO
 import edu.example.learner_kotlin.member.dto.MemberDTO
 import edu.example.learner_kotlin.member.entity.Member
+import edu.example.learner_kotlin.member.entity.Role
 import edu.example.learner_kotlin.member.exception.LoginException
 import edu.example.learner_kotlin.member.exception.MemberException
 import edu.example.learner_kotlin.member.repository.MemberRepository
@@ -133,7 +134,7 @@ class MemberService(
     }
 
     //로그인
-    fun login(email: String?, password: String?): LoginDTO {
+    fun login(email: String, password: String): LoginDTO {
         val member: Member = memberRepository.getMemberByEmail(email)
             ?: throw LoginException.NOT_FOUND_EMAIL.memberTaskException
         log.info("member : $member")
@@ -142,7 +143,7 @@ class MemberService(
         }
 
         // JWT 생성 및 쿠키 반환
-        val accessToken: String = jwtUtil.createToken(mutableMapOf("mid" to member.nickname, "role" to member.role),30)
+        val accessToken: String = jwtUtil.createToken(mutableMapOf("mid" to member.nickname, "role" to member.role), 30)
         val cookie = Cookie("Authorization", accessToken).apply {
             maxAge = 60 * 60 * 60   // 60시간
             path = "/"              // 전체 경로에서 접근 가능
@@ -150,7 +151,7 @@ class MemberService(
             secure = false          // 로컬 개발 시 false로 설정
         }
 
-        return LoginDTO(cookie, member.memberId)
+        return LoginDTO(email, password, cookie, member.memberId)
     }
 
     //이메일로 닉네임 얻기

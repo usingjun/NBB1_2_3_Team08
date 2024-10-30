@@ -1,13 +1,16 @@
 package edu.example.learner_kotlin.config
 
+import edu.example.learner_kotlin.member.service.CustomOauth2UserService
 import edu.example.learner_kotlin.security.JWTCheckFilter
 import edu.example.learner_kotlin.security.JWTUtil
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configurers.*
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -20,8 +23,8 @@ import org.springframework.web.cors.CorsConfigurationSource
 @EnableWebSecurity
 class SecurityConfig (
     private val jwtUtil: JWTUtil,
-//    private val customSuccessHandler: CustomSuccessHandler,
-//    private val customOauth2UserService: CustomOauth2UserService
+    private val customSuccessHandler: CustomSuccessHandler,
+    private val customOauth2UserService: CustomOauth2UserService
 ){
 
     @Bean
@@ -33,7 +36,7 @@ class SecurityConfig (
     @Throws(Exception::class)
     fun securityFilterChain(
         http: HttpSecurity,
-//        customClientRegistrationRepo: CustomClientRegistrationRepo
+        customClientRegistrationRepo: CustomClientRegistrationRepo
     ): SecurityFilterChain {
         //csrf disable
         http.csrf{it.disable()}
@@ -47,19 +50,16 @@ class SecurityConfig (
             .addFilterBefore(JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
-//        http
-//            .oauth2Login(
-//                Customizer<OAuth2LoginConfigurer<HttpSecurity?>> { oauth2: OAuth2LoginConfigurer<HttpSecurity?> ->
-//                    oauth2
-//                        .userInfoEndpoint(Customizer<UserInfoEndpointConfig> { userInfoEndpointConfig: UserInfoEndpointConfig ->
-//                            userInfoEndpointConfig.userService(
-//                                customOauth2UserService
-//                            )
-//                        })
-//                        .clientRegistrationRepository(customClientRegistrationRepo.clientRegistrationRepository())
-//                        .successHandler(customSuccessHandler)
-//                }
-//            )
+        http
+            .oauth2Login{ oauth2  ->
+                    oauth2
+                        .userInfoEndpoint { userInfoEndpointConfig ->
+                            userInfoEndpointConfig.userService(customOauth2UserService)
+                        }
+                        .clientRegistrationRepository(customClientRegistrationRepo.clientRegistrationRepository())
+                        .successHandler(customSuccessHandler)
+                }
+
 
         //경로별 인가 작업
         http.authorizeHttpRequests{ auth ->
