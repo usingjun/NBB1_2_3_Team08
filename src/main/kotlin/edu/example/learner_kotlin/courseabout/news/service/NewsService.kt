@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.courseabout.news.service
 
+import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
 import edu.example.learner_kotlin.courseabout.news.dto.NewsResDTO
 import edu.example.learner_kotlin.courseabout.news.dto.NewsRqDTO
 import edu.example.learner_kotlin.courseabout.news.entity.NewsEntity
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,10 +24,8 @@ class NewsService(
 ) {
     fun createNews(courseId: Long, newsRqDTO: NewsRqDTO): NewsResDTO {
         log.info("새소식 등록 : ${newsRqDTO.newsName}")
-        // 반환 타입이 Optional<Course>이므로 orElseThrow를 사용하여 예외처리
-        // :? 사용하니 unreachable code
-        val course = courseRepository.findById(courseId)
-            .orElseThrow { IllegalArgumentException("해당 강의를 찾을 수 없습니다.") }
+        val course = courseRepository.findByIdOrNull(courseId)
+            ?: throw IllegalArgumentException("해당 강의를 찾을 수 없습니다.")
         val newsEntity = newsRqDTO.toEntity().apply { changeCourse(course) }
         newsRepository.save(newsEntity)
         return NewsResDTO.fromEntity(newsEntity)
@@ -34,8 +34,8 @@ class NewsService(
     fun updateNews(courseId: Long, newsId: Long, newsRqDTO: NewsRqDTO): NewsResDTO {
         log.info("새소식 업데이트 : ${newsRqDTO.newsName}")
         val newsEntity = validateNewsInCourse(courseId, newsId)
-        newsEntity.changeNewsName(newsRqDTO.newsName)
-        newsEntity.changeNewsDescription(newsRqDTO.newsDescription)
+        newsEntity.apply { newsName = newsRqDTO.newsName }
+        newsEntity.apply { newsDescription = newsRqDTO.newsDescription }
         return NewsResDTO.fromEntity(newsRepository.save(newsEntity))
     }
 
@@ -60,8 +60,8 @@ class NewsService(
     }
 
     private fun validateNewsInCourse(courseId: Long, newsId: Long): NewsEntity {
-        val newsEntity = newsRepository.findById(newsId)
-            .orElseThrow { IllegalArgumentException("해당 아이디의 소식을 찾을 수 없습니다.") }
+        val newsEntity = newsRepository.findByIdOrNull(newsId)
+            ?: throw IllegalArgumentException("해당 아이디의 소식을 찾을 수 없습니다.")
         if (newsEntity.courseNews?.courseId != courseId) {
             throw IllegalArgumentException("해당 강의에 속하지 않는 소식입니다.")
         }
@@ -100,9 +100,9 @@ class NewsService(
 
     // 조회수 증가
     fun addViewCountV2(newsId: Long) {
-        val newsEntity = newsRepository.findById(newsId)
-            .orElseThrow { IllegalArgumentException("해당 아이디의 소식을 찾을 수 없습니다.") }
-        newsEntity.changeViewCount(newsEntity.viewCount + 1)
+        val newsEntity = newsRepository.findByIdOrNull(newsId)
+            ?: throw IllegalArgumentException("해당 아이디의 소식을 찾을 수 없습니다.")
+        newsEntity.apply { viewCount += 1 }
         newsRepository.save(newsEntity)
     }
 

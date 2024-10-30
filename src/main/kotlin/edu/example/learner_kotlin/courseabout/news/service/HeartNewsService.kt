@@ -8,6 +8,8 @@ import edu.example.learner_kotlin.courseabout.news.entity.NewsEntity
 import edu.example.learner_kotlin.courseabout.news.repository.HeartNewsRepository
 import edu.example.learner_kotlin.courseabout.news.repository.NewsRepository
 import edu.example.learner_kotlin.member.entity.Member
+import edu.example.learner_kotlin.member.repository.MemberRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -47,15 +49,17 @@ class HeartNewsService(
     }
 
     fun checkHeart(newsId: Long, memberId: Long): Boolean {
-        val (member, news) = findMemberAndNews(memberId, newsId)
-        return heartNewsRepository.existsByMemberAndNewsEntity(member, news)
+        return runCatching {
+            val (member, news) = findMemberAndNews(memberId, newsId)
+            heartNewsRepository.existsByMemberAndNewsEntity(member, news)
+        }.getOrDefault(false)
     }
 
     private fun findMemberAndNews(memberId: Long, newsId: Long): Pair<Member, NewsEntity> {
-        val member = memberRepository.findById(memberId)
-            .orElseThrow { NotFoundException("멤버아이디를 찾을 수 없습니다.") }
-        val news = newsRepository.findById(newsId)
-            .orElseThrow { NotFoundException("새소식을 찾을 수 없습니다.") }
+        val member = memberRepository.findByIdOrNull(memberId)
+            ?: throw NotFoundException("멤버아이디를 찾을 수 없습니다.")
+        val news = newsRepository.findByIdOrNull(newsId)
+            ?: throw NotFoundException("새소식을 찾을 수 없습니다.")
         return Pair(member, news)
     }
 }

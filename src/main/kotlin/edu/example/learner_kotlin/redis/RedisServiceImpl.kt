@@ -28,7 +28,7 @@ class RedisServiceImpl(
 
     // 중복 조회 여부 확인
     fun isDuplicateView(key: String, duration: Duration): Boolean {
-        return if (redisTemplate.hasKey(key) == true) {
+        return if (redisTemplate.hasKey(key)) {
             true // 이미 조회된 경우
         } else {
             redisTemplate.opsForValue().set(key, "viewed", duration) // 조회 정보 Redis에 저장

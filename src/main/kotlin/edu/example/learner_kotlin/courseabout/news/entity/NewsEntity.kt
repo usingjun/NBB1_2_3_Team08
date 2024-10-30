@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.courseabout.news.entity
 
+import edu.example.learner_kotlin.courseabout.course.entity.Course
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
@@ -10,7 +11,7 @@ import java.time.LocalDateTime
 @Entity
 @EntityListeners(AuditingEntityListener::class)
 @Table(name = "news")
-class NewsEntity protected constructor(
+data class NewsEntity (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "news_id")
     val newsId: Long? = null,
@@ -40,18 +41,6 @@ class NewsEntity protected constructor(
     val heartNewsList: List<HeartNews> = mutableListOf()
 )
 {
-
-    fun changeNewsName(newsName: String) {
-        this.newsName = newsName
-    }
-
-    fun changeNewsDescription(newsDescription: String?) {
-        this.newsDescription = newsDescription
-    }
-
-    fun changeViewCount(viewCount: Int) {
-        this.viewCount = viewCount
-    }
 
     fun changeCourse(course: Course) {
         this.courseNews = course
