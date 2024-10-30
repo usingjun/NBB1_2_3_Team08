@@ -17,7 +17,7 @@ class InquiryRepositoryTests {
         val memberId = 1L
 
         inquiryRepository.findByMemberId(memberId).run {
-            assertEquals(10, this.size)
+            assertEquals(11, this.size)
         }
     }
 }
