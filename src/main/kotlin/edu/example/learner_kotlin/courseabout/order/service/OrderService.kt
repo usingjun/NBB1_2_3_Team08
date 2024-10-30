@@ -11,7 +11,7 @@ interface OrderService {
 
     fun delete(courseId: Long)
     fun readAll(): List<OrderDTO>
-//    fun getOrdersById(memberId: Long): List<OrderDTO>
+    fun getOrdersById(memberId: Long): List<OrderDTO>
     fun deleteAll()
     fun purchaseOrderItems(orderId: Long, memberId: Long): OrderDTO;
 }

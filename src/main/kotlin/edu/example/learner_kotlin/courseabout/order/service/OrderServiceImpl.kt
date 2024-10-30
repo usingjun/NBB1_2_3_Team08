@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.courseabout.order.service
 
+import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
@@ -87,8 +88,8 @@ class OrderServiceImpl(
 
     override fun add(orderDTO: OrderDTO, memberId: Long): OrderDTO {
         orderDTO.memberId=memberId
-        var order= modelMapper.map(orderDTO, Order::class.java)
-        order = orderRepository.save(order) // Order 저장
+        var orderEntity= orderDTO.toEntity(orderDTO)
+        orderEntity = orderRepository.save(orderEntity) // Order 저장
         var totalPrice = 0L
 
         // orderDTO안에 orderItemDTOList를 orderItemList로 변환
@@ -96,17 +97,21 @@ class OrderServiceImpl(
 
         for (orderItemDTO in orderDTO.orderItemDTOList!!) {
             log.info("orderItem {$orderItemDTO} ")
-            val course = courseRepository.findById(orderItemDTO.courseId!!).orElseThrow()
-            orderItemDTO.apply {
-                price=course.coursePrice
-                courseAttribute= course.courseAttribute.toString()
-                val orderItem: OrderItem = modelMapper.map(orderItemDTO, OrderItem::class.java)
-                order.orderItems.add(orderItem)
-                totalPrice+=orderItem.price!!
+            //OrderItem 의 강의 찾기
+            var findCourse = courseRepository.findById(orderItemDTO.courseId!!).orElseThrow()
+            log.info("course {$findCourse} ")
+            val orderItem = OrderItem().apply {
+                order = orderEntity
+                course = Course(courseId = findCourse.courseId)
+                price =findCourse.coursePrice
+                courseAttribute = findCourse.courseAttribute
+                totalPrice+= findCourse.coursePrice!!
             }
+            orderItemRepository.save(orderItem)
         }
-        order.totalPrice=totalPrice
-        order = orderRepository.save(order)
+        log.info("orderItem save success")
+        orderEntity.totalPrice=totalPrice
+        orderEntity = orderRepository.save(orderEntity)
         orderDTO.totalPrice=totalPrice
         return orderDTO
     }
@@ -215,7 +220,7 @@ class OrderServiceImpl(
 
 
     //    @Override
-    //    public List<OrderDTO> readAll() {
+    //    public List<OrderDTO> readAll()x {
     //        List<Order> orders = orderRepository.findAll();
     //        List<OrderDTO> orderDTOList = new ArrayList<>();
     //        for (int i = 0; i <orders.size(); i++) {
@@ -246,22 +251,22 @@ class OrderServiceImpl(
         return orderDTOList
     }
 
-//    override fun getOrdersById(memberId: Long): List<OrderDTO> {
-//        val member: Member = memberRepository.getReferenceById(memberId)
-//        val orders: List<Order> = orderRepository.findByMember(member)
-//        val orderDTOListByMember: MutableList<OrderDTO> = ArrayList()
-//
-//        for (order in orders) {
-//            val orderDTO: OrderDTO = OrderDTO(order)
-//            orderDTO.setOrderItemDTOList(ArrayList<E>()) // 리스트 초기화
-//
-//            for (orderItem in order.getOrderItems()) {
-//                orderDTO.getOrderItemDTOList().add(OrderItemDTO(orderItem))
-//            }
-//            orderDTOListByMember.add(orderDTO)
-//        }
-//        return orderDTOListByMember
-//    }
+    override fun getOrdersById(memberId: Long): List<OrderDTO> {
+        val member: Member = memberRepository.getReferenceById(memberId)
+        val orders: List<Order> = orderRepository.findByMember(member)
+        val orderDTOListByMember: MutableList<OrderDTO> = ArrayList()
+
+        for (order in orders) {
+            val orderDTO = OrderDTO(order)
+            orderDTO.orderItemDTOList=ArrayList()
+
+            for (orderItem in order.orderItems) {
+                orderDTO.orderItemDTOList!!.add(OrderItemDTO(orderItem))
+            }
+            orderDTOListByMember.add(orderDTO)
+        }
+        return orderDTOListByMember
+    }
 
 
     override fun deleteAll() {

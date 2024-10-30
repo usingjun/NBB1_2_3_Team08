@@ -33,10 +33,9 @@ data class Order(
 
     var totalPrice: Long = 0, // 기본값 설정
 
+)
+{
     @JsonIgnore
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     val orderItems: MutableList<OrderItem> = ArrayList()
-)
-{
-
 }

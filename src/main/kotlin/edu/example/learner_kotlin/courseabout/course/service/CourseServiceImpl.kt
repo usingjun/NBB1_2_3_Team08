@@ -11,6 +11,7 @@ import edu.example.learner_kotlin.courseabout.exception.CourseException
 import edu.example.learner_kotlin.member.repository.MemberRepository
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -42,8 +43,9 @@ class CourseServiceImpl(
     }
 
     override fun read(courseId: Long): CourseDTO {
-        val course = courseRepository.findById(courseId)
-            .orElseThrow { CourseException.COURSE_NOT_FOUND.courseException }
+        val findByIdOrNull = courseRepository.findByIdOrNull(courseId)!!
+
+        val course = findByIdOrNull
 
         log.info("course: {}", course)
         return CourseDTO(course)

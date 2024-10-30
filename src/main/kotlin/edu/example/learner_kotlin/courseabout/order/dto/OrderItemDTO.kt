@@ -1,6 +1,7 @@
 package edu.leranermig.order.dto
 
 
+import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 
 
@@ -12,6 +13,15 @@ data class OrderItemDTO(
     var price: Long? = null,
 
 ) {
+    fun toEntity(orderItemDTO: OrderItemDTO): OrderItem {
+        return OrderItem().apply {
+            orderId = orderItemDTO.orderId
+            courseId = courseId
+            course = Course( courseName=courseName, courseAttribute=courseAttribute)
+            price = price
+
+        }
+    }
     constructor(orderItem: OrderItem) : this(
         orderId = orderItem.orderItemId,
         courseId = orderItem.course?.courseId,

@@ -26,8 +26,6 @@ class CourseController(
     private val orderService: OrderService,
     private val videoService: VideoService,
 ) {
-
-
     @PostMapping
     @Operation(summary = "강의 생성", description = "새로운 강의를 생성합니다.")
     @ApiResponses(

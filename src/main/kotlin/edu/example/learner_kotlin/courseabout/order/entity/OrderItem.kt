@@ -22,13 +22,13 @@ class OrderItem(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "courseId", nullable = false)
-    val course: Course? = null,
+    var course: Course? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId", nullable = false, updatable = false) // 변경 불가 설정
     var order: Order? = null,
 
-    val courseAttribute: CourseAttribute? = null,
+    var courseAttribute: CourseAttribute? = null,
 
     @CreatedDate
     val createdAt: LocalDateTime? = null,
