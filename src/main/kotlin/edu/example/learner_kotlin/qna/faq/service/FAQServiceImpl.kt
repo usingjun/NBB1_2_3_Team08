@@ -25,7 +25,7 @@ class FAQServiceImpl(private val faqRepository: FAQRepository, private val model
         with(faq) {
             faqTitle = faqDTO.faqTitle
             faqContent = faqDTO.faqContent
-            faqCategory = FAQCategory.valueOf(faqDTO.faqCategory.toString())
+            faqCategory = FAQCategory.valueOf(faqDTO.faqCategory!!)
         }
         FAQDTO(faq)
     }
