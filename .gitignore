@@ -38,3 +38,7 @@ out/
 
 ### Kotlin ###
 .kotlin
+.tmp/
+.caches/
+.daemon/
+.native/
