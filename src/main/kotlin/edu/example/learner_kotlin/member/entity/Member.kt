@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UserDetails
 import java.time.LocalDateTime
 
 
@@ -30,7 +33,7 @@ data class Member (
     var phoneNumber: String? = null,
 
     @Lob // BLOB 타입으로 처리됨
-    var profileImage: ByteArray,
+    var profileImage: ByteArray? = null,
 
     var imageType: String? = null
     ,
@@ -44,7 +47,7 @@ data class Member (
     @CreatedDate
     val createDate: LocalDateTime? = null
 ){
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val heartNewsList: List<HeartNews> = ArrayList<HeartNews>()
 //
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
