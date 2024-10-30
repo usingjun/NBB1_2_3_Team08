@@ -1,6 +1,8 @@
 package edu.example.learner_kotlin.member.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import edu.example.learner.courseabout.coursereview.entity.Review
+import edu.example.learner_kotlin.courseabout.course.entity.Course
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -53,8 +55,8 @@ data class Member (
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val memberCourses: List<MemberCourse> = ArrayList<MemberCourse>()
 //
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    private val courses: List<Course> = ArrayList<Course>()
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val courses: List<Course> = ArrayList<Course>()
 //
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val inquiries: List<Inquiry> = ArrayList<Inquiry>()
@@ -65,6 +67,6 @@ data class Member (
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val courseAnswers: List<CourseAnswer> = ArrayList<CourseAnswer>()
 //
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    private val reviews: List<Review> = ArrayList<Review>()
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val reviews: List<Review> = ArrayList<Review>()
 }

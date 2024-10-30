@@ -1,5 +1,6 @@
 package edu.example.learner.courseabout.coursereview.entity
 
+import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.member.entity.Member
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
@@ -36,12 +37,12 @@ data class Review (
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val reviewType: ReviewType? = null,
-
+){
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    val member: Member? = null,
+    val member: Member? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
-    private val course: Course? = null
-){}
+    val course: Course? = null
+}

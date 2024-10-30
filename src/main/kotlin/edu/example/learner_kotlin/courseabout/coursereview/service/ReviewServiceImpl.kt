@@ -4,8 +4,10 @@ import edu.example.learner.courseabout.coursereview.dto.ReviewDTO
 import edu.example.learner.courseabout.coursereview.entity.Review
 import edu.example.learner.courseabout.coursereview.entity.ReviewType
 import edu.example.learner.courseabout.coursereview.repository.ReviewRepository
+import edu.example.learner_kotlin.courseabout.course.service.CourseServiceImpl
 import edu.example.learner_kotlin.courseabout.coursereview.exception.ReviewException
 import edu.example.learner_kotlin.log
+import edu.example.learner_kotlin.member.service.MemberService
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
@@ -22,7 +24,7 @@ class ReviewServiceImpl(
     @Transactional
     override fun createReview(reviewDTO: ReviewDTO, reviewType: ReviewType?): ReviewDTO {
         try {
-            val course = courseService!!.readReview(reviewDTO.courseId).toEntity()
+            val course = reviewDTO.courseId?.let { courseService!!.readReview(it).toEntity() }
 
             log.info("Creating review for course $course")
             val memberInfo = memberService!!.getMemberInfo(reviewDTO.writerId)
@@ -30,7 +32,7 @@ class ReviewServiceImpl(
 
             if (reviewDTO.writerId == null) {
                 throw ReviewException.NOT_LOGIN.get()
-            } else if (memberInfo.nickname === course.member.nickname) {
+            } else if (memberInfo.nickname === course?.member?.nickname) {
                 throw ReviewException.NOT_MATCHED_REVIEWER.get()
             }
 
@@ -56,7 +58,7 @@ class ReviewServiceImpl(
     }
 
     override fun updateReview(reviewId: Long, reviewDTO: ReviewDTO): ReviewDTO {
-        val course = courseService!!.read(reviewDTO.courseId)!!.toEntity()
+        val course = reviewDTO.courseId?.let { courseService!!.read(it) }!!.toEntity()
         log.info(course)
 
         val review = reviewRepository!!.findById(reviewId).orElseThrow { ReviewException.NOT_FOUND.get() }!!
@@ -185,8 +187,8 @@ class ReviewServiceImpl(
                     reviewType = review.reviewType,
                     reviewUpdatedDate = review.reviewUpdatedDate,
                     writerId = review.member?.memberId,
-                    courseName = review.course.courseName,
-                    courseId = review.course.courseId,
+                    courseName = review.course?.courseName,
+                    courseId = review.course?.courseId,
                     nickname = nickname,
                     writerName = review.member?.nickname
                 )
@@ -212,9 +214,9 @@ class ReviewServiceImpl(
                     reviewType = review.reviewType,
                     reviewUpdatedDate = review.reviewUpdatedDate,
                     writerId = review.member?.memberId,
-                    courseName = review.course.courseName,
+                    courseName = review.course?.courseName,
                     courseId = courseId,
-                    nickname = review.course.member.nickname,
+                    nickname = review.course?.member?.nickname,
                     writerName = review.member?.nickname
                 )
             }
