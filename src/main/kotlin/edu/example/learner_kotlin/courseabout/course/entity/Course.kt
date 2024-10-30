@@ -1,6 +1,7 @@
 package edu.example.learner_kotlin.courseabout.course.entity
 
 import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
+import edu.example.learner_kotlin.courseabout.video.entity.Video
 import edu.example.learner_kotlin.member.entity.Member
 import jakarta.persistence.*
 import jakarta.validation.constraints.Max
@@ -41,14 +42,14 @@ data class Course(
 
     @LastModifiedDate
     var courseModifiedDate: LocalDateTime? = null,
+) {
     @OneToMany(mappedBy = "course",cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     var  orderItems : MutableList<OrderItem> = mutableListOf()
-) {
     //    @OneToMany(mappedBy = "courseNews", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     //    private List<NewsEntity> newsEntities = new ArrayList<>();
     //
-    //    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    //    private List<Video> videos = new ArrayList<>();
+    @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    var videos : MutableList<Video> = mutableListOf()
     //
     //    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     //    private List<Review> reviews = new ArrayList<>();
@@ -56,8 +57,5 @@ data class Course(
     //    @OneToMany(mappedBy = "course",cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     //    private List<CourseInquiry> courseInquiries = new ArrayList<>();
     //
-
-
-
 
 }

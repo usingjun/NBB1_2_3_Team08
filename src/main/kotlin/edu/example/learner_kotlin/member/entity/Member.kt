@@ -45,14 +45,15 @@ data class Member (
     @CreatedDate
     val createDate: LocalDateTime? = null,
 
-    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    private val courses: List<Course> = ArrayList<Course>()
 ){
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val heartNewsList: List<HeartNews> = ArrayList<HeartNews>()
 //
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     val memberCourses: List<MemberCourse> = ArrayList<MemberCourse>()
+
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val courses: List<Course> = ArrayList<Course>()
 //
 
 //
