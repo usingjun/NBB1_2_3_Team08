@@ -1,4 +1,4 @@
-package edu.example.learner.member.service
+package edu.example.learner_kotlin.member.service
 
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.dto.LoginDTO
@@ -7,6 +7,7 @@ import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.exception.LoginException
 import edu.example.learner_kotlin.member.exception.MemberException
 import edu.example.learner_kotlin.member.repository.MemberRepository
+import edu.example.learner_kotlin.security.JWTUtil
 import jakarta.servlet.http.Cookie
 import org.modelmapper.ModelMapper
 import org.springframework.data.repository.findByIdOrNull
@@ -14,8 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
-import java.util.Map
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.MutableList
@@ -26,7 +25,7 @@ class MemberService(
     private val memberRepository: MemberRepository,
     private val passwordEncoder: PasswordEncoder,
     private val modelMapper: ModelMapper,
-//    private val jwtUtil: JWTUtil
+    private val jwtUtil: JWTUtil
 ){
     //회원가입
     fun register(memberDTO: MemberDTO): MemberDTO {
@@ -143,7 +142,7 @@ class MemberService(
         }
 
         // JWT 생성 및 쿠키 반환
-        val accessToken: String = jwtUtil.createToken(Map.of("mid", member.nickname, "role", member.role), 30)
+        val accessToken: String = jwtUtil.createToken(mutableMapOf("mid" to member.nickname, "role" to member.role),30)
         val cookie = Cookie("Authorization", accessToken).apply {
             maxAge = 60 * 60 * 60   // 60시간
             path = "/"              // 전체 경로에서 접근 가능
