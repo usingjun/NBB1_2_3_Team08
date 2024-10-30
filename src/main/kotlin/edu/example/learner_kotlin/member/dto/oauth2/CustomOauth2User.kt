@@ -14,7 +14,7 @@ class CustomOauth2User(
         return oauth2Response.getNickName()
     }
 
-    override fun getAttributes(): MutableMap<String, Any> {
+    override fun getAttributes(): MutableMap<String?, Any?> {
         return mutableMapOf("mid" to oauth2Response.getNickName(), "role" to role)
     }
 

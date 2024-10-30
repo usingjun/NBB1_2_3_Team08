@@ -19,7 +19,7 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
     }
 
     // JWT 문자열 생성 (저장 문자열, 만료 시간 - 분 단위)
-    fun createToken(valueMap: Map<String, Any> , min: Int): String {
+    fun createToken(valueMap: MutableMap<String?, Any?> , min: Int): String {
         val now = Date() // 토큰 발행 시간
         val headers = mapOf("alg" to "HS256", "typ" to "JWT") // 전체 헤더를 Map 으로 설정
 

@@ -26,7 +26,8 @@ data class ReviewDTO(
         review.reviewType,
         review.member?.memberId,
         review.member?.nickname,
-        review.member?.course,
-        review.member?.nickname
+        review.course?.courseName,
+        review.course?.member?.nickname,
+        review.course?.courseId
     )
 }

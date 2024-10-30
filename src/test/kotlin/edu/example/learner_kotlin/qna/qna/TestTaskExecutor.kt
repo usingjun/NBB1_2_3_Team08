@@ -11,6 +11,8 @@ import edu.example.learner_kotlin.qna.faq.repository.FAQRepository
 import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
 import edu.example.learner_kotlin.qna.inquiry.entity.InquiryStatus
 import edu.example.learner_kotlin.qna.inquiry.repository.InquiryRepository
+//import edu.example.learner_kotlin.studytable.entity.StudyTable
+//import edu.example.learner_kotlin.studytable.repository.StudyTableRepository
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -20,7 +22,8 @@ class TestTaskExecutor(
     val memberRepository: MemberRepository,
     val inquiryRepository: InquiryRepository,
     val faqRepository: FAQRepository,
-    val answerRepository: AnswerRepository
+    val answerRepository: AnswerRepository,
+//    val studyTableRepository: StudyTableRepository
 ) :
     ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
@@ -78,5 +81,12 @@ class TestTaskExecutor(
                 faqRepository.save(this)
             }
         }
+//
+//        val studyTable = StudyTable().apply {
+//            studyTime = 30
+//            completed = 1
+//            this.member = Member().apply { memberId = 1L }
+//        }
+//        studyTableRepository.save(studyTable)
     }
 }
