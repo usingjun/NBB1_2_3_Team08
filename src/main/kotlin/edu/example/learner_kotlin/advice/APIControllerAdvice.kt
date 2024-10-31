@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.advice
 
+import edu.example.learner_kotlin.courseabout.coursereview.exception.ReviewTaskException
 import edu.example.learner_kotlin.courseabout.exception.HeartNewsAlreadyExistsException
 import edu.example.learner_kotlin.courseabout.exception.NotFoundException
 import edu.example.learner_kotlin.log
@@ -94,6 +95,11 @@ class APIControllerAdvice {
 //
 //    @ExceptionHandler(CourseAnswerTaskException::class)
 //    fun handleCourseAnswerException(ex: CourseAnswerTaskException): ResponseEntity<String> {
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage())
+//    }
+
+//    @ExceptionHandler(ReviewTaskException::class)
+//    fun handleCourseAnswerException(ex: ReviewTaskException): ResponseEntity<String> {
 //        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage())
 //    }
 }

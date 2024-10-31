@@ -29,22 +29,22 @@ data class Review (
     var rating: Int = 0,
 
     @CreatedDate
-    val reviewCreatedDate: LocalDateTime? = null,
+    var reviewCreatedDate: LocalDateTime? = null,
 
     @LastModifiedDate
-    val reviewUpdatedDate: LocalDateTime? = null,
+    var reviewUpdatedDate: LocalDateTime? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val reviewType: ReviewType? = null,
+    var reviewType: ReviewType? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,  cascade = [CascadeType.ALL])
     @JoinColumn(name = "member_id")
-    val member: Member? = null,
+    var member: Member? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,  cascade = [CascadeType.ALL])
     @JoinColumn(name = "course_id")
-    val course: Course? = null
+    var course: Course? = null
 ){
 
 }
