@@ -80,14 +80,14 @@ class NewsController(
     @PatchMapping("/{newsId}/like")
     @Operation(summary = "좋아요", description = "좋아요를 처리합니다.")
     fun increaseHeart(@RequestBody @Validated heartNewsReqDTO: HeartNewsReqDTO): ResponseEntity<Any> {
-        heartNewsService.addHeart(heartNewsReqDTO)
+        heartNewsService.insert(heartNewsReqDTO)
         return ResponseEntity.ok().build()
     }
 
     @DeleteMapping("/{newsId}/like")
     @Operation(summary = "좋아요 취소", description = "좋아요를 취소합니다.")
     fun decreaseHeart(@RequestBody @Validated heartNewsReqDTO: HeartNewsReqDTO): ResponseEntity<Any> {
-        heartNewsService.deleteHeart(heartNewsReqDTO)
+        heartNewsService.delete(heartNewsReqDTO)
         return ResponseEntity.ok().build()
     }
 
