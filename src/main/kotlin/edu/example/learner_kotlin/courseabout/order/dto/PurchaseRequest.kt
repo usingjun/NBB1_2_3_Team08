@@ -4,7 +4,6 @@ package edu.leranermig.order.dto
 
 
 
-class PurchaseRequest {
-    // Getter와 Setter
-    var memberId: Long? = null
+data class PurchaseRequest (var memberId: Long? = null){
+
 }

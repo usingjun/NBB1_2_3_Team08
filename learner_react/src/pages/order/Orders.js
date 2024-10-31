@@ -58,7 +58,6 @@ const Orders = () => {
             // 성공적으로 결제 후 해당 주문 제거
             await axios.delete(`${Order_Url}/${orderId}`, { withCredentials: true });
             window.location.reload();
-
         } catch (error) {
             console.error("결제 중 오류 발생:", error);
             alert("결제에 실패했습니다.");

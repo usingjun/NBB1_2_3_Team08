@@ -130,6 +130,7 @@ class CourseController(
                 orderService.delete(order.orderId!!)
             }
         }
+        log.info("Deleting course {$courseId}" )
         return ResponseEntity.ok<Map<String, String>>(java.util.Map.of<String, String>("success", "강좌가 삭제되었습니다."))
     }
 

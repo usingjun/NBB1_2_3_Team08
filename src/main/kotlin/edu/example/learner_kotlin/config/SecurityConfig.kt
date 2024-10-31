@@ -46,8 +46,8 @@ class SecurityConfig (
             .httpBasic{it.disable()}
 
         //JWTFilter 추가
-//        http
-//            .addFilterBefore(JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
+        http
+            .addFilterBefore(JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http

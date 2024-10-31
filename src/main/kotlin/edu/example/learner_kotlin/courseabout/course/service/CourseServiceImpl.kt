@@ -105,20 +105,34 @@ class CourseServiceImpl(
         return byMemberNickname.map { CourseDTO(it) } ?: emptyList() // 빈 리스트 반환
     }
 
+    //수강중인 강의 목록
     override fun getMemberCoursesByMemberId(memberId: Long): List<MemberCourseDTO> {
         val memberCourseList = memberCourseRepository.getMemberCourse(memberId)
-            ?: throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
 
-        return memberCourseList.map { MemberCourseDTO(it) }.also {
+        if (memberCourseList.isEmpty()) {
+            throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
+        }
+        var memberCourseDTOList = mutableListOf<MemberCourseDTO>()
+        for (memberCourse in memberCourseList) {
+            memberCourseDTOList.add(MemberCourseDTO(memberCourse))
+        }
+        return memberCourseDTOList.also {
             log.info("Member courses: {}", it)
         }
     }
 
     override fun getCoursesByMemberId(memberId: Long): List<CourseDTO> {
-        val memberCourses = memberCourseRepository.findByMember_MemberId(memberId)
-            .takeIf { it!!.isNotEmpty() } ?: throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
+        val memberCourses = memberCourseRepository.getMemberCourseByMemberMemberId(memberId).orEmpty()
+        log.info("Member courses: {$memberCourses}" )
+            if (memberCourses.isEmpty()) {
+                throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
+            }
+         var courseDTOList : MutableList<CourseDTO> = mutableListOf()
+        for (memberCourse in memberCourses) {
+            courseDTOList.add(CourseDTO(memberCourse.course!!))
+        }
 
-        return memberCourses.map { CourseDTO(it?.course!!) }
+        return courseDTOList
     }
 
     // 강사 닉네임 반환

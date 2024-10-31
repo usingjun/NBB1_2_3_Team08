@@ -34,7 +34,7 @@ data class Video (
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_Id", referencedColumnName = "course_id") // course_id에 맞추기
-    val course: Course? = null,
+    var course: Course? = null,
 ){
     // 초기 동영상 시간 설정 메서드
     fun initializeTimes(totalDuration: Long?, currentTime: Long?) {

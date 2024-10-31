@@ -28,6 +28,7 @@ import kotlin.Exception
 import kotlin.Long
 import kotlin.RuntimeException
 import kotlin.collections.ArrayList
+import kotlin.math.log
 
 
 @Service
@@ -43,12 +44,15 @@ class OrderServiceImpl(
     
     // 주문 총 가격계산과 구매 정보저장 OCP 위반
     override fun purchaseOrderItems(orderId: Long, memberId: Long): OrderDTO {
+        log.info("구매 로직 시작")
         // 주문 찾기
         val order = orderRepository.findById(orderId)
             .orElseThrow<RuntimeException>(OrderException.ORDER_NOT_FOUND::get)
-
+        val findmember = memberRepository.findById(memberId).orElseThrow()
+        log.info("결제할 장바구니{$order}")
         // 주문자 확인
-        if (order!!.member!!.memberId==memberId){
+        if (order!!.member!!.memberId != memberId){
+            log.info("에러발생")
             throw OrderException.ORDER_NOT_FOUND.get()
         }
 
@@ -58,7 +62,7 @@ class OrderServiceImpl(
         for (orderItem in order.orderItems) {
             totalPrice += orderItem.price!!
         }
-
+        log.info("계산 완료")
         // 주문 상태 업데이트 (예: 결제 완료 상태로 변경)
         order.orderStatus = OrderStatus.COMPLETED
         order.totalPrice=totalPrice // 총 가격 설정
@@ -66,14 +70,12 @@ class OrderServiceImpl(
         // 구매 정보 저장 (멤버-강의 연결)
         for (orderItem in order.orderItems) {
             val memberCourse = MemberCourse().apply {
-                member!!.memberId = memberId
-                course.apply {
-                    orderItem.course
-                }
-                purchaseDate = Date()
+                member = findmember
+                course = courseRepository.findById(orderItem.course!!.courseId!!).get()
             }
 
             memberCourseRepository.save(memberCourse)
+            log.info("저장 전 확인 {$memberCourse}")
         }
 
         // 주문 정보 저장
@@ -81,13 +83,16 @@ class OrderServiceImpl(
         log.info("저장완료")
 
         // 주문 DTO 반환
-        return modelMapper.map(order, OrderDTO::class.java)
+        return OrderDTO(order)
     }
 
 
     override fun add(orderDTO: OrderDTO, memberId: Long): OrderDTO {
+        log.info("add test {$orderDTO}")
         orderDTO.memberId=memberId
+
         var orderEntity= orderDTO.toEntity(orderDTO)
+        orderEntity.orderStatus=OrderStatus.PENDING
         orderEntity = orderRepository.save(orderEntity) // Order 저장
         var totalPrice = 0L
 
@@ -110,6 +115,7 @@ class OrderServiceImpl(
         }
         log.info("orderItem save success")
         orderEntity.totalPrice=totalPrice
+
         orderEntity = orderRepository.save(orderEntity)
         orderDTO.totalPrice=totalPrice
         return orderDTO
@@ -128,7 +134,7 @@ class OrderServiceImpl(
                 orderItemDTOS.add(OrderItemDTO(orderItem))
             }
 
-            val orderDTO: OrderDTO = modelMapper.map(order, OrderDTO::class.java)
+            val orderDTO =OrderDTO(order)
             orderDTO.orderItemDTOList=orderItemDTOS
             log.info("read order {}", orderDTO)
             return orderDTO

@@ -19,7 +19,6 @@ data class OrderDTO(
 ) {
     fun toEntity(orderDTO: OrderDTO): Order{
         var order = Order().apply {
-            orderStatus = OrderStatus.valueOf(orderDTO.orderStatus)
             member = Member(memberId = orderDTO.memberId)
             totalPrice= orderDTO.totalPrice
 //            orderItems=listToEntity(orderItemDTOList!!)
