@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useLocation } from "react-router-dom"; // 추가: useLocation import
 
 const defaultImage = "/images/course_default_img.png";
 
@@ -11,6 +12,7 @@ const Courses = () => {
     const [filteredCourses, setFilteredCourses] = useState([]); // 필터링된 강의 목록 상태 추가
     const [role, setRole] = useState(""); // role을 상태로 저장
     const navigate = useNavigate();
+    const location = useLocation(); // 추가: location 사용
 
     // memberId를 로컬 저장소에 저장하는 useEffect
     useEffect(() => {
@@ -18,6 +20,14 @@ const Courses = () => {
         const memberId = query.get('memberId');
         const role = query.get('role');
         const searchQuery = query.get('searchId'); // URL에서 searchId 가져오기
+
+        // sessionExpired 쿼리 매개변수 확인
+        const sessionExpired = query.get('sessionExpired');
+        console.log(sessionExpired)
+        if (sessionExpired) {
+            alert('로그인 시간이 만료되었습니다. 재로그인 해주세요.'); // 알림 표시
+
+        }
 
         if (memberId) {
             localStorage.setItem('memberId', memberId);
@@ -116,8 +126,6 @@ const CourseItem = ({ course, navigate }) => {
 };
 
 export default Courses;
-
-// 스타일 코드 (기존과 동일)
 
 
 // 스타일 코드
