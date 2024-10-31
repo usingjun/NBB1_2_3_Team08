@@ -61,7 +61,7 @@ class JWTCheckFilter(
                     ))) || (request.method == "POST" &&
                     (requestURI.matches("/join/.*".toRegex()) || requestURI.matches("/members/find/.*".toRegex())))
         ) {
-            log.info("JWT check passed")
+            log.info("JWT check passed $decodedURI")
             isPublicPath = true
         }
 
@@ -96,6 +96,7 @@ class JWTCheckFilter(
         val accessToken: String = authorization
 
         try {
+            log.info("--- 토큰 유효성 검증 시작 ---")
             val claims = jwtUtil.validateToken(accessToken)
             log.info("--- 토큰 유효성 검증 완료 ---")
 
@@ -103,15 +104,11 @@ class JWTCheckFilter(
             val mid = claims["mid"].toString()
             val role = claims["role"].toString() // 단일 역할 처리
 
-            // String을 Role로 변환하는 함수
-            fun convertRole(roleString: String): Role {
-                return enumValueOf<Role>(roleString)
-            }
-
+            log.info(claims.toString())
             log.info("권한 : $role")
             // 토큰을 이용하여 인증된 정보 저장
             val authToken = UsernamePasswordAuthenticationToken(
-                CustomUserPrincipal(Member(memberId = mid.toLong(), role = convertRole(role))), null, mutableListOf(
+                CustomUserPrincipal(mid, role), null, mutableListOf(
                     SimpleGrantedAuthority(
                         "ROLE_$role"
                     )

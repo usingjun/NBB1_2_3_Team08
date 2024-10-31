@@ -37,12 +37,14 @@ data class Review (
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val reviewType: ReviewType? = null,
-){
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    val member: Member? = null
+    val member: Member? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     val course: Course? = null
+){
+
 }

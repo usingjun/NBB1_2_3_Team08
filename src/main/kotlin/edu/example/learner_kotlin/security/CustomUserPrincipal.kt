@@ -7,10 +7,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 
-class CustomUserPrincipal(member: Member) : UserDetails {
-    private val username: String = member.email ?: throw MemberException.MEMBER_NOT_FOUND.memberTaskException
-    private val role: String = member.role.toString()
-
+class CustomUserPrincipal(
+    private val username: String,
+    private val role: String
+): UserDetails {
+    constructor(member : Member) : this(
+        username = member.nickname.toString(),
+        role = member.role.toString()
+    )
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority("ROLE_" + this.role))
@@ -23,4 +27,5 @@ class CustomUserPrincipal(member: Member) : UserDetails {
     override fun getUsername(): String {
         return username
     }
+
 }
