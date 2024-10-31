@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from './axiosInstance'; // axiosInstance import
 
 const CourseNewsList = ({ courseId }) => {
     const [newsList, setNewsList] = useState([]);
@@ -13,24 +14,10 @@ const CourseNewsList = ({ courseId }) => {
     const newsPerPage = 5;
     const navigate = useNavigate();
 
-    useEffect(() => {
-        checkUserRole();
-        fetchInstructorName();
-    }, [courseId]); // courseId가 변경될 때마다 실행
-
     const fetchInstructorName = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/course/${courseId}/member-nickname`, {
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const nickname = await response.text();
-            // console.log("Instructor Nickname:", nickname);
-            setInstructorName(nickname);
+            const response = await axiosInstance.get(`/course/${courseId}/member-nickname`);
+            setInstructorName(response.data);
         } catch (err) {
             console.error("Failed to fetch instructor nickname:", err);
         } finally {
@@ -48,43 +35,38 @@ const CourseNewsList = ({ courseId }) => {
             if (token) {
                 const decodedToken = jwtDecode(token);
                 setUserRole(decodedToken.role);
-                const nickname = decodedToken.mid; // 토큰에서 nickname 추출
-                setUserName(nickname); // userName 설정
+                setUserName(decodedToken.mid);
             }
         } catch (error) {
             console.error("토큰 확인 중 오류 발생:", error);
         }
     };
 
-
-    const canCreateNews = () => {
-        // console.log("Current state:", {
-        //     userRole,
-        //     userName,
-        //     instructorName
-        // });
-        // console.log("User role:", userRole);
-        return (userRole === 'INSTRUCTOR' && userName === instructorName) ||
-            userRole === 'ADMIN';
-    };
-
-
     const fetchNews = (page) => {
-        fetch(`http://localhost:8080/course/${courseId}/news?page=${page}&size=${newsPerPage}`, {
-            credentials: 'include',
-        })
+        fetch(`http://localhost:8080/course/${courseId}/news?page=${page}&size=${newsPerPage}`)
             .then(res => res.json())
             .then(data => {
-                // console.log("Fetched news:", data);
                 setNewsList(data.content);
                 setTotalPages(data.totalPages);
             })
             .catch(err => console.error("새소식 가져오기 실패:", err));
     };
 
+
+    useEffect(() => {
+        checkUserRole();
+        fetchInstructorName();
+    }, [courseId]);
+
     useEffect(() => {
         fetchNews(currentPage);
     }, [courseId, currentPage]);
+
+    // 나머지 코드는 동일하게 유지
+    const canCreateNews = () => {
+        return (userRole === 'INSTRUCTOR' && userName === instructorName) ||
+            userRole === 'ADMIN';
+    };
 
     const handlePrevPage = () => {
         if (currentPage > 0) {

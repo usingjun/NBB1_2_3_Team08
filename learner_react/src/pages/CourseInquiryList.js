@@ -279,8 +279,8 @@ const CourseInquiryList = ({ courseId }) => {
                                     <h4>답변 목록</h4>
                                     {answers.length > 0 ? (
                                         answers.map((answer) => {
-                                            const answerProfileImageSrc = answer && answer.member && answer.member.profileImage
-                                                ? `data:image/jpeg;base64,${answer.member.profileImage}`
+                                            const answerProfileImageSrc = answer && answer.profileImage
+                                                ? `data:image/jpeg;base64,${answer.profileImage}`
                                                 : "http://localhost:8080/images/default_profile.jpg";
 
                                             return (

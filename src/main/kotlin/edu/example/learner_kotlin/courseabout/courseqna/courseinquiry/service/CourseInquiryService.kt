@@ -17,7 +17,7 @@ class CourseInquiryService(
 
     // 강의 문의 등록
     fun register(courseInquiryDTO: CourseInquiryDTO): CourseInquiryDTO {
-        val courseInquiry: CourseInquiry = modelMapper.map(courseInquiryDTO, CourseInquiry::class.java)
+        val courseInquiry = courseInquiryDTO.toEntity()
         courseInquiryRepository.save(courseInquiry)
         return modelMapper.map(courseInquiry, CourseInquiryDTO::class.java)
     }
