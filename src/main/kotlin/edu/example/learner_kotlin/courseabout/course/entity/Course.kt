@@ -44,9 +44,9 @@ data class Course(
     @LastModifiedDate
     var courseModifiedDate: LocalDateTime? = null,
 
-    @OneToMany(mappedBy = "courseNews", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    var newsEntities: MutableList<NewsEntity> = mutableListOf(),
 ) {
+    @OneToMany(mappedBy = "courseNews", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    var newsEntities: MutableList<NewsEntity> = mutableListOf()
 //    @OneToMany(mappedBy = "course",cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    var  orderItems : MutableList<OrderItem> = mutableListOf()
 

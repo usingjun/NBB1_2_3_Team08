@@ -1,5 +1,7 @@
 package edu.example.learner_kotlin.advice
 
+import edu.example.learner_kotlin.courseabout.exception.HeartNewsAlreadyExistsException
+import edu.example.learner_kotlin.courseabout.exception.NotFoundException
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.exception.MemberTaskException
 import org.springframework.http.HttpStatus
@@ -73,22 +75,22 @@ class APIControllerAdvice {
 //    }
 //
 //
-//    @ExceptionHandler(IllegalArgumentException::class)
-//    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<String> {
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//            .body<String>(ex.message) // 예외 메시지를 그대로 전송
-//    }
-//
-//    @ExceptionHandler(NotFoundException::class)
-//    fun handleNotFoundException(ex: Exception): ResponseEntity<*> {
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//            .body<String>(ex.message)
-//    }
-//
-//    @ExceptionHandler(HeartNewsAlreadyExistsException::class)
-//    fun handleHeartNewsAlreadyExistsException(ex: HeartNewsAlreadyExistsException): ResponseEntity<String> {
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage())
-//    }
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body<String>(ex.message) // 예외 메시지를 그대로 전송
+    }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFoundException(ex: Exception): ResponseEntity<*> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body<String>(ex.message)
+    }
+
+    @ExceptionHandler(HeartNewsAlreadyExistsException::class)
+    fun handleHeartNewsAlreadyExistsException(ex: HeartNewsAlreadyExistsException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
+    }
 //
 //    @ExceptionHandler(CourseAnswerTaskException::class)
 //    fun handleCourseAnswerException(ex: CourseAnswerTaskException): ResponseEntity<String> {
