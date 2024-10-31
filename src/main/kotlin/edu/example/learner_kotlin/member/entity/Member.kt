@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.member.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import edu.example.learner.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.course.entity.Course
@@ -35,8 +36,8 @@ data class Member (
     @Lob // BLOB 타입으로 처리됨
     var profileImage: ByteArray? = null,
 
-    var imageType: String? = null
-    ,
+    var imageType: String? = null,
+
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     var role: Role? = null,
