@@ -13,6 +13,7 @@ const MyCourses = () => {
                 .then(response => response.json())
                 .then(data => setCourses(data))
                 .catch(error => console.error('Error fetching courses:', error));
+            console.log(courses);
         } else {
             console.error('memberId not found in localStorage');
         }

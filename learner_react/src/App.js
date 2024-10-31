@@ -26,6 +26,9 @@ import InquiryDetail from "./pages/Inquiry/InquiryDetail";
 import InquiryRegistration from "./pages/Inquiry/InquiryRegistration";
 import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
+import axios from "axios";
+axios.defaults.withCredentials = true;
+
 
 function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);

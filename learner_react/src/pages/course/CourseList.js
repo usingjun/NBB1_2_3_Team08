@@ -51,10 +51,12 @@ const CourseList = () => {
         if (window.confirm("정말로 이 강좌를 삭제하시겠습니까?")) {
             try {
                 await axios.delete(`${Course_Url}/${courseId}`, { withCredentials: true });
+                console.log("삭제")
                 setCourses(courses.filter(course => course.courseId !== courseId));
             } catch (error) {
                 console.error("강좌 삭제 중 오류 발생:", error);
-                setError("강좌를 삭제하는 데 실패했습니다.");
+                const errorMessage = error.response?.data?.message || "강좌를 삭제하는 데 실패했습니다.";
+                setError(errorMessage);
             }
         }
     };

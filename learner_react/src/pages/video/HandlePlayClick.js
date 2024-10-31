@@ -41,7 +41,7 @@ export const handlePlayClick = async (courseId, video, navigate, setError, role,
         }
         // INSTRUCTOR 역할일 경우
         else if (role === "INSTRUCTOR") {
-            if (!video.course_Id) {
+            if (!video.courseId) {
                 console.error("비디오 객체에서 course_Id를 찾을 수 없습니다:", video);
                 alert("비디오 정보를 확인할 수 없습니다.");
                 return;
