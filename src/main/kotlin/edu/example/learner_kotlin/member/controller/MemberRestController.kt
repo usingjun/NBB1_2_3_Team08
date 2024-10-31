@@ -42,21 +42,21 @@ class MemberRestController (private val memberService: MemberService){
         log.info("--- memberUploadImage()")
         //파일 크기 제한
         if (!file.isEmpty && file.size > 2097152) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body<String>("파일 크기가 너무 큽니다.")
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("파일 크기가 너무 큽니다.")
         }
 
         //이미지 파일인지 확인
         if (file.contentType?.startsWith("image/") == false) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body<String>("이미지 파일만 업로드 가능해요👻")
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미지 파일만 업로드 가능해요👻")
         }
 
         try {
             memberService.uploadImage(file, memberId)
-            return ResponseEntity.status(HttpStatus.CREATED).body<String>("Image uploaded successfully")
+            return ResponseEntity.status(HttpStatus.CREATED).body("Image uploaded successfully")
         } catch (e: Exception) {
             log.error("Error uploading image", e)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body<String>("Error uploading image: " + e.message)
+                .body("Error uploading image: " + e.message)
         }
     }
 
