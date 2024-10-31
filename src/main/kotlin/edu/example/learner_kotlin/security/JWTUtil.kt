@@ -1,12 +1,12 @@
 package edu.example.learner_kotlin.security
 
 import edu.example.learner_kotlin.log
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.security.SignatureException
 import java.time.Duration
 import java.util.*
 import javax.crypto.SecretKey
@@ -33,19 +33,43 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
         }.compact()
     }
 
-    //검증 기능 수행
     fun validateToken(token: String?): Map<String, Any> {
-        try {
-            val claims: Claims = Jwts.parser()          //JWT 파싱하고 파서객체 생성
-                .verifyWith(key)                        //JWT 를 서명하는데 사용된 비밀키 설정
-                .build()                                //파서를 설정하여 빌드
-                .parseClaimsJwt(token)                  //JWT 파싱 및 서명 검증
-                .body                                   // 클레임 가져오기
+        if (token.isNullOrBlank()) {
+            log.error("JWT token is null or empty")
+            throw IllegalArgumentException("JWT token cannot be null or empty")
+        }
+
+        return try {
+            // JWT를 파싱하고 검증
+            val jws: Jws<Claims> = Jwts.parser()
+                .verifyWith(key) // 서명 검증 키 설정
+                .build()
+                .parseSignedClaims(token) // JWT 파싱 및 서명 검증
+
+            // Claims 객체 가져오기
+            val claims: Claims = jws.body
+
             log.info("--- claims : $claims")
-            return claims
+            claims
+        } catch (e: UnsupportedJwtException) {
+            log.error("Unsupported JWT token: {}", e.message)
+            throw RuntimeException("Unsupported JWT token")
+        } catch (e: MalformedJwtException) {
+            log.error("Malformed JWT token: {}", e.message)
+            throw RuntimeException("Malformed JWT token")
+        } catch (e: SignatureException) {
+            log.error("JWT signature validation failed: {}", e.message)
+            throw RuntimeException("JWT signature validation failed")
+        } catch (e: SecurityException) {
+            log.error("JWT string is actually a JWE: {}", e.message)
+            throw RuntimeException("JWT string is actually a JWE")
+        } catch (e: ExpiredJwtException) {
+            log.error("JWT token is expired: {}", e.message)
+            throw RuntimeException("JWT token is expired")
         } catch (e: IllegalArgumentException) {
             log.error("Invalid JWT token: {}", e.message)
             throw RuntimeException("Invalid JWT token")
         }
+
     }
 }
