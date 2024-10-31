@@ -1,7 +1,7 @@
 package edu.example.learner_kotlin.courseabout.course.entity
 
+//import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.news.entity.NewsEntity
-import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.video.entity.Video
 import edu.example.learner_kotlin.member.entity.Member
 import jakarta.persistence.*
@@ -35,7 +35,8 @@ data class Course(
 
     var coursePrice: @NotNull Long? = null,
     var courseLevel: @NotNull @Max(5) @Min(1) Int? = null,
-
+//    @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+//    val memberCourses: List<MemberCourse> = emptyList(),
     var sale : Boolean = false,
     @CreatedDate
     var courseCreatedDate: LocalDateTime? = null,
@@ -43,8 +44,6 @@ data class Course(
     @LastModifiedDate
     var courseModifiedDate: LocalDateTime? = null,
 
-
-) {
     @OneToMany(mappedBy = "courseNews", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     var newsEntities: MutableList<NewsEntity> = mutableListOf()
 
