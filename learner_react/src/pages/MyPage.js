@@ -5,48 +5,35 @@ import YearlyStudyTable from "../components/study-table/YearlyStudyTable";
 
 const MyPage = () => {
     const [userInfo, setUserInfo] = useState(null);
-    const [myCourses, setMyCourses] = useState([]); // 사용자 강의 상태 추가
     const [selectedFile, setSelectedFile] = useState(null);
-    const [errorMessage, setErrorMessage] = useState(""); // 오류 메시지 상태 추가
+    const [errorMessage, setErrorMessage] = useState("");
     const [isHover, setIsHover] = useState(false);
 
     useEffect(() => {
         const memberId = localStorage.getItem("memberId");
-        const fetchUserInfo = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/members/${memberId}`, {
-                    credentials: "include",
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserInfo(data);
-                } else {
-                    console.error("사용자 정보 로드 실패:", response.status);
-                }
-            } catch (error) {
-                console.error("API 호출 중 오류 발생:", error);
-            }
-        };
-
-        const fetchMyCourses = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/members/${memberId}/courses`, {
-                    credentials: "include",
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setMyCourses(data); // 사용자 강의 정보 설정
-                } else {
-                    console.error("강의 정보 로드 실패:", response.status);
-                }
-            } catch (error) {
-                console.error("강의 정보 API 호출 중 오류 발생:", error);
-            }
-        };
-
-        fetchUserInfo();
-        fetchMyCourses(); // 강의 정보 가져오기
+        fetchUserInfo(memberId);
     }, []);
+
+    const fetchUserInfo = async (memberId) => {
+        try {
+            const response = await fetch(`http://localhost:8080/members/${memberId}`, {
+                credentials: "include",
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUserInfo(data);
+            } else {
+                handleFetchError("사용자 정보 로드 실패", response.status);
+            }
+        } catch (error) {
+            handleFetchError("API 호출 중 오류 발생", error);
+        }
+    };
+
+    const handleFetchError = (message, error) => {
+        console.error(message, error);
+        setErrorMessage(message);
+    };
 
     const handleLogout = () => {
         document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -58,43 +45,39 @@ const MyPage = () => {
         const file = event.target.files[0];
         if (file) {
             setSelectedFile(file);
-            const memberId = localStorage.getItem("memberId");
-            const formData = new FormData();
-            formData.append("file", file);
-            try {
-                const response = await fetch(`http://localhost:8080/members/${memberId}/image`, {
-                    method: "PUT",
-                    body: formData,
-                    credentials: "include",
-                });
+            await uploadProfileImage(file);
+        }
+    };
 
-                const responseBody = await response.text(); // 텍스트로 응답을 받음
+    const uploadProfileImage = async (file) => {
+        const memberId = localStorage.getItem("memberId");
+        const formData = new FormData();
+        formData.append("file", file);
 
-                if (response.ok) {
-                    setUserInfo((prevUserInfo) => ({
-                        ...prevUserInfo,
-                        profileImage: responseBody.profileImage, // 여기에 프로필 이미지 경로 추가
-                    }));
-                    setErrorMessage(""); // 성공 시 오류 메시지 초기화
-                    alert(responseBody.message || "이미지 업로드 성공!"); // 성공 메시지
-                    window.location.reload(); // 페이지 리로드
-                } else {
-                    console.error("이미지 업로드 실패:", response.status, responseBody);
-                    setErrorMessage(`이미지 업로드 실패: ${responseBody || "알 수 없는 오류 발생"}`); // 오류 메시지 상태에 설정
-                }
-            } catch (error) {
-                console.error("이미지 업로드 중 오류 발생:", error);
-                setErrorMessage("이미지 업로드 중 오류 발생"); // 오류 메시지 상태에 설정
+        try {
+            const response = await fetch(`http://localhost:8080/members/${memberId}/image`, {
+                method: "PUT",
+                body: formData,
+                credentials: "include",
+            });
+
+            const responseBody = await response.text();
+            if (response.ok) {
+                setUserInfo((prev) => ({ ...prev, profileImage: responseBody.profileImage }));
+                alert(responseBody.message || "이미지 업로드 성공!");
+                window.location.reload();
+            } else {
+                handleFetchError("이미지 업로드 실패", responseBody);
             }
+        } catch (error) {
+            handleFetchError("이미지 업로드 중 오류 발생", error);
         }
     };
 
     const handleUploadClick = () => {
-        const fileInput = document.getElementById("fileInput");
-        fileInput.click();
+        document.getElementById("fileInput").click();
     };
 
-    // 이미지 삭제 핸들러
     const handleDeleteImage = async () => {
         const memberId = localStorage.getItem("memberId");
         try {
@@ -104,23 +87,17 @@ const MyPage = () => {
             });
 
             if (response.ok) {
-                setUserInfo((prevUserInfo) => ({
-                    ...prevUserInfo,
-                    profileImage: null, // 이미지 삭제 후 프로필 이미지를 null로 설정
-                }));
-                alert("이미지가 성공적으로 삭제되었습니다."); // 성공 메시지
-                window.location.reload(); // 페이지 리로드
+                setUserInfo((prev) => ({ ...prev, profileImage: null }));
+                alert("이미지가 성공적으로 삭제되었습니다.");
+                window.location.reload();
             } else {
-                console.error("이미지 삭제 실패:", response.status);
-                setErrorMessage("이미지 삭제 실패"); // 오류 메시지 상태에 설정
+                handleFetchError("이미지 삭제 실패", response.status);
             }
         } catch (error) {
-            console.error("이미지 삭제 중 오류 발생:", error);
-            setErrorMessage("이미지 삭제 중 오류 발생"); // 오류 메시지 상태에 설정
+            handleFetchError("이미지 삭제 중 오류 발생", error);
         }
     };
 
-    // 회원탈퇴 핸들러 추가
     const handleWithdraw = async () => {
         const memberId = localStorage.getItem("memberId");
         try {
@@ -130,17 +107,13 @@ const MyPage = () => {
             });
 
             if (response.ok) {
-                alert("회원탈퇴가 완료되었습니다."); // 성공 메시지
-                document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // 쿠키 삭제
-                localStorage.removeItem("memberId"); // 로컬 저장소에서 memberId 삭제
-                window.location.href = "/"; // 메인 화면으로 리다이렉트
+                alert("회원탈퇴가 완료되었습니다.");
+                handleLogout();
             } else {
-                console.error("회원탈퇴 실패:", response.status);
-                setErrorMessage("회원탈퇴 실패"); // 오류 메시지 상태에 설정
+                handleFetchError("회원탈퇴 실패", response.status);
             }
         } catch (error) {
-            console.error("회원탈퇴 중 오류 발생:", error);
-            setErrorMessage("회원탈퇴 중 오류 발생"); // 오류 메시지 상태에 설정
+            handleFetchError("회원탈퇴 중 오류 발생", error);
         }
     };
 
@@ -161,16 +134,10 @@ const MyPage = () => {
             >
                 <ProfilePicture src={profileImageSrc} alt="Profile" />
                 {isHover && (
-                    <>
-                        <UploadButton onClick={handleUploadClick}>
-                            +
-                        </UploadButton>
-                    </>
+                    <UploadButton onClick={handleUploadClick}>+</UploadButton>
                 )}
-                {userInfo.profileImage && ( // 프로필 이미지가 있을 때만 삭제 버튼 표시
-                    <DeleteButton onClick={handleDeleteImage}>
-                        이미지 삭제
-                    </DeleteButton>
+                {userInfo.profileImage && (
+                    <DeleteButton onClick={handleDeleteImage}>이미지 삭제</DeleteButton>
                 )}
                 <input
                     type="file"
@@ -195,13 +162,12 @@ const MyPage = () => {
                     <YearlyStudyTable />
                 </TableContainer>
             </UserInfoSection>
-            {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>} {/* 오류 메시지 표시 */}
+            {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
             <ButtonContainer>
                 <StyledButton onClick={() => window.location.href = "/edit-profile"}>회원정보 수정</StyledButton>
                 <StyledButton onClick={handleLogout}>로그아웃</StyledButton>
-                <StyledButton onClick={handleWithdraw}>회원탈퇴하기</StyledButton> {/* 회원탈퇴하기 버튼 추가 */}
+                <StyledButton onClick={handleWithdraw}>회원탈퇴하기</StyledButton>
             </ButtonContainer>
-
         </Container>
     );
 };
@@ -258,10 +224,10 @@ const DeleteButton = styled.button`
     background-color: #dc3545;
     color: white;
     border: none;
-    border-radius: 5px; // 버튼의 모서리를 둥글게 변경
-    padding: 0.5rem 1rem; // 패딩 추가
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
     cursor: pointer;
-    font-size: 1rem; // 폰트 크기 조정
+    font-size: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -298,76 +264,48 @@ const AboutSection = styled.div`
     border-radius: 5px;
     padding: 1.5rem;
     background-color: #f9f9f9;
-    text-align: left;
 `;
 
 const AboutTitle = styled.h2`
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
+    margin: 0;
+    font-size: 1.5rem;
 `;
 
 const AboutContent = styled.p`
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 `;
 
-const MyCoursesSection = styled.div`
-    margin: 2rem 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 1.5rem;
-    background-color: #f9f9f9;
-    text-align: left;
+const TableContainer = styled.div`
+    margin-top: 2rem;
 `;
 
-const CourseList = styled.ul`
-    list-style-type: none;
-    padding: 0;
-`;
-
-const CourseItem = styled.li`
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #ddd;
-    &:last-child {
-        border-bottom: none; // 마지막 항목의 경계 제거
-    }
+const LoadingMessage = styled.p`
+    font-size: 1.5rem;
+    color: #888;
 `;
 
 const ButtonContainer = styled.div`
     display: flex;
-    justify-content: center;
-    gap: 2rem;
+    justify-content: space-around;
+    margin-top: 2rem;
 `;
 
 const StyledButton = styled.button`
-    background-color: #3cb371;
-    color: white;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
     border: none;
     border-radius: 5px;
-    padding: 1rem 2rem;
+    background-color: #007bff;
+    color: white;
     cursor: pointer;
-    font-size: 1.2rem;
-    transition: background-color 0.3s;
     &:hover {
-        background-color: #218838;
+        background-color: #0056b3;
     }
 `;
 
 const ErrorMessage = styled.div`
     color: red;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    font-weight: bold;
+    margin-top: 1rem;
 `;
 
-const LoadingMessage = styled.div`
-    font-size: 1.5rem;
-    color: #3cb371; // 로딩 메시지 색상
-    margin-top: 2rem;
-`;
-
-const TableContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* 가로 중앙 정렬 */
-    justify-content: center; /* 세로 중앙 정렬 */
-    margin-top: 2rem;
-`;
