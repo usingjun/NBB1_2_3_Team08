@@ -49,6 +49,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
     implementation("org.modelmapper:modelmapper:3.1.1")     // DTO <-> Entity
+
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 }
 
 kotlin {

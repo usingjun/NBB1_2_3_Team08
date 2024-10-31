@@ -3,13 +3,13 @@ package edu.example.learner_kotlin.courseabout.course.controller
 
 
 import edu.example.learner_kotlin.courseabout.course.dto.CourseDTO
-//import edu.example.learner_kotlin.courseabout.course.dto.MemberCourseDTO
+import edu.example.learner_kotlin.courseabout.course.dto.MemberCourseDTO
 import edu.example.learner_kotlin.courseabout.course.service.CourseService
-//import edu.example.learner_kotlin.courseabout.order.service.OrderService
+import edu.example.learner_kotlin.courseabout.order.service.OrderService
 import edu.example.learner_kotlin.courseabout.video.dto.VideoDTO
 import edu.example.learner_kotlin.courseabout.video.service.VideoService
 import edu.example.learner_kotlin.log
-//import edu.leranermig.order.dto.OrderDTO
+import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -23,11 +23,9 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "강의 관리", description = "강의 CRUD 및 관련 작업을 수행합니다.")
 class CourseController(
     private var  courseService: CourseService,
-//    private val orderService: OrderService,
+    private val orderService: OrderService,
     private val videoService: VideoService,
 ) {
-
-
     @PostMapping
     @Operation(summary = "강의 생성", description = "새로운 강의를 생성합니다.")
     @ApiResponses(
@@ -108,62 +106,68 @@ class CourseController(
         return ResponseEntity.ok<CourseDTO>(courseService.updateCourse(courseDTO))
     }
 
-//    @DeleteMapping("/{courseId}")
-//    @Operation(summary = "강의 삭제", description = "강의 ID로 특정 강의를 삭제합니다.")
-//    @ApiResponses(
-//        value = [ApiResponse(
-//            responseCode = "200",
-//            description = "강의가 성공적으로 삭제되었습니다."
-//        ), ApiResponse(
-//            responseCode = "404",
-//            description = "강의를 찾을 수 없습니다."
-//        )]
-//    )
-//    fun deleteCourse(@PathVariable courseId: Long): ResponseEntity<*> {
-//        // 강좌 삭제
-//        courseService.deleteCourse(courseId)
-//
-//        // 모든 주문 조회
-//        val orders: List<OrderDTO> = orderService.readAll()
-//
-//        // 주문이 비어있으면 삭제
-//        for (order in orders) {
-//            if (order.orderItemDTOList!!.isEmpty()) {
-//                orderService.delete(order.orderId!!)
-//            }
-//        }
-//        return ResponseEntity.ok<Map<String, String>>(java.util.Map.of<String, String>("success", "강좌가 삭제되었습니다."))
-//    }
+    @DeleteMapping("/{courseId}")
+    @Operation(summary = "강의 삭제", description = "강의 ID로 특정 강의를 삭제합니다.")
+    @ApiResponses(
+        value = [ApiResponse(
+            responseCode = "200",
+            description = "강의가 성공적으로 삭제되었습니다."
+        ), ApiResponse(
+            responseCode = "404",
+            description = "강의를 찾을 수 없습니다."
+        )]
+    )
+    fun deleteCourse(@PathVariable courseId: Long): ResponseEntity<*> {
+        // 강좌 삭제
+        courseService.deleteCourse(courseId)
 
-//    @GetMapping("/{memberId}/list")
-//    @Operation(summary = "내 수강 정보 조회", description = "회원 ID로 해당 회원의 수강 정보를 조회합니다.")
-//    @ApiResponses(
-//        value = [ApiResponse(
-//            responseCode = "200",
-//            description = "수강 정보가 성공적으로 조회되었습니다."
-//        ), ApiResponse(
-//            responseCode = "404",
-//            description = "회원 정보를 찾을 수 없습니다."
-//        )]
-//    )
-//    fun readCourseListByMemberId(@PathVariable memberId: Long): ResponseEntity<List<MemberCourseDTO>> {
-//        log.info("Reading course list for member {}", memberId)
-//        return ResponseEntity.ok(courseService.getMemberCoursesByMemberId(memberId))
-//    }
+        // 모든 주문 조회
+        val orders: List<OrderDTO> = orderService.readAll()
+
+        // 주문이 비어있으면 삭제
+        for (order in orders) {
+            if (order.orderItemDTOList!!.isEmpty()) {
+                orderService.delete(order.orderId!!)
+            }
+        }
+        log.info("Deleting course {$courseId}" )
+        return ResponseEntity.ok<Map<String, String>>(java.util.Map.of<String, String>("success", "강좌가 삭제되었습니다."))
+    }
+
+    @GetMapping("/{memberId}/list")
+    @Operation(summary = "내 수강 정보 조회", description = "회원 ID로 해당 회원의 수강 정보를 조회합니다.")
+    @ApiResponses(
+        value = [ApiResponse(
+            responseCode = "200",
+            description = "수강 정보가 성공적으로 조회되었습니다."
+        ), ApiResponse(
+            responseCode = "404",
+            description = "회원 정보를 찾을 수 없습니다."
+        )]
+    )
+    fun readCourseListByMemberId(@PathVariable memberId: Long): ResponseEntity<List<MemberCourseDTO>> {
+        log.info("Reading course list for member {}", memberId)
+        return ResponseEntity.ok(courseService.getMemberCoursesByMemberId(memberId))
+    }
 
     @GetMapping("/{courseId}/member-nickname")
     @Operation(summary = "코스의 강사 닉네임 조회", description = "코스의 강사 닉네임을 조회합니다.")
     fun getCourseInstructorNickname(@PathVariable courseId: Long): ResponseEntity<String> {
         val instructorNickname: String = courseService.read(courseId).memberNickname!!
 
-        return ResponseEntity.ok<String>(instructorNickname)
+        return if (instructorNickname != null) {
+            ResponseEntity.ok<String>(instructorNickname) // 닉네임을 성공적으로 반환
+        } else {
+            ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body<String>("해당 코스 또는 닉네임을 찾을 수 없습니다.")
+        }
     }
 
-//    @GetMapping("/instruct/list/{nickname}")
-//    @Operation(summary = "강사의 본인 강의 조회", description = "강사가 본인의 강의를 조회")
-//    fun readInstructList(@PathVariable nickname: String): ResponseEntity<List<CourseDTO>> {
-//        log.info("Reading course instruct list {}", nickname)
-//
-//        return ResponseEntity.ok<List<CourseDTO>>(courseService.getCoursesByNickname(nickname))
-//    }
+    @GetMapping("/instruct/list/{nickname}")
+    @Operation(summary = "강사의 본인 강의 조회", description = "강사가 본인의 강의를 조회")
+    fun readInstructList(@PathVariable nickname: String): ResponseEntity<List<CourseDTO>> {
+        log.info("Reading course instruct list {}", nickname)
+
+        return ResponseEntity.ok<List<CourseDTO>>(courseService.getCoursesByNickname(nickname))
+    }
 }

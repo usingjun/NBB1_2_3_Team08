@@ -2,6 +2,8 @@ package edu.example.learner_kotlin.courseabout.video.service
 
 
 
+import edu.example.learner_kotlin.courseabout.course.entity.Course
+import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.video.dto.VideoDTO
 import edu.example.learner_kotlin.courseabout.video.entity.Video
@@ -14,7 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class VideoService(
     private val videoRepository: VideoRepository,
-    private val modelMapper: ModelMapper
+    private val courseRepository: CourseRepository,
 ) {
 
     val allVideos: List<VideoDTO>
@@ -31,8 +33,16 @@ class VideoService(
     // 비디오를 추가합니다.
 
     fun addVideo(videoDTO: VideoDTO): VideoDTO {
-        log.info("Adding video: $videoDTO")
-        val video= modelMapper.map(videoDTO, Video::class.java)
+        log.info("Adding video: ${videoDTO.courseId}")
+        var video = Video().apply {
+            url = videoDTO.url
+            title = videoDTO.title
+            description = videoDTO.description
+            log.info("testset")
+            course = Course(courseId = videoDTO.courseId)
+            log.info("testset2${course!!.courseId}")
+        }
+        log.info("video: $video")
         val savedVideo = videoRepository.save(video)
         log.info("Add success {}", savedVideo)
         return VideoDTO(savedVideo)
@@ -48,7 +58,7 @@ class VideoService(
         log.info("Current Video details: {}", video)
         log.info("Update Video details: {}", videoDTO)
         //When 업데이트 처리
-        video!!.apply {
+        video.apply {
             title = videoDTO.title
             description = videoDTO.description
             url = videoDTO.url

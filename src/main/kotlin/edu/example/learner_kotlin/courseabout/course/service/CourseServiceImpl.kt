@@ -2,13 +2,16 @@ package edu.example.learner_kotlin.courseabout.course.service
 
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.course.dto.CourseDTO
+import edu.example.learner_kotlin.courseabout.course.dto.MemberCourseDTO
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.CourseAttribute
 import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
-import edu.example.learner_kotlin.courseabout.course.exception.CourseException
+import edu.example.learner_kotlin.courseabout.course.repository.MemberCourseRepository
+import edu.example.learner_kotlin.courseabout.exception.CourseException
 import edu.example.learner_kotlin.member.repository.MemberRepository
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,7 +19,7 @@ import org.springframework.stereotype.Service
 class CourseServiceImpl(
     private val modelMapper: ModelMapper,
     private val courseRepository: CourseRepository,
-//    private val memberCourseRepository: MemberCourseRepository,
+    private val memberCourseRepository: MemberCourseRepository,
     private val memberRepository: MemberRepository
 ) : CourseService {
 
@@ -40,8 +43,9 @@ class CourseServiceImpl(
     }
 
     override fun read(courseId: Long): CourseDTO {
-        val course = courseRepository.findById(courseId)
-            .orElseThrow { CourseException.COURSE_NOT_FOUND.courseException }
+        val findByIdOrNull = courseRepository.findByIdOrNull(courseId)!!
+
+        val course = findByIdOrNull
 
         log.info("course: {}", course)
         return CourseDTO(course)
@@ -97,29 +101,39 @@ class CourseServiceImpl(
     }
 
     override fun getCoursesByNickname(nickname: String): List<CourseDTO> {
-        TODO("Not yet implemented")
+        val byMemberNickname = courseRepository.getByMemberNickname(nickname)
+        return byMemberNickname.map { CourseDTO(it) } ?: emptyList() // 빈 리스트 반환
     }
 
-//    override fun getCoursesByNickname(nickname: String): List<CourseDTO> {
-//        val byMemberNickname = courseRepository.getByMemberNickname(nickname)
-//        return byMemberNickname.map { CourseDTO(it) } ?: emptyList() // 빈 리스트 반환
-//    }
-//
-//    override fun getMemberCoursesByMemberId(memberId: Long): List<MemberCourseDTO> {
-//        val memberCourseList = memberCourseRepository.getMemberCourse(memberId)
-//            ?: throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
-//
-//        return memberCourseList.map { MemberCourseDTO(it) }.also {
-//            log.info("Member courses: {}", it)
-//        }
-//    }
-//
-//    override fun getCoursesByMemberId(memberId: Long): List<CourseDTO> {
-//        val memberCourses = memberCourseRepository.findByMember_MemberId(memberId)
-//            .takeIf { it!!.isNotEmpty() } ?: throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
-//
-//        return memberCourses.map { CourseDTO(it?.course!!) }
-//    }
+    //수강중인 강의 목록
+    override fun getMemberCoursesByMemberId(memberId: Long): List<MemberCourseDTO> {
+        val memberCourseList = memberCourseRepository.getMemberCourse(memberId)
+
+        if (memberCourseList.isEmpty()) {
+            throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
+        }
+        var memberCourseDTOList = mutableListOf<MemberCourseDTO>()
+        for (memberCourse in memberCourseList) {
+            memberCourseDTOList.add(MemberCourseDTO(memberCourse))
+        }
+        return memberCourseDTOList.also {
+            log.info("Member courses: {}", it)
+        }
+    }
+
+    override fun getCoursesByMemberId(memberId: Long): List<CourseDTO> {
+        val memberCourses = memberCourseRepository.getMemberCourseByMemberMemberId(memberId).orEmpty()
+        log.info("Member courses: {$memberCourses}" )
+            if (memberCourses.isEmpty()) {
+                throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
+            }
+         var courseDTOList : MutableList<CourseDTO> = mutableListOf()
+        for (memberCourse in memberCourses) {
+            courseDTOList.add(CourseDTO(memberCourse.course!!))
+        }
+
+        return courseDTOList
+    }
 
     // 강사 닉네임 반환
 //    fun getInstructorNicknameByCourseId(courseId: Long): String {

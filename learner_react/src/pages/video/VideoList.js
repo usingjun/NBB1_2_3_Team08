@@ -61,7 +61,7 @@ const VideoList = () => {
             {videos.length > 0 ? (
                 videos.map((video, index) => (
                     <VideoItem
-                        key={video.video_Id}
+                        key={video.videoId}
                         onClick={() => handlePlayClick(courseId, video, navigate, setError, role, memberNickname)} // 전체 항목 클릭 시 재생
                     >
                         <VideoInfo>
