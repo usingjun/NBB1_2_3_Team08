@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface CourseAnswerRepository : JpaRepository<CourseAnswer, Long> {
-    @Query("SELECT ca FROM CourseAnswer ca WHERE ca.courseInquiry.inquiryId = :inquiryId")
+    @Query("SELECT ca FROM CourseAnswer ca JOIN FETCH ca.member WHERE ca.courseInquiry.inquiryId = :inquiryId")
     fun getCourseAnswers(inquiryId: Long): List<CourseAnswer>?
 }
