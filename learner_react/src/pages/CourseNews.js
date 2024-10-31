@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from './axiosInstance';
 
 export default function CourseNews() {
     const { courseId, newsId } = useParams();
@@ -17,27 +18,19 @@ export default function CourseNews() {
         checkUserRole();
         fetchInstructorName();
         if (localStorage.getItem('memberId')) {
-            checkLikeStatus(); // 좋아요 여부 체크
+            checkLikeStatus();
         }
         fetchNewsData();
     }, [courseId, newsId]);
 
     const fetchInstructorName = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/course/${courseId}/member-nickname`, {
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const nickname = await response.text();
-            setInstructorName(nickname);
+            const response = await axiosInstance.get(`/course/${courseId}/member-nickname`);
+            setInstructorName(response.data);
         } catch (err) {
             console.error("Failed to fetch instructor nickname:", err);
         } finally {
-            setIsLoading(false); // Set loading to false
+            setIsLoading(false);
         }
     };
 
@@ -51,25 +44,21 @@ export default function CourseNews() {
             if (token) {
                 const decodedToken = jwtDecode(token);
                 setUserRole(decodedToken.role);
-                const nickname = decodedToken.mid;
-                setUserName(nickname); // 닉네임을 상태에 설정
+                setUserName(decodedToken.mid);
             }
         } catch (error) {
             console.error("토큰 확인 중 오류 발생:", error);
         }
     };
 
+
     const checkLikeStatus = async () => {
         const memberId = localStorage.getItem('memberId');
         try {
-            const res = await fetch(`http://localhost:8080/course/${courseId}/news/${newsId}/like?memberId=${memberId}`, {
-                credentials: 'include',
+            const response = await axiosInstance.get(`/course/${courseId}/news/${newsId}/like`, {
+                params: { memberId }
             });
-
-            if (!res.ok) throw new Error('Failed to fetch like status');
-
-            const data = await res.json();
-            setLiked(data); // 현재 좋아요 상태 설정
+            setLiked(response.data);
         } catch (err) {
             console.error("좋아요 상태 확인 실패:", err);
         }
@@ -77,13 +66,10 @@ export default function CourseNews() {
 
     const fetchNewsData = async () => {
         try {
-            const res = await fetch(`http://localhost:8080/course/${courseId}/news/${newsId}`, {
-                credentials: 'include',
-            });
-            if (!res.ok) throw new Error('Failed to fetch news');
-            const data = await res.json();
+            const response = await fetch(`http://localhost:8080/course/${courseId}/news/${newsId}`);
+            if (!response.ok) throw new Error('Failed to fetch news');
+            const data = await response.json();
             setNews(data);
-            // 좋아요 여부는 checkLikeStatus에서 설정하므로 여기서 초기화하지 않음
         } catch (err) {
             console.error("새소식 가져오기 실패:", err);
             alert('새소식을 불러오는데 실패했습니다.');
@@ -91,10 +77,10 @@ export default function CourseNews() {
         }
     };
 
+
     const likeNews = async () => {
         const memberId = localStorage.getItem('memberId');
 
-        // memberId가 없으면 알림 표시하고 함수 종료
         if (!memberId) {
             alert('로그인 후 시도해주세요.');
             return;
@@ -106,23 +92,16 @@ export default function CourseNews() {
         };
 
         try {
-            const method = liked ? 'DELETE' : 'PATCH'; // 상태에 따라 메소드 결정
+            if (liked) {
+                // 좋아요 취소
+                await axiosInstance.delete(`/course/${courseId}/news/${newsId}/like`, {
+                    data: requestData // DELETE 요청의 경우 data 옵션으로 전달
+                });
+            } else {
+                // 좋아요 추가
+                await axiosInstance.patch(`/course/${courseId}/news/${newsId}/like`, requestData);
+            }
 
-            // 좋아요 상태 업데이트 요청
-            const likeRes = await fetch(`http://localhost:8080/course/${courseId}/news/${newsId}/like`, {
-                method: method,
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData)
-            });
-
-            if (!likeRes.ok) throw new Error('Failed to update like status');
-
-            await likeRes.text();
-
-            // 상태를 반전시키고 좋아요 수 업데이트
             setLiked(!liked);
             setNews(prev => ({
                 ...prev,
@@ -135,24 +114,20 @@ export default function CourseNews() {
     };
 
 
-    const deleteNews = () => {
+
+    const deleteNews = async () => {
         if (!window.confirm('정말로 이 새소식을 삭제하시겠습니까?')) {
             return;
         }
 
-        fetch(`http://localhost:8080/course/${courseId}/news/${newsId}`, {
-            method: 'DELETE',
-            credentials: 'include',
-        })
-            .then(res => {
-                if (!res.ok) throw new Error('Failed to delete news');
-                alert('새소식이 성공적으로 삭제되었습니다.');
-                navigate(`/courses/${courseId}`);
-            })
-            .catch(err => {
-                console.error("새소식 삭제 실패:", err);
-                alert('새소식 삭제 중 오류가 발생했습니다.');
-            });
+        try {
+            await axiosInstance.delete(`/course/${courseId}/news/${newsId}`);
+            alert('새소식이 성공적으로 삭제되었습니다.');
+            navigate(`/courses/${courseId}`);
+        } catch (err) {
+            console.error("새소식 삭제 실패:", err);
+            alert('새소식 삭제 중 오류가 발생했습니다.');
+        }
     };
 
     const canCreateNews = () => {
