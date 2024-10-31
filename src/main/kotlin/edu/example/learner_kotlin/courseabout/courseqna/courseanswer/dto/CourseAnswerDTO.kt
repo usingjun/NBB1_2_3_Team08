@@ -2,6 +2,7 @@ package edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.dto
 
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseAnswer
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseInquiry
+import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.QCourseInquiry.courseInquiry
 import edu.example.learner_kotlin.member.entity.Member
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
@@ -31,21 +32,12 @@ data class CourseAnswerDTO(
     )
 
     fun toEntity(): CourseAnswer {
-        // 기본 생성자로 Member 인스턴스를 생성하고, 프로퍼티를 수동으로 설정
-        val member = memberId?.let {
-            Member(memberId = it).apply {
-                nickname = memberNickname
-                profileImage = this@CourseAnswerDTO.profileImage
-            }
-        }
-        val courseInquiry = inquiryId?.let { CourseInquiry(it) }
-
         return CourseAnswer(
             answerId = answerId,
-            member = member,
+            member = memberId?.let { Member(it) },
             answerContent = answerContent,
             answerCreateDate = answerCreateDate,
-            courseInquiry = courseInquiry
+            courseInquiry = inquiryId?.let { CourseInquiry(it) }
         )
     }
 
