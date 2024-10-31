@@ -31,7 +31,7 @@ const OrderCreate = () => {
             const purchasedStatus = {};
             for (const course of courses) {
                 try {
-                    const response = await axios.get('http://localhost:8080/course/${course.courseId}/purchase?memberId=${memberId}', { withCredentials: true });
+                    const response = await axios.get(`http://localhost:8080/course/${course.courseId}/purchase?memberId=${memberId}`, { withCredentials: true });
                     purchasedStatus[course.courseId] = response.data; // boolean 값 저장
                 } catch (error) {
                     console.error(`Error checking purchase for course ${course.courseId}:`, error);
