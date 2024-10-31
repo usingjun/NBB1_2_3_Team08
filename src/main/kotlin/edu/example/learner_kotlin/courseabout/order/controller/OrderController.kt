@@ -57,7 +57,7 @@ class OrderController (
         return ResponseEntity.ok(orderService.readAll())
     }
 
-    @PutMapping("/{orderId}/")
+    @PutMapping("/{orderId}")
     @Operation(summary = "주문 수정", description = "주문 ID로 특정 주문의 세부 정보를 수정합니다.")
     fun updateOrder(
         @Parameter(description = "주문 수정 데이터") @RequestBody OrderDTO: OrderDTO,

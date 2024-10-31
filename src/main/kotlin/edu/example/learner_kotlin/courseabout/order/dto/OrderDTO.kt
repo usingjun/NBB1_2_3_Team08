@@ -22,20 +22,20 @@ data class OrderDTO(
             orderStatus = OrderStatus.valueOf(orderDTO.orderStatus)
             member = Member(memberId = orderDTO.memberId)
             totalPrice= orderDTO.totalPrice
-            orderItems=listToEntity(orderItemDTOList!!)
+//            orderItems=listToEntity(orderItemDTOList!!)
         }
         return order
     }
-    private fun listToEntity(orderItemDTOList: MutableList<OrderItemDTO>): MutableList<OrderItem> {
-        var orderItemList = mutableListOf<OrderItem>()
-        for (orderItemDTO in orderItemDTOList) {
-            orderItemList.add( OrderItem().apply {
-                course = Course(courseId = orderItemDTO.courseId)
-                courseAttribute= CourseAttribute.fromString(orderItemDTO.courseAttribute!!)
-                price = orderItemDTO.price
-            }) }
-        return orderItemList
-        }
+//    private fun listToEntity(orderItemDTOList: MutableList<OrderItemDTO>): MutableList<OrderItem> {
+//        var orderItemList = mutableListOf<OrderItem>()
+//        for (orderItemDTO in orderItemDTOList) {
+//            orderItemList.add( OrderItem().apply {
+//                orderId = orderItemDTO.orderId
+//                course = Course(courseId = orderItemDTO.courseId)
+//                price = orderItemDTO.price
+//            }) }
+//        return orderItemList
+//        }
     constructor(order: Order) : this(
         orderId = order.orderId,
         memberId = order.member!!.memberId,

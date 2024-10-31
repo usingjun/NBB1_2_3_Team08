@@ -145,8 +145,6 @@ class OrderServiceImpl(
             val foundOrder: Order = orderRepository.findById(orderId)
                 .orElseThrow<RuntimeException>(OrderException.ORDER_NOT_FOUND::get)!!
 
-            // 주문 상태 업데이트
-            foundOrder.orderStatus= OrderStatus.valueOf(orderDTO.orderStatus)
 
             // 기존 주문 아이템
             val existingItems: MutableList<OrderItem> = foundOrder.orderItems
@@ -171,7 +169,7 @@ class OrderServiceImpl(
                     dto.courseAttribute=String.valueOf(findCourse.courseAttribute)
                     dto.orderId=orderId
                     val newItem: OrderItem = OrderItem().apply {
-                        orderItemId =orderId
+                        order =Order(orderId)
                         course =Course(findCourse.courseId)
                         courseAttribute = findCourse.courseAttribute
                         price = findCourse.coursePrice
