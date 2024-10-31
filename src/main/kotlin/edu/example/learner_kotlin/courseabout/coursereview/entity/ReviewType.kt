@@ -1,4 +1,4 @@
-package edu.example.learner.courseabout.coursereview.entity
+package edu.example.learner_kotlin.courseabout.coursereview.entity
 
 enum class ReviewType {
     INSTRUCTOR,

@@ -1,7 +1,6 @@
 package edu.example.learner_kotlin.member.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import edu.example.learner.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry

@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
 
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
@@ -11,17 +13,34 @@ const Header = ({ openModal }) => {
     const [role, setRole] = useState(""); // 사용자 역할 상태 추가
 
     useEffect(() => {
-        const cookies = document.cookie.split('; ').find(row => row.startsWith('Authorization='));
-        if (cookies) {
-            const token = cookies.split('=')[1];
+        try {
+            const token = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('Authorization='))
+                ?.split('=')[1];
+
             if (token) {
                 setIsLoggedIn(true);
-                // JWT 디코딩 (예: jwt-decode 라이브러리 사용)
-                const payload = JSON.parse(atob(token.split('.')[1])); // JWT의 payload 디코딩
-                setRole(payload.role); // 역할 설정
+                // Bearer 접두사 제거
+                const tokenWithoutBearer = token.replace('Bearer ', '');
+
+                try {
+                    const decodedToken = jwtDecode(tokenWithoutBearer);
+                    setRole(decodedToken.role);
+                } catch (decodeError) {
+                    console.error("토큰 디코딩 실패:", decodeError);
+                    // 잘못된 토큰인 경우 로그아웃 처리
+                    setIsLoggedIn(false);
+                    document.cookie = 'Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    localStorage.removeItem('memberId');
+                }
             }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+            setIsLoggedIn(false);
         }
     }, []);
+
 
     const handleLogout = () => {
         document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

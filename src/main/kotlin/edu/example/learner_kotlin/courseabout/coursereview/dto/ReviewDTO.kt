@@ -1,7 +1,7 @@
-package edu.example.learner.courseabout.coursereview.dto
+package edu.example.learner_kotlin.courseabout.coursereview.dto
 
-import edu.example.learner.courseabout.coursereview.entity.Review
-import edu.example.learner.courseabout.coursereview.entity.ReviewType
+import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
+import edu.example.learner_kotlin.courseabout.coursereview.entity.ReviewType
 import java.time.LocalDateTime
 
 data class ReviewDTO(
