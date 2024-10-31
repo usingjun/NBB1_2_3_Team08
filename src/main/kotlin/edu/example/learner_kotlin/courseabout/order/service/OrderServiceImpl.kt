@@ -5,10 +5,10 @@ import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
 import edu.example.learner_kotlin.courseabout.course.repository.MemberCourseRepository
+import edu.example.learner_kotlin.courseabout.exception.CourseException
 
-import edu.leranermig.order.dto.OrderDTO
+import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
 import edu.leranermig.order.dto.OrderItemDTO
-import edu.leranermig.order.dto.OrderUpdateDTO
 import edu.example.learner_kotlin.courseabout.order.entity.Order
 import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.order.entity.OrderStatus
@@ -24,7 +24,6 @@ import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 import java.lang.String
 import java.util.*
-import java.util.function.Predicate
 import kotlin.Exception
 import kotlin.Long
 import kotlin.RuntimeException
@@ -129,7 +128,7 @@ class OrderServiceImpl(
                 orderItemDTOS.add(OrderItemDTO(orderItem))
             }
 
-            val orderDTO: OrderDTO = modelMapper.map(order,OrderDTO::class.java)
+            val orderDTO: OrderDTO = modelMapper.map(order, OrderDTO::class.java)
             orderDTO.orderItemDTOList=orderItemDTOS
             log.info("read order {}", orderDTO)
             return orderDTO
@@ -140,20 +139,20 @@ class OrderServiceImpl(
     }
 
     @Transactional
-    override fun update(orderUpdateDTO: OrderUpdateDTO, orderId: Long): OrderUpdateDTO {
+    override fun update(orderDTO: OrderDTO, orderId: Long): OrderDTO {
         try {
             //given
             val foundOrder: Order = orderRepository.findById(orderId)
                 .orElseThrow<RuntimeException>(OrderException.ORDER_NOT_FOUND::get)!!
 
             // 주문 상태 업데이트
-            foundOrder.orderStatus= OrderStatus.valueOf(orderUpdateDTO.orderStatus!!)
+            foundOrder.orderStatus= OrderStatus.valueOf(orderDTO.orderStatus)
 
             // 기존 주문 아이템
             val existingItems: MutableList<OrderItem> = foundOrder.orderItems
             // when
             // 새 아이템을 추가 및 업데이트
-            for (dto in orderUpdateDTO.orderItemDTOList) {
+            for (dto in orderDTO.orderItemDTOList!!) {
                 // 기존 아이템 중에서 해당 아이템을 찾습니다.
                 val existingItemOpt: Optional<OrderItem> = existingItems.stream()
                     .filter { item: OrderItem ->
@@ -168,37 +167,38 @@ class OrderServiceImpl(
                     orderItemRepository.save(existingItem) // 변경사항 저장
                 } else {
                     // 새 아이템 추가
-                    val course = courseRepository.findById(dto.courseId!!)
-                    dto.courseAttribute=String.valueOf(course.get().courseAttribute)
+                    val findCourse = courseRepository.findById(dto.courseId!!).orElseThrow(CourseException.COURSE_NOT_FOUND::courseException)
+                    dto.courseAttribute=String.valueOf(findCourse.courseAttribute)
                     dto.orderId=orderId
-                    val newItem: OrderItem = modelMapper.map(dto, OrderItem::class.java)
+                    val newItem: OrderItem = OrderItem().apply {
+                        orderItemId =orderId
+                        course =Course(findCourse.courseId)
+                        courseAttribute = findCourse.courseAttribute
+                        price = findCourse.coursePrice
+                    }
                     orderItemRepository.save(newItem) // 새로운 아이템 저장
                     foundOrder.orderItems.add(newItem)
                 }
             }
 
             // 삭제할 아이템 찾기
-            val updatedCourseIds: MutableList<Long?>? = orderUpdateDTO.orderItemDTOList.stream()
+            val updatedCourseIds: MutableList<Long?>? = orderDTO.orderItemDTOList!!.stream()
                 .map(OrderItemDTO::courseId)
                 .toList()
 
             // 기존 아이템 중 삭제할 아이템 제거
-            existingItems.removeIf(
-                Predicate<OrderItem> { existingItem: OrderItem ->
-                    !updatedCourseIds!!.contains(
-                        existingItem.course!!.courseId
-                    )
-                }
-            )
+            existingItems.removeIf { existingItem: OrderItem ->
+                !updatedCourseIds!!.contains(
+                    existingItem.course!!.courseId
+                )
+            }
 
             // 총 금액 계산
             val totalPrice: Long = foundOrder.orderItems.stream()
                 .mapToLong { it.price!! } // 각 아이템의 가격을 가져와서
                 .sum() // 총합 계산
-
             foundOrder.totalPrice=totalPrice // 총 금액을 주문에 설정
-
-            return modelMapper.map(foundOrder, OrderUpdateDTO::class.java)
+            return OrderDTO(foundOrder)
         } catch (e: Exception) {
             log.error("수정 오류," + e.message)
             throw OrderException.NOT_MODIFIED.get()

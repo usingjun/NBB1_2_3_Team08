@@ -1,13 +1,12 @@
 package edu.example.learner_kotlin.courseabout.order.service
 
-import edu.leranermig.order.dto.OrderDTO
-import edu.leranermig.order.dto.OrderUpdateDTO
+import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
 
 
 interface OrderService {
     fun add(orderDTO: OrderDTO, memberId: Long): OrderDTO
     fun read(orderId: Long): OrderDTO?
-    fun update(orderUpdateDTODTO: OrderUpdateDTO, orderId: Long): OrderUpdateDTO
+    fun update(orderDTO: OrderDTO, orderId: Long): OrderDTO
 
     fun delete(courseId: Long)
     fun readAll(): List<OrderDTO>

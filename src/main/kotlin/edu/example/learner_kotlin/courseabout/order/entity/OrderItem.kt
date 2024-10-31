@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 class OrderItem(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val orderItemId: Long? = null,
+    var orderItemId: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "courseId", nullable = false)

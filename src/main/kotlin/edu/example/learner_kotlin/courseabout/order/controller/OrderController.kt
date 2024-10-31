@@ -3,8 +3,7 @@ package edu.example.learner_kotlin.courseabout.order.controller
 import edu.example.learner_kotlin.courseabout.course.service.CourseService
 import edu.example.learner_kotlin.courseabout.order.service.OrderService
 import edu.example.learner_kotlin.log
-import edu.leranermig.order.dto.OrderDTO
-import edu.leranermig.order.dto.OrderUpdateDTO
+import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
 import edu.leranermig.order.dto.PurchaseRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -61,11 +60,11 @@ class OrderController (
     @PutMapping("/{orderId}/")
     @Operation(summary = "주문 수정", description = "주문 ID로 특정 주문의 세부 정보를 수정합니다.")
     fun updateOrder(
-        @Parameter(description = "주문 수정 데이터") @RequestBody orderUpdateDTO: OrderUpdateDTO,
+        @Parameter(description = "주문 수정 데이터") @RequestBody OrderDTO: OrderDTO,
         @Parameter(description = "수정할 주문 ID") @PathVariable("orderId") orderId: Long
-    ): ResponseEntity<OrderUpdateDTO> {
-        log.info("주문 수정: {}", orderUpdateDTO)
-        return ResponseEntity.ok(orderService.update(orderUpdateDTO, orderId))
+    ): ResponseEntity<OrderDTO> {
+        log.info("주문 수정: {}", OrderDTO)
+        return ResponseEntity.ok(orderService.update(OrderDTO, orderId))
     }
 
     @DeleteMapping("/{orderId}")

@@ -37,5 +37,5 @@ data class Order(
 {
     @JsonIgnore
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    val orderItems: MutableList<OrderItem> = ArrayList()
+    var orderItems: MutableList<OrderItem> = ArrayList()
 }

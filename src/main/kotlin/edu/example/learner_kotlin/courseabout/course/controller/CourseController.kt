@@ -9,7 +9,7 @@ import edu.example.learner_kotlin.courseabout.order.service.OrderService
 import edu.example.learner_kotlin.courseabout.video.dto.VideoDTO
 import edu.example.learner_kotlin.courseabout.video.service.VideoService
 import edu.example.learner_kotlin.log
-import edu.leranermig.order.dto.OrderDTO
+import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
