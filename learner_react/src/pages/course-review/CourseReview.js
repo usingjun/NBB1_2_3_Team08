@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
+import axiosInstance from '../axiosInstance'; // axiosInstance import
 
 const CourseReview = ({ courseId }) => {
     const navigate = useNavigate();
@@ -17,32 +18,39 @@ const CourseReview = ({ courseId }) => {
     }, []);
 
     useEffect(() => {
-        const memberId = localStorage.getItem("memberId");
-        if (memberId) {
-            fetch(`http://localhost:8080/members/${memberId}`, {
-                credentials: 'include',
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("사용자 정보:", data);
-                    setUserNickname(data.nickname);
-                    setUserId(data.memberId);
-                })
-                .catch(err => console.error("사용자 정보 가져오기 실패:", err));
-        }
-    }, []);
+        const fetchMemberData = async () => {
+            const memberId = localStorage.getItem("memberId");
+            if (memberId && !userNickname && !userId) {
+                try {
+                    const res = await axiosInstance.get(`/members/${memberId}`);
+                    console.log("사용자 정보:", res.data);
+                    setUserNickname(res.data.nickname);
+                    setUserId(res.data.memberId);
+                } catch (err) {
+                    console.error("사용자 정보 가져오기 실패:", err);
+                }
+            }
+        };
+        fetchMemberData();
+    }, [userNickname, userId]); // userNickname과 userId가 변경될 때만 호출
 
-    const fetchReviews = () => {
-        fetch(`http://localhost:8080/course/${courseId}/reviews/list`, {
-            credentials: 'include',
-        })
-            .then(res => res.json())
-            .then(data => {
-                console.log("Fetched reviews:", data);
-                setReviewList(data);
+    // 0.3초 지연 함수
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // 리뷰를 가져오는 함수
+    const fetchReviews = async () => {
+        await delay(300); // 요청 전 0.3초 지연
+        axiosInstance
+            .get(`/course/${courseId}/reviews/list`)
+            .then(response => {
+                console.log("Fetched reviews:", response.data);
+                setReviewList(response.data);
             })
-            .catch(err => console.error("리뷰 가져오기 실패:", err));
+            .catch(err => {
+                console.error("리뷰 가져오기 실패:", err);
+            });
     };
+
 
     useEffect(() => {
         fetchReviews();

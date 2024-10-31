@@ -143,7 +143,7 @@ class MemberService(
         }
 
         // JWT 생성 및 쿠키 반환
-        val accessToken: String = jwtUtil.createToken(mutableMapOf("mid" to member.nickname, "role" to member.role), 30)
+        val accessToken: String = jwtUtil.createToken(mutableMapOf("mid" to member.nickname, "role" to member.role), 1)
         val cookie = Cookie("Authorization", accessToken).apply {
             maxAge = 60 * 60 * 60   // 60시간
             path = "/"              // 전체 경로에서 접근 가능

@@ -35,7 +35,7 @@ const LoginModal = ({ closeModal }) => {
             } else {
                 const errorMessage = await response.text();
                 console.error(`오류 발생: ${response.status} - ${errorMessage}`);
-                alert(`로그인 실패: ${errorMessage}`);
+                alert(`로그인 실패: ${errorMessage.split("\"")[3]}`);
             }
         } catch (error) {
             console.error("로그인 요청 실패:", error);
