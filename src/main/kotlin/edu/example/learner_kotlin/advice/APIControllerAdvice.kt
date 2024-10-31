@@ -47,18 +47,20 @@ class APIControllerAdvice {
         return ResponseEntity.status(e.statusCode).body<Map<String, String?>>(errMap)
     }
 
-//    @ExceptionHandler(ReviewTaskException::class)
-//    fun handleLoginException(e: ReviewTaskException): ResponseEntity<*> {
-//        log.info("--- ReviewTaskException")
-//        log.info("--- e.getClass().getName() : " + e.getClass().getName())
-//        log.info("--- e.getMessage() : " + e.getMessage())
-//
-//        val errMap: Map<String, String> = java.util.Map.of("error", e.getMessage())
-//
-//
-//        return ResponseEntity.status(e.getStatusCode()).body<Map<String, String>>(errMap)
-//    }
-//
+    // ReviewTaskException 처리
+    @ExceptionHandler(ReviewTaskException::class)
+    fun handleReviewException(e: ReviewTaskException): ResponseEntity<Map<String, String?>> {
+        log.info("--- ReviewTaskException occurred")
+        log.info("--- Exception message: ${e.message}")
+
+        // 예외 메시지를 담은 에러 응답 생성
+        val errMap = mapOf("error" to e.message)
+
+        // 예외의 상태 코드와 메시지로 응답 반환
+        return ResponseEntity.status(e.statusCode).body(errMap)
+    }
+
+    //
 //    //파일 업로드 예외처리
 //    @ExceptionHandler(MaxUploadSizeExceededException::class)
 //    fun handleMaxSizeException(exc: MaxUploadSizeExceededException?): ResponseEntity<String> {
@@ -95,11 +97,6 @@ class APIControllerAdvice {
 //
 //    @ExceptionHandler(CourseAnswerTaskException::class)
 //    fun handleCourseAnswerException(ex: CourseAnswerTaskException): ResponseEntity<String> {
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage())
-//    }
-
-//    @ExceptionHandler(ReviewTaskException::class)
-//    fun handleCourseAnswerException(ex: ReviewTaskException): ResponseEntity<String> {
 //        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage())
 //    }
 }
