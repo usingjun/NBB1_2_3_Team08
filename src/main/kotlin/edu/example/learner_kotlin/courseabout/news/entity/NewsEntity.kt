@@ -37,10 +37,10 @@ data class NewsEntity (
     @JoinColumn(name = "course_id")
     var courseNews: Course? = null,
 
-    @OneToMany(mappedBy = "newsEntity", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val heartNewsList: List<HeartNews> = mutableListOf()
 )
 {
+    @OneToMany(mappedBy = "newsEntity", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val heartNewsList: List<HeartNews> = mutableListOf()
 
     fun changeCourse(course: Course) {
         this.courseNews = course
