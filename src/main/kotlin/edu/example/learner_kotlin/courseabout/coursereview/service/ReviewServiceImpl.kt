@@ -1,9 +1,9 @@
-package edu.example.learner.courseabout.coursereview.service
+package edu.example.learner_kotlin.courseabout.coursereview.service
 
-import edu.example.learner.courseabout.coursereview.dto.ReviewDTO
-import edu.example.learner.courseabout.coursereview.entity.Review
-import edu.example.learner.courseabout.coursereview.entity.ReviewType
-import edu.example.learner.courseabout.coursereview.repository.ReviewRepository
+import edu.example.learner_kotlin.courseabout.coursereview.dto.ReviewDTO
+import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
+import edu.example.learner_kotlin.courseabout.coursereview.entity.ReviewType
+import edu.example.learner_kotlin.courseabout.coursereview.repository.ReviewRepository
 import edu.example.learner_kotlin.courseabout.course.service.CourseServiceImpl
 import edu.example.learner_kotlin.courseabout.coursereview.exception.ReviewException
 import edu.example.learner_kotlin.log
