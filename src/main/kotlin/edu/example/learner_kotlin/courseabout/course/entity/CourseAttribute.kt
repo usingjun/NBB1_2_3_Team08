@@ -1,6 +1,6 @@
 package edu.example.learner_kotlin.courseabout.course.entity
 
-import edu.example.learner_kotlin.courseabout.exception.CourseException
+import edu.example.learner_kotlin.courseabout.course.exception.CourseException
 
 enum class CourseAttribute {
     JAVA,

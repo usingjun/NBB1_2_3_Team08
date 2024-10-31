@@ -1,12 +1,14 @@
 package edu.example.learner_kotlin.member.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import edu.example.learner.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.course.entity.Course
-import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
+import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
+import MemberCourse
 
 
 @Entity
@@ -32,7 +34,7 @@ data class Member (
     var phoneNumber: String? = null,
 
     @Lob // BLOB 타입으로 처리됨
-    var profileImage: ByteArray? =null,
+    var profileImage: ByteArray? = null,
 
     var imageType: String? = null,
     @Column(nullable = false)
@@ -43,23 +45,20 @@ data class Member (
     var introduction: String? = null,
 
     @CreatedDate
-    val createDate: LocalDateTime? = null,
-
+    val createDate: LocalDateTime? = null
 ){
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val heartNewsList: List<HeartNews> = ArrayList<HeartNews>()
 //
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     val memberCourses: List<MemberCourse> = ArrayList<MemberCourse>()
+//
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val courses: List<Course> = ArrayList<Course>()
 
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    val courses: List<Course> = ArrayList<Course>()
-//
+    private val inquiries: List<Inquiry> = ArrayList<Inquiry>()
 
-//
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    private val inquiries: List<Inquiry> = ArrayList<Inquiry>()
-//
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val courseInquiries: List<CourseInquiry> = ArrayList<CourseInquiry>()
 //
