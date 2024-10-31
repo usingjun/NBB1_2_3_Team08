@@ -151,18 +151,13 @@ class CourseController(
 //        return ResponseEntity.ok(courseService.getMemberCoursesByMemberId(memberId))
 //    }
 
-//    @GetMapping("/{courseId}/member-nickname")
-//    @Operation(summary = "코스의 강사 닉네임 조회", description = "코스의 강사 닉네임을 조회합니다.")
-//    fun getCourseInstructorNickname(@PathVariable courseId: Long): ResponseEntity<String> {
-//        val instructorNickname: String = courseService.read(courseId).memberNickname!!
-//
-//        return if (instructorNickname != null) {
-//            ResponseEntity.ok<String>(instructorNickname) // 닉네임을 성공적으로 반환
-//        } else {
-//            ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                .body<String>("해당 코스 또는 닉네임을 찾을 수 없습니다.")
-//        }
-//    }
+    @GetMapping("/{courseId}/member-nickname")
+    @Operation(summary = "코스의 강사 닉네임 조회", description = "코스의 강사 닉네임을 조회합니다.")
+    fun getCourseInstructorNickname(@PathVariable courseId: Long): ResponseEntity<String> {
+        val instructorNickname: String = courseService.read(courseId).memberNickname!!
+
+        return ResponseEntity.ok<String>(instructorNickname)
+    }
 
 //    @GetMapping("/instruct/list/{nickname}")
 //    @Operation(summary = "강사의 본인 강의 조회", description = "강사가 본인의 강의를 조회")

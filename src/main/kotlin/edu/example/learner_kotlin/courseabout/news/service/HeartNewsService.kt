@@ -21,11 +21,17 @@ class HeartNewsService(
     private val memberRepository: MemberRepository
 ) {
 
-    fun addHeart(heartNewsReqDTO: HeartNewsReqDTO) {
-        val (member, news) = findMemberAndNews(heartNewsReqDTO.memberId, heartNewsReqDTO.newsId)
 
-        // 이미 좋아요 되어있으면 에러 반환
-        if (heartNewsRepository.existsByMemberAndNewsEntity(member, news)) {
+    @Throws(Exception::class)
+    fun insert(heartNewsReqDTO: HeartNewsReqDTO) {
+        val member = memberRepository.findByIdOrNull(heartNewsReqDTO.memberId)
+            ?: throw NotFoundException("멤버아이디를 찾을 수 없습니다.")
+
+        val news = newsRepository.findByIdOrNull(heartNewsReqDTO.newsId)
+            ?: throw NotFoundException("새소식을 찾을 수 없습니다.")
+
+        // 이미 좋아요가 등록되어 있으면 예외 발생
+        if (heartNewsRepository.findByMemberAndNewsEntity(member, news) != null) {
             throw HeartNewsAlreadyExistsException("이미 좋아요가 등록되어 있습니다.")
         }
 
@@ -38,28 +44,27 @@ class HeartNewsService(
         newsRepository.addLikeCount(news)
     }
 
-    fun deleteHeart(heartNewsReqDTO: HeartNewsReqDTO) {
-        val (member, news) = findMemberAndNews(heartNewsReqDTO.memberId, heartNewsReqDTO.newsId)
+    fun delete(heartNewsReqDTO: HeartNewsReqDTO) {
+        val member = memberRepository.findByIdOrNull(heartNewsReqDTO.memberId)
+            ?: throw NotFoundException("멤버아이디를 찾을 수 없습니다.")
+
+        val news = newsRepository.findByIdOrNull(heartNewsReqDTO.newsId)
+            ?: throw NotFoundException("새소식을 찾을 수 없습니다.")
 
         val heartNews = heartNewsRepository.findByMemberAndNewsEntity(member, news)
-            ?: throw NotFoundException("삭제할 좋아요가 없습니다.")
+            ?: throw  NotFoundException("삭제할 좋아요가 없습니다.")
 
         heartNewsRepository.delete(heartNews)
         newsRepository.subLikeCount(news)
     }
 
     fun checkHeart(newsId: Long, memberId: Long): Boolean {
-        return runCatching {
-            val (member, news) = findMemberAndNews(memberId, newsId)
-            heartNewsRepository.existsByMemberAndNewsEntity(member, news)
-        }.getOrDefault(false)
-    }
+        val news = newsRepository.findById(newsId)
+            .orElseThrow { NotFoundException("새소식을 찾을 수 없습니다.") }
 
-    private fun findMemberAndNews(memberId: Long, newsId: Long): Pair<Member, NewsEntity> {
-        val member = memberRepository.findByIdOrNull(memberId)
-            ?: throw NotFoundException("멤버아이디를 찾을 수 없습니다.")
-        val news = newsRepository.findByIdOrNull(newsId)
-            ?: throw NotFoundException("새소식을 찾을 수 없습니다.")
-        return Pair(member, news)
+        val member = memberRepository.findById(memberId)
+            .orElseThrow { NotFoundException("멤버아이디를 찾을 수 없습니다.") }
+
+        return heartNewsRepository.findByMemberAndNewsEntity(member, news) != null
     }
 }
