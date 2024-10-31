@@ -3,13 +3,12 @@ package edu.example.learner_kotlin.member.entity
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import edu.example.learner.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.course.entity.Course
+import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
-import MemberCourse
-
 
 @Entity
 @Table(name = "member", indexes = [Index(columnList = "email")])

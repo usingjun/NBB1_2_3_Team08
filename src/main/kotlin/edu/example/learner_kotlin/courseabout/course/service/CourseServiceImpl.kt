@@ -25,7 +25,7 @@ class CourseServiceImpl(
 
     override fun addCourse(courseDTO: CourseDTO): CourseDTO {
         log.info("add course")
-        val member = memberRepository.getMemberByNickname(courseDTO.memberNickname!!)
+        val member = memberRepository.getMemberByNickName(courseDTO.memberNickname!!)
 
         log.info("member: {$member}")
         val course = Course().apply {

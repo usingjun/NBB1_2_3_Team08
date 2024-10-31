@@ -46,8 +46,8 @@ class SecurityConfig (
             .httpBasic{it.disable()}
 
         //JWTFilter 추가
-        http
-            .addFilterBefore(JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
+//        http
+//            .addFilterBefore(JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http
@@ -147,7 +147,7 @@ class SecurityConfig (
             cors.configurationSource(CorsConfigurationSource {
                 CorsConfiguration().apply {
                     // 허용된 origin 설정
-                    allowedOrigins = (listOf("http://localhost:3000"))
+                    allowedOrigins = (listOf("http://localhost:3000", "http://localhost:8080"))
                     // 모든 HTTP 메소드 허용
                     allowedMethods = (listOf("*"))
                     // 인증 관련 쿠키 전송을 허용
