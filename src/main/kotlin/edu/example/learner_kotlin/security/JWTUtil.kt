@@ -5,7 +5,9 @@ import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.server.ResponseStatusException
 import java.security.SignatureException
 import java.time.Duration
 import java.util.*
@@ -63,10 +65,11 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
         } catch (e: SecurityException) {
             log.error("JWT string is actually a JWE: {}", e.message)
             throw RuntimeException("JWT string is actually a JWE")
-        } catch (e: ExpiredJwtException) {
+        }catch (e: ExpiredJwtException) {
             log.error("JWT token is expired: {}", e.message)
             throw RuntimeException("JWT token is expired")
-        } catch (e: IllegalArgumentException) {
+        }
+        catch (e: IllegalArgumentException) {
             log.error("Invalid JWT token: {}", e.message)
             throw RuntimeException("Invalid JWT token")
         }

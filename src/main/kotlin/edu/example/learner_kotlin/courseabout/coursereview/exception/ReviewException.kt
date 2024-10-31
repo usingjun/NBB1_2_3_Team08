@@ -1,7 +1,5 @@
 package edu.example.learner_kotlin.courseabout.coursereview.exception
 
-import edu.example.learner.courseabout.exception.ReviewTaskException
-
 enum class ReviewException(message: String, code: Int) {
     NOT_FOUND("NOT_FOUND", 404),
     NOT_REGISTERED("Review NOT Registered", 400),

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import WeeklyStudyTable from "../components/study-table/WeeklyStudyTable";
 import YearlyStudyTable from "../components/study-table/YearlyStudyTable";
+import axiosInstance from './axiosInstance'; // axiosInstance import
+import Cookies from 'js-cookie'; // js-cookie 패키지 import
 
 const MyPage = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -16,11 +18,12 @@ const MyPage = () => {
 
     const fetchUserInfo = async (memberId) => {
         try {
-            const response = await fetch(`http://localhost:8080/members/${memberId}`, {
-                credentials: "include",
+            const response = await axiosInstance.get(`/members/${memberId}`, {
+                // credentials: "include"가 필요 없으므로 제거
             });
-            if (response.ok) {
-                const data = await response.json();
+
+            if (response.status === 200) {
+                const data = await response.data; // 응답 데이터는 이미 axiosInstance에서 처리됨
                 setUserInfo(data);
             } else {
                 handleFetchError("사용자 정보 로드 실패", response.status);
@@ -36,9 +39,9 @@ const MyPage = () => {
     };
 
     const handleLogout = () => {
-        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        Cookies.remove('Authorization'); // Authorization 쿠키 제거
         localStorage.removeItem("memberId");
-        window.location.href = "/";
+        window.location.href = "/"; // 메인 페이지로 이동
     };
 
     const handleFileChange = async (event) => {
@@ -55,19 +58,13 @@ const MyPage = () => {
         formData.append("file", file);
 
         try {
-            const response = await fetch(`http://localhost:8080/members/${memberId}/image`, {
-                method: "PUT",
-                body: formData,
-                credentials: "include",
-            });
-
-            const responseBody = await response.text();
+            const response = await axiosInstance.put(`/members/${memberId}/image`, formData);
             if (response.ok) {
-                setUserInfo((prev) => ({ ...prev, profileImage: responseBody.profileImage }));
-                alert(responseBody.message || "이미지 업로드 성공!");
+                setUserInfo((prev) => ({ ...prev, profileImage: response.data.profileImage })); // 수정
+                alert(response.data.message || "이미지 업로드 성공!");
                 window.location.reload();
             } else {
-                handleFetchError("이미지 업로드 실패", responseBody);
+                handleFetchError("이미지 업로드 실패", response.status);
             }
         } catch (error) {
             handleFetchError("이미지 업로드 중 오류 발생", error);
@@ -81,10 +78,7 @@ const MyPage = () => {
     const handleDeleteImage = async () => {
         const memberId = localStorage.getItem("memberId");
         try {
-            const response = await fetch(`http://localhost:8080/members/${memberId}/image`, {
-                method: "DELETE",
-                credentials: "include",
-            });
+            const response = await axiosInstance.delete(`/members/${memberId}/image`);
 
             if (response.ok) {
                 setUserInfo((prev) => ({ ...prev, profileImage: null }));
@@ -101,10 +95,7 @@ const MyPage = () => {
     const handleWithdraw = async () => {
         const memberId = localStorage.getItem("memberId");
         try {
-            const response = await fetch(`http://localhost:8080/members/${memberId}`, {
-                method: "DELETE",
-                credentials: "include",
-            });
+            const response = await axiosInstance.delete(`/members/${memberId}`);
 
             if (response.ok) {
                 alert("회원탈퇴가 완료되었습니다.");
@@ -174,7 +165,8 @@ const MyPage = () => {
 
 export default MyPage;
 
-// 스타일 컴포넌트들
+// 스타일 컴포넌트들 (생략)
+
 const Container = styled.div`
     padding: 4rem;
     max-width: 800px;

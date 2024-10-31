@@ -1,8 +1,6 @@
 package edu.example.learner_kotlin.security
 
 import edu.example.learner_kotlin.log
-import edu.example.learner_kotlin.member.entity.Member
-import edu.example.learner_kotlin.member.entity.Role
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.Cookie
@@ -26,7 +24,6 @@ class JWTCheckFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        log.info("--- doFilterInternal() ")
         log.info("--- requestURI : " + request.requestURI)
 
 
@@ -36,13 +33,12 @@ class JWTCheckFilter(
         val requestURI: String = request.requestURI
         val method: String = request.method
         log.info("method : $method")
-        log.info("requestURI : $requestURI")
 
         // URL 디코딩
         val decodedURI: String = URLDecoder.decode(requestURI, StandardCharsets.UTF_8)
         log.info("decodedURI : $decodedURI")
 
-        if ((request.getMethod() == "GET" && ((requestURI.matches("/course/\\d+".toRegex()) ||
+        if ((request.method == "GET" && ((requestURI.matches("/course/\\d+".toRegex()) ||
                     requestURI.matches("/course/\\d+/member-nickname".toRegex()) ||
                     requestURI.matches("/course/video/\\d+".toRegex()) ||
                     requestURI.matches("/course/list".toRegex()) ||
@@ -57,7 +53,9 @@ class JWTCheckFilter(
                     requestURI.matches("/course/\\d+/course-inquiry/\\d+".toRegex()) ||
                     requestURI.matches("/course/\\d+/course-inquiry".toRegex()) ||
                     requestURI.matches("/course/\\d+/course-answer/\\d+".toRegex()) ||
-                    requestURI.startsWith("/images")
+                    requestURI.startsWith("/images") ||
+                    requestURI.matches("/swagger-ui(/.*)?".toRegex()) || // swagger-ui로 시작하는 요청 및 favicon 파일 포함
+                    requestURI.matches("/v3/api-docs(/.*)?".toRegex()) // v3/api-docs로 시작하는 요청
                     ))) || (request.method == "POST" &&
                     (requestURI.matches("/join/.*".toRegex()) || requestURI.matches("/members/find/.*".toRegex())))
         ) {
@@ -136,7 +134,8 @@ class JWTCheckFilter(
     fun handleException(response: HttpServletResponse, e: Exception) {
         log.info("--- handleException ---")
         response.apply {
-            status = HttpServletResponse.SC_FORBIDDEN
+            status = HttpServletResponse.SC_UNAUTHORIZED
+            log.info(status)
             contentType = "application/json"
             writer.write(e.message ?: "")
         }

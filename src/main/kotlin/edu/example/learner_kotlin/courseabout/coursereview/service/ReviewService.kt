@@ -1,7 +1,7 @@
-package edu.example.learner.courseabout.coursereview.service
+package edu.example.learner_kotlin.courseabout.coursereview.service
 
-import edu.example.learner.courseabout.coursereview.dto.ReviewDTO
-import edu.example.learner.courseabout.coursereview.entity.ReviewType
+import edu.example.learner_kotlin.courseabout.coursereview.dto.ReviewDTO
+import edu.example.learner_kotlin.courseabout.coursereview.entity.ReviewType
 import org.springframework.stereotype.Service
 
 @Service
