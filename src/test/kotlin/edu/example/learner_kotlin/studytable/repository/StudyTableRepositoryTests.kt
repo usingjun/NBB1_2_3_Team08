@@ -1,6 +1,5 @@
 package edu.example.learner_kotlin.studytable.repository
 
-import edu.example.learner_kotlin.log
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
