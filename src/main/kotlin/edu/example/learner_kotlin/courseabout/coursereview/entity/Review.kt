@@ -1,4 +1,4 @@
-package edu.example.learner.courseabout.coursereview.entity
+package edu.example.learner_kotlin.courseabout.coursereview.entity
 
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.member.entity.Member

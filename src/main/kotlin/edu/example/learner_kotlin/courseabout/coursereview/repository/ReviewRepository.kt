@@ -1,6 +1,6 @@
-package edu.example.learner.courseabout.coursereview.repository
+package edu.example.learner_kotlin.courseabout.coursereview.repository
 
-import edu.example.learner.courseabout.coursereview.entity.Review
+import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
