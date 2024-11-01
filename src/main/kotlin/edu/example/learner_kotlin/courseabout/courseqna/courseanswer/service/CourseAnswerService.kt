@@ -1,14 +1,11 @@
 package edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.service
 
 import edu.example.learner_kotlin.courseabout.courseqna.courseanswer.exception.CourseAnswerException
-import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.dto.CourseAnswerDTO
-import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseAnswer
+import edu.example.learner_kotlin.courseabout.courseqna.courseanswer.dto.CourseAnswerDTO
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.exception.CourseInquiryException
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.repository.CourseAnswerRepository
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.repository.CourseInquiryRepository
 import edu.example.learner_kotlin.log
-import edu.example.learner_kotlin.member.exception.MemberException
-import edu.example.learner_kotlin.member.repository.MemberRepository
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

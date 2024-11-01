@@ -2,7 +2,9 @@ package edu.example.learner_kotlin.courseabout.course.controller
 
 
 
+import edu.example.learner_kotlin.courseabout.course.dto.CourseCreateDTO
 import edu.example.learner_kotlin.courseabout.course.dto.CourseDTO
+import edu.example.learner_kotlin.courseabout.course.dto.CourseUpdateDTO
 import edu.example.learner_kotlin.courseabout.course.dto.MemberCourseDTO
 import edu.example.learner_kotlin.courseabout.course.service.CourseService
 import edu.example.learner_kotlin.courseabout.order.service.OrderService
@@ -38,9 +40,9 @@ class CourseController(
         )]
     )
 
-    fun createCourse(@RequestBody courseDTO: CourseDTO): ResponseEntity<CourseDTO> {
-        log.info("Creating course {}", courseDTO)
-        return ResponseEntity.ok(courseService.addCourse(courseDTO))
+    fun createCourse(@RequestBody dto: CourseCreateDTO): ResponseEntity<CourseCreateDTO> {
+        log.info("Creating course {}", dto)
+        return ResponseEntity.ok(courseService.addCourse(dto))
     }
 
     @GetMapping("/{courseId}")
@@ -96,14 +98,11 @@ class CourseController(
             description = "강의를 찾을 수 없습니다."
         )]
     )
-    fun updateCourse(
-        @PathVariable courseId: Long,
-        @RequestBody courseDTO: CourseDTO
-    ): ResponseEntity<CourseDTO> {
-        courseDTO.courseId = courseId
+    fun updateCourse(@PathVariable courseId: Long, @RequestBody dto: CourseUpdateDTO): ResponseEntity<CourseUpdateDTO> {
+        dto.courseId = courseId
 
-        log.info("Updating course {}", courseDTO)
-        return ResponseEntity.ok<CourseDTO>(courseService.updateCourse(courseDTO))
+        log.info("Updating course {}", dto)
+        return ResponseEntity.ok(courseService.updateCourse(dto))
     }
 
     @DeleteMapping("/{courseId}")

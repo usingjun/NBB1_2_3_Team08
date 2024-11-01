@@ -27,10 +27,10 @@ data class Video (
     var currentVideoTime: Long? = null, // 현재 동영상 시간 추가
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null,
+    var createdAt: LocalDateTime? = null,
 
     @LastModifiedDate
-    val updatedAt: LocalDateTime? = null,
+    var updatedAt: LocalDateTime? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_Id", referencedColumnName = "course_id") // course_id에 맞추기
