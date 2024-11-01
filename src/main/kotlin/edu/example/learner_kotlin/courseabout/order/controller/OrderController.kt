@@ -1,6 +1,7 @@
 package edu.example.learner_kotlin.courseabout.order.controller
 
 import edu.example.learner_kotlin.courseabout.course.service.CourseService
+import edu.example.learner_kotlin.courseabout.order.dto.OrderCreateDTO
 import edu.example.learner_kotlin.courseabout.order.service.OrderService
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.Map
-import kotlin.math.log
 
 
 @RestController
@@ -26,11 +26,11 @@ class OrderController (
     @PostMapping("/{memberId}")
     @Operation(summary = "주문 생성", description = "회원 ID로 새로운 주문을 생성합니다.")
     fun createOrder(
-        @Parameter(description = "주문 데이터") @RequestBody orderDTO: OrderDTO,
+        @Parameter(description = "주문 데이터") @RequestBody dto: OrderCreateDTO,
         @Parameter(description = "회원 ID") @PathVariable memberId: Long
-    ): ResponseEntity<OrderDTO> {
-        log.info("회원 ID: {}의 주문 생성 데이터: {}", memberId, orderDTO)
-        return ResponseEntity.ok(orderService.add(orderDTO, memberId))
+    ): ResponseEntity<OrderCreateDTO> {
+        log.info("회원 ID: {}의 주문 생성 데이터: {}", memberId, dto)
+        return ResponseEntity.ok(orderService.add(dto, memberId))
     }
 
     @GetMapping("/{orderId}")

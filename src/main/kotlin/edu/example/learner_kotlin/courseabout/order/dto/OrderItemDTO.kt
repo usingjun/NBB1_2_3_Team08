@@ -16,7 +16,7 @@ data class OrderItemDTO(
     fun toEntity(orderItemDTO: OrderItemDTO): OrderItem {
         return OrderItem().apply {
             orderId = orderItemDTO.orderId
-            courseId = courseId
+            courseId = orderItemDTO.courseId
             course = Course( courseName=courseName, courseAttribute=courseAttribute)
             price = price
 
