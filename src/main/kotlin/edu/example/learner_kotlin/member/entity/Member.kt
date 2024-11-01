@@ -3,7 +3,9 @@ package edu.example.learner_kotlin.member.entity
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
+import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
+import edu.example.learner_kotlin.studytable.entity.StudyTable
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -65,6 +67,7 @@ data class Member (
 //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val courseAnswers: List<CourseAnswer> = ArrayList<CourseAnswer>()
 //
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    private val reviews: List<Review> = mutableListOf<Review>()
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val reviews: List<Review> = mutableListOf<Review>()
+
 }
