@@ -46,10 +46,10 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
 
         // JWT 생성
         val accessToken: String = jwtUtil.createToken(
-            mutableMapOf("category" to "access", "username" to username, "role" to role), 30
+            mutableMapOf("category" to "access", "username" to username, "role" to role, "mid" to memberId), 30
         ) // 30분
         val refreshToken: String = jwtUtil.createToken(
-            mutableMapOf("category" to "refresh", "username" to username, "role" to role), 1440
+            mutableMapOf("category" to "refresh", "username" to username, "role" to role, "mid" to memberId), 1440
         ) // 24시간
 
         // Refresh 토큰을 쿠키에 저장
@@ -73,7 +73,7 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
     private fun createCookie(key: String, value: String): Cookie {
         val cookie = Cookie(key, value)
         cookie.maxAge = 24 * 60 * 60
-        cookie.secure = true;
+        cookie.secure = false;
         cookie.path = "/";
         cookie.isHttpOnly = true
 
