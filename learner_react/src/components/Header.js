@@ -41,8 +41,9 @@ const Header = ({ openModal }) => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("memberId");
 
-        // 쿠키에서 RefreshToken 제거
-        document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // 쿠키에서 Authorization 및 RefreshToken 제거
+        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax;"; // RefreshToken 제거
 
         setIsLoggedIn(false);
         setRole(""); // 역할 초기화

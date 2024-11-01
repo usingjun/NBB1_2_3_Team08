@@ -27,8 +27,9 @@ import InquiryRegistration from "./pages/Inquiry/InquiryRegistration";
 import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
 import axios from "axios";
-axios.defaults.withCredentials = true;
 import AttendanceCheck from "./components/attendance/AttendanceCheck";
+
+axios.defaults.withCredentials = true;
 
 function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
