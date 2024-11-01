@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import './Style/InquiryList.css';
+import axiosInstance from "../axiosInstance";
 
 const InquiryListPage = () => {
     const [inquiries, setInquiries] = useState([]);
@@ -14,7 +14,7 @@ const InquiryListPage = () => {
     useEffect(() => {
         const fetchInquiries = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/inquiries', { withCredentials: true });
+                const response = await axiosInstance.get('/inquiries');
                 setInquiries(response.data);
             } catch (error) {
                 console.error('Failed to fetch inquiries:', error.response ? error.response.data : error.message);
@@ -34,7 +34,7 @@ const InquiryListPage = () => {
         if (!memberId) return; // memberId가 없으면 리턴
 
         try {
-            const response = await axios.get(`http://localhost:8080/inquiries/member/${memberId}`, { withCredentials: true }); // memberId로 문의 조회
+            const response = await axiosInstance.get(`/inquiries/member/${memberId}`); // memberId로 문의 조회
             setInquiries(response.data);
             setIsMyInquiries(true); // 내 문의 모아보기 상태 업데이트
         } catch (error) {
@@ -45,7 +45,7 @@ const InquiryListPage = () => {
     // 전체 문의로 되돌리는 함수
     const fetchAllInquiries = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/inquiries', { withCredentials: true });
+            const response = await axiosInstance.get('/inquiries');
             setInquiries(response.data);
             setIsMyInquiries(false); // 전체 문의로 되돌리기
         } catch (error) {

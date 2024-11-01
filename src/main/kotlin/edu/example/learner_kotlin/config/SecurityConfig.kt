@@ -24,13 +24,12 @@ import org.springframework.web.cors.CorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig (
+class SecurityConfig(
     private val jwtUtil: JWTUtil,
     private val customSuccessHandler: CustomSuccessHandler,
     private val customOauth2UserService: CustomOauth2UserService,
     private val authenticationConfiguration : AuthenticationConfiguration,
 ){
-
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
@@ -48,11 +47,11 @@ class SecurityConfig (
         customClientRegistrationRepo: CustomClientRegistrationRepo
     ): SecurityFilterChain {
         //csrf disable
-        http.csrf{it.disable()}
-        //From 로그인 방식 disable
-            .formLogin{it.disable()}
-        //HTTP Basic 인증 방식 disable
-            .httpBasic{it.disable()}
+        http.csrf { it.disable() }
+            //From 로그인 방식 disable
+            .formLogin { it.disable() }
+            //HTTP Basic 인증 방식 disable
+            .httpBasic { it.disable() }
 
         //JWTFilter 추가
         http
