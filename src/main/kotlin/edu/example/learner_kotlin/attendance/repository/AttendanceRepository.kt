@@ -20,9 +20,15 @@ interface AttendanceRepository : JpaRepository<Attendance, Long> {
         @Param("endDate") endDate: LocalDate
     ): List<Attendance>
 
-    @Query("select month(a.attendanceDate), floor((day(a.attendanceDate) + 6) / 7) as weekNumber from Attendance a where a.member.memberId = :memberId and year(a.attendanceDate) = :year group by month(a.attendanceDate), floor((day(a.attendanceDate) + 6) / 7) order by month(a.attendanceDate), floor((day(a.attendanceDate) + 6) / 7)")
+    @Query(
+        value = "select month(a.attendance_date) as monthNumber, week(a.attendance_date, 0) - week(last_day(a.attendance_date - interval 1 month) + interval 1 day, 0) + 1 as weekNumber from Attendance a where a.member_id = :memberId and year(a.attendance_date) = :year group by monthNumber, weekNumber",
+        nativeQuery = true
+    )
     fun findByMemberIdAndYear(@Param("memberId") memberId: Long, @Param("year") year: Int): List<Array<Any>>
 
     @Query("select a.continuous from Attendance a where a.member.memberId = :memberId and a.attendanceDate = :date")
     fun findContinuousByMemberIdAndDate(@Param("memberId") memberId: Long, @Param("date") date: LocalDate): Int
+
+    @Query("select count(a) from Attendance a where a.member.memberId = :memberId and year(a.attendanceDate) = :year")
+    fun countAttendanceDaysOfYearByMemberIdAndYear(@Param("memberId") memberId: Long, @Param("year") year: Int): Int
 }

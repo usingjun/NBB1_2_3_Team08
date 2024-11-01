@@ -82,4 +82,14 @@ class AttendanceRepositoryTests {
             assertEquals(1, this)
         }
     }
+
+    @Test
+    fun testCountAttendanceDaysOfYearByMemberIdAndYear() {
+        val memberId = 1L
+        val year = 2024
+
+        attendanceRepository.countAttendanceDaysOfYearByMemberIdAndYear(memberId, year).run {
+            assertEquals(1, this)
+        }
+    }
 }

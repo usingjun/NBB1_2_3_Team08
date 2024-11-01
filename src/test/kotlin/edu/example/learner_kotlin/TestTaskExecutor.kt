@@ -30,12 +30,18 @@ class TestTaskExecutor(
 ) :
     ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
-        val member = Member().apply {
-            email = "test@example.org"
-            nickname = "test"
+        val member1 = Member().apply {
+            email = "test1@example.org"
+            nickname = "test1"
             role = Role.USER
         }
-        memberRepository.save(member)
+        memberRepository.save(member1)
+        val member2 = Member().apply {
+            email = "test2@example.org"
+            nickname = "test2"
+            role = Role.ADMIN
+        }
+        memberRepository.save(member2)
 
         for (i in 1..10L) {
             val inquiry = Inquiry().apply {
