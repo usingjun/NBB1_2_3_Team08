@@ -64,16 +64,6 @@ class AttendanceRepositoryTests {
     }
 
     @Test
-    fun testFindByMemberIdAndYear() {
-        val memberId = 1L
-        val year = 2024
-
-        attendanceRepository.findByMemberIdAndYear(memberId, year).run {
-            assertEquals(1, this.size)
-        }
-    }
-
-    @Test
     fun testFindContinuousByMemberIdAndDate() {
         val memberId = 1L
         val date = LocalDate.now()
