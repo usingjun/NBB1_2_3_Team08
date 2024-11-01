@@ -1,4 +1,4 @@
-package edu.example.learner_kotlin.member.service
+package edu.example.learner_kotlin.security
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.dto.oauth2.CustomOauth2User
 import edu.example.learner_kotlin.member.dto.oauth2.GoogleResponse

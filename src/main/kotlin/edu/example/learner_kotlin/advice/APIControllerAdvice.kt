@@ -6,6 +6,7 @@ import edu.example.learner_kotlin.courseabout.exception.NotFoundException
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.exception.LoginTaskException
 import edu.example.learner_kotlin.member.exception.MemberTaskException
+import edu.example.learner_kotlin.security.exception.JWTTaskException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -39,6 +40,18 @@ class APIControllerAdvice {
     @ExceptionHandler(LoginTaskException::class)
     fun handleLoginException(e: LoginTaskException): ResponseEntity<*> {
         log.info("--- LoginTaskException")
+        log.info("--- e.getMessage() : " + e.message)
+
+        val errMap: Map<String, String?> = java.util.Map.of("error", e.message)
+
+
+        return ResponseEntity.status(e.statusCode).body<Map<String, String?>>(errMap)
+    }
+
+    //JWT 예외처리
+    @ExceptionHandler(JWTTaskException::class)
+    fun handleJWTException(e: JWTTaskException): ResponseEntity<*> {
+        log.info("--- JWTTaskException")
         log.info("--- e.getMessage() : " + e.message)
 
         val errMap: Map<String, String?> = java.util.Map.of("error", e.message)
