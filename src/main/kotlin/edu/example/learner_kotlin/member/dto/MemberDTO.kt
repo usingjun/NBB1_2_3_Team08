@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 data class MemberDTO(
     var memberId: Long? = null,                  // 멤버 ID
     @field:NotNull var email: String?,           // 이메일 (필수)
-    @field:NotNull var password: String?,        // 비밀번호 (필수)
+    var password: String?,                       // 비밀번호 (필수)
     @field:NotNull var nickname: String?,        // 닉네임 (필수)
     var phoneNumber: String? = null,             // 전화번호 (선택적)
     var profileImage: ByteArray? = null,         // 프로필 이미지 (선택적)

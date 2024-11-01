@@ -133,27 +133,6 @@ class MemberService(
         }
     }
 
-    //로그인
-    fun login(email: String, password: String): LoginDTO {
-        val member: Member = memberRepository.getMemberByEmail(email)
-            ?: throw LoginException.NOT_FOUND_EMAIL.memberTaskException
-        log.info("member : $member")
-        if (!passwordEncoder.matches(password, member.password)) {
-            throw LoginException.PASSWORD_DISAGREEMENT.memberTaskException
-        }
-
-        // JWT 생성 및 쿠키 반환
-        val accessToken: String = jwtUtil.createToken(mutableMapOf("mid" to member.nickname, "role" to member.role), 1)
-        val cookie = Cookie("Authorization", accessToken).apply {
-            maxAge = 60 * 60 * 60   // 60시간
-            path = "/"              // 전체 경로에서 접근 가능
-            isHttpOnly = false      // JavaScript에서 접근 가능
-            secure = false          // 로컬 개발 시 false로 설정
-        }
-
-        return LoginDTO(email, password, cookie, member.memberId)
-    }
-
     //이메일로 닉네임 얻기
     fun getNicknameByEmail(email: String?): String {
         return run{

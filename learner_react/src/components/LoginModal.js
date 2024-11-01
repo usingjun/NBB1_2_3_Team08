@@ -12,23 +12,25 @@ const LoginModal = ({ closeModal }) => {
     const handleLogin = async (event) => {
         event.preventDefault();
 
+        const formData = new URLSearchParams();
+        formData.append('username', email);
+        formData.append('password', password);
+
         try {
-            const response = await fetch("http://localhost:8080/join/login", {
+            const response = await fetch("http://localhost:8080/login", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                }),
+                body: formData.toString(), // URL 인코딩된 데이터
                 credentials: "include",
             });
 
             if (response.ok) {
-                const { memberId } = await response.json();
+                const { memberId, accessToken } = await response.json();
                 console.log("로그인 성공, memberId:", memberId);
                 localStorage.setItem("memberId", memberId);
+                localStorage.setItem("accessToken", accessToken);
                 alert("로그인에 성공하셨습니다.");
                 closeModal();
                 window.location.href = "http://localhost:3000/courses";

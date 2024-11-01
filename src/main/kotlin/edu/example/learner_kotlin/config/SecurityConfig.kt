@@ -1,17 +1,18 @@
 package edu.example.learner_kotlin.config
 
-import edu.example.learner_kotlin.member.service.CustomOauth2UserService
+import edu.example.learner_kotlin.security.CustomOauth2UserService
 import edu.example.learner_kotlin.security.JWTCheckFilter
 import edu.example.learner_kotlin.security.JWTUtil
+import edu.example.learner_kotlin.security.LoginFilter
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.security.config.Customizer
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configurers.*
-import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -23,15 +24,20 @@ import org.springframework.web.cors.CorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig (
+class SecurityConfig(
     private val jwtUtil: JWTUtil,
     private val customSuccessHandler: CustomSuccessHandler,
-    private val customOauth2UserService: CustomOauth2UserService
+    private val customOauth2UserService: CustomOauth2UserService,
+    private val authenticationConfiguration : AuthenticationConfiguration,
 ){
-
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
+    }
+
+    @Bean
+    fun authenticationManager(configuration : AuthenticationConfiguration): AuthenticationManager {
+        return configuration.authenticationManager
     }
 
     @Bean
@@ -41,15 +47,19 @@ class SecurityConfig (
         customClientRegistrationRepo: CustomClientRegistrationRepo
     ): SecurityFilterChain {
         //csrf disable
-        http.csrf{it.disable()}
-        //From 로그인 방식 disable
-            .formLogin{it.disable()}
-        //HTTP Basic 인증 방식 disable
-            .httpBasic{it.disable()}
+        http.csrf { it.disable() }
+            //From 로그인 방식 disable
+            .formLogin { it.disable() }
+            //HTTP Basic 인증 방식 disable
+            .httpBasic { it.disable() }
 
         //JWTFilter 추가
         http
             .addFilterBefore(JWTCheckFilter(jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
+
+        //LoginFilter 추가
+        http
+            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http
@@ -163,7 +173,7 @@ class SecurityConfig (
 
                 // 로그인 권한 설정
                 it.requestMatchers("/login").permitAll()
-                it.requestMatchers("/join/login").permitAll() // 로그인 및 회원가입 모두 허용
+                it.requestMatchers("/reissue").permitAll()
                 it.requestMatchers("/members/find/**").permitAll() // 비밀번호 찾기 및 아이디 찾기 모두 허용
 
                 it.anyRequest().authenticated()
@@ -192,6 +202,7 @@ class SecurityConfig (
                     // 노출될 헤더 설정 (여러 개 추가하려면 add로 해야 함)
                     addExposedHeader("Authorization")
                     addExposedHeader("Set-Cookie")
+                    addExposedHeader("RefreshToken")
                 }
             })
         }
