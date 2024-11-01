@@ -1,17 +1,15 @@
-package edu.example.learner_kotlin.member.repository;
+package edu.example.learner_kotlin.member.repository
 
-import edu.example.learner_kotlin.member.entity.Follow;
-import edu.example.learner_kotlin.member.entity.Member;
-import org.springframework.data.jpa.repository.JpaRepository;
+import edu.example.learner_kotlin.member.entity.Follow
+import edu.example.learner_kotlin.member.entity.Member
+import org.springframework.data.jpa.repository.JpaRepository
 
-import java.util.List;
+interface FollowRepository : JpaRepository<Follow?, Long?> {
+    fun existsByFollowerAndFollowing(follower: Member?, following: Member?): Boolean
 
-public interface FollowRepository extends JpaRepository<Follow, Long> {
-    boolean existsByFollowerAndFollowing(Member follower, Member following);
+    fun deleteByFollowerAndFollowing(follower: Member?, following: Member?)
 
-    void deleteByFollowerAndFollowing(Member follower, Member following);
+    fun findByFollower(follower: Member?): List<Follow?>?
 
-    List<Follow> findByFollower(Member follower);
-
-    List<Follow> findByFollowing(Member following);
+    fun findByFollowing(following: Member?): List<Follow?>?
 }
