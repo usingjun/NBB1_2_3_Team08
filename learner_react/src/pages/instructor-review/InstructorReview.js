@@ -54,7 +54,7 @@ const InstructorReview = () => {
     const fetchCourses = () => {
         const memberId = localStorage.getItem("memberId");
         if (memberId) {
-            fetch(`http://localhost:8080/courses/list/${memberId}`, {
+            fetch(`http://localhost:8080/courses/instructor/list/${nickname}`, {
                 credentials: 'include',
             })
                 .then(res => res.json())
