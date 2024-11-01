@@ -35,12 +35,12 @@ const AddVideo = ( ) => {
             const role = decodedToken.role;
 
             const payload = {
-                course_Id: courseId,
+                courseId: courseId,
                 title,
                 url,
                 description,
             };
-
+            console.log("courseId :",courseId)
             await axios.post('http://localhost:8080/video', payload, { withCredentials: true });
 
             // 성공 메시지와 페이지 리디렉션

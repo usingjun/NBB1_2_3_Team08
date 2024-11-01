@@ -1,5 +1,10 @@
 package edu.example.learner_kotlin.courseabout.coursereview.service
 
+import edu.example.learner_kotlin.courseabout.course.entity.Course
+import edu.example.learner_kotlin.courseabout.course.entity.CourseAttribute
+import edu.example.learner_kotlin.courseabout.course.entity.QCourse.course
+import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
+import edu.example.learner_kotlin.courseabout.course.service.CourseService
 import edu.example.learner_kotlin.courseabout.coursereview.dto.ReviewDTO
 import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.coursereview.entity.ReviewType
@@ -7,50 +12,61 @@ import edu.example.learner_kotlin.courseabout.coursereview.repository.ReviewRepo
 import edu.example.learner_kotlin.courseabout.course.service.CourseServiceImpl
 import edu.example.learner_kotlin.courseabout.coursereview.exception.ReviewException
 import edu.example.learner_kotlin.log
+import edu.example.learner_kotlin.member.entity.Member
+import edu.example.learner_kotlin.member.repository.MemberRepository
 import edu.example.learner_kotlin.member.service.MemberService
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
+import org.modelmapper.PropertyMap
+import org.modelmapper.convention.MatchingStrategies
 import org.springframework.stereotype.Service
 
 
 @Service
 class ReviewServiceImpl(
     private val reviewRepository: ReviewRepository,
-    private val courseService: CourseServiceImpl,
-    private val memberService: MemberService,
+    private val courseRepository: CourseRepository,
+    private val memberRepository: MemberRepository,
     private val modelMapper: ModelMapper,
 ) : ReviewService {
 
     @Transactional
     override fun createReview(reviewDTO: ReviewDTO, reviewType: ReviewType?): ReviewDTO {
         try {
-            val course = reviewDTO.courseId?.let { courseService!!.readReview(it).toEntity() }
+            // courseId를 통해 영속 상태의 Course 엔티티를 조회
+            val course = courseRepository.findById(reviewDTO.courseId!!)
+                .orElseThrow { ReviewException.COURSE_NOT_FOUND.get() }
 
             log.info("Creating review for course $course")
-            val memberInfo = memberService!!.getMemberInfo(reviewDTO.writerId)
-            log.info("$course.member.nickname")
 
-            if (reviewDTO.writerId == null) {
-                throw ReviewException.NOT_LOGIN.get()
-            } else if (memberInfo.nickname === course?.member?.nickname) {
-                throw ReviewException.NOT_MATCHED_REVIEWER.get()
-            }
+            // writerId를 통해 영속 상태의 Member 엔티티를 조회
+            val member = memberRepository.findById(reviewDTO.writerId!!)
+                .orElseThrow { ReviewException.NOT_LOGIN.get() }
 
-            reviewDTO.apply {
-                this.reviewType = reviewType
-            }
+            log.info("Loaded Member: $member")
+            log.info("Member nickname: ${member.nickname}")
 
-            val review = modelMapper.map(reviewDTO, Review::class.java)
-            log.info(review)
+            // Review 엔티티 생성
+            val review = Review(
+                reviewName = reviewDTO.reviewName,
+                reviewDetail = reviewDTO.reviewDetail,
+                rating = reviewDTO.rating ?: 0,
+                member = member,  // 영속 상태의 member 사용
+                course = course,
+                reviewType = reviewType
+            )
 
-            reviewRepository!!.save(review)
+            log.info("Review to be saved: $review")
+
+            // 리뷰 저장
+            reviewRepository.save(review)
             return ReviewDTO(review)
         } catch (e: Exception) {
             log.error("--- e : $e")
-            error("--- " + e.message) //에러 로그로 발생 예외의 메시지를 기록하고
             throw ReviewException.NOT_REGISTERED.get()
         }
     }
+
 
     override fun getReviewById(reviewId: Long): ReviewDTO {
         val review = reviewRepository!!.findById(reviewId).orElseThrow { ReviewException.NOT_FOUND.get() }!!
@@ -58,30 +74,44 @@ class ReviewServiceImpl(
     }
 
     override fun updateReview(reviewId: Long, reviewDTO: ReviewDTO): ReviewDTO {
-        val course = reviewDTO.courseId?.let { courseService!!.read(it) }!!.toEntity()
-        log.info(course)
+        val course = courseRepository.findById(reviewDTO.courseId!!)
+            .orElseThrow { ReviewException.COURSE_NOT_FOUND.get() }
 
-        val review = reviewRepository!!.findById(reviewId).orElseThrow { ReviewException.NOT_FOUND.get() }!!
-        if (review.member?.memberId !== reviewDTO.writerId) {
+        log.info("Creating review for course $course")
+
+        // writerId를 통해 영속 상태의 Member 엔티티를 조회
+        val member = memberRepository.findById(reviewDTO.writerId!!)
+            .orElseThrow { ReviewException.NOT_LOGIN.get() }
+
+        log.info("Loaded Member: $member")
+
+        // 영속 상태의 Review 엔티티 조회
+        val review = reviewRepository.findById(reviewId)
+            .orElseThrow { ReviewException.NOT_FOUND.get() }
+
+        // 작성자 일치 여부 확인
+        if (review?.member?.memberId != member.memberId) {
             throw ReviewException.NOT_MATCHED_REVIEWER.get()
         }
 
+        // 기본 값 설정 및 업데이트 정보 반영
         if (reviewDTO.rating == 0) {
             reviewDTO.rating = 1
         }
-        reviewDTO.reviewDetail = review.reviewDetail
-
-        val newReview = modelMapper.map(reviewDTO, Review::class.java)
 
         try {
-            review.apply {
-                reviewName=newReview.reviewName
-                reviewDetail = newReview.reviewDetail
-                rating = newReview.rating
+            // 엔티티 필드에 직접 값 설정하여 업데이트
+            review?.apply {
+                reviewName = reviewDTO.reviewName
+                reviewDetail = reviewDTO.reviewDetail
+                rating = reviewDTO.rating ?: 1
+                this.course = course  // 영속 상태의 Course 엔티티 사용
+                this.member = member  // 영속 상태의 Member 엔티티 사용
             }
 
-            reviewRepository.save(review)
-            return ReviewDTO(review)
+            // 수정된 리뷰 저장
+            review?.let { reviewRepository.save(it) }
+            return review?.let { ReviewDTO(it) }!!
         } catch (e: Exception) {
             log.error(e.message)
             throw ReviewException.NOT_MODIFIED.get()

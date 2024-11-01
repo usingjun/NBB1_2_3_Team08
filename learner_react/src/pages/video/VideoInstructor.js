@@ -55,7 +55,7 @@ const VideoList = () => {
         if (window.confirm("정말로 이 비디오를 삭제하시겠습니까?")) {
             try {
                 await axios.delete(`${Video_Url}/${videoId}`,{ withCredentials: true });
-                setVideos(videos.filter(video => video.video_Id !== videoId));
+                setVideos(videos.filter(video => video.videoId !== videoId));
             } catch (error) {
                 console.error("비디오 삭제 중 오류 발생:", error);
                 setError("비디오 삭제에 실패했습니다.");
@@ -76,13 +76,13 @@ const VideoList = () => {
             )}
             {videos.length > 0 ? (
                 videos.map((video, index) => (
-                    <VideoItem key={video.video_Id}>
+                    <VideoItem key={video.videoId}>
                         <VideoInfo>
                             <Title>{index + 1}. {video.description}</Title>
                         </VideoInfo>
                         <ButtonContainer>
-                            <StyledButton onClick={() => navigate(`/video/update/${video.video_Id}`)}>수정</StyledButton>
-                            <StyledButton onClick={() => handleDeleteClick(video.video_Id)}>삭제</StyledButton>
+                            <StyledButton onClick={() => navigate(`/video/update/${video.videoId}`)}>수정</StyledButton>
+                            <StyledButton onClick={() => handleDeleteClick(video.videoId)}>삭제</StyledButton>
                         </ButtonContainer>
                     </VideoItem>
                 ))

@@ -6,15 +6,15 @@ import jakarta.persistence.PersistenceContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-//쿼리 dsl 초기 설정
 @Configuration
-class QueryDSLConfig {
+class QuerydslConfig {
+
     @PersistenceContext
-    private val entityManager: EntityManager? = null
+    private lateinit var entityManager: EntityManager
 
     @Bean
+
     fun jpaQueryFactory(): JPAQueryFactory {
         return JPAQueryFactory(entityManager)
     }
 }
-

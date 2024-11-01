@@ -10,9 +10,9 @@ const extractVideoId = (url) => {
 // 비디오 재생 로직을 별도의 함수로 분리
 const navigateToVideoPlayer = (navigate, video, courseId) => {
     const youtubeId = extractVideoId(video.url);
-    navigate(`/video/${video.video_Id}/play`, {
+    navigate(`/video/${video.videoId}/play`, {
         state: {
-            videoEntityId: video.video_Id,
+            videoEntityId: video.videoId,
             youtubeId: youtubeId,
             courseId: courseId // courseId를 state에 추가
         }
@@ -41,14 +41,14 @@ export const handlePlayClick = async (courseId, video, navigate, setError, role,
         }
         // INSTRUCTOR 역할일 경우
         else if (role === "INSTRUCTOR") {
-            if (!video.course_Id) {
+            if (!video.courseId) {
                 console.error("비디오 객체에서 course_Id를 찾을 수 없습니다:", video);
                 alert("비디오 정보를 확인할 수 없습니다.");
                 return;
             }
 
             // 강의 정보 조회
-            const courseResponse = await axios.get(`http://localhost:8080/course/${video.course_Id}`);
+            const courseResponse = await axios.get(`http://localhost:8080/course/${video.courseId}`);
             const courseData = courseResponse.data;
 
             console.log("강의 정보:", courseData); // 강의 데이터 확인용 로그

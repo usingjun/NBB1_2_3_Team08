@@ -13,6 +13,7 @@ const CourseUpdate = () => {
     const [courseDescription, setCourseDescription] = useState("");
     const [memberNickname, setMemberNickname] = useState(""); // 수정이 필요 없는 데이터
     const [successMessage, setSuccessMessage] = useState(""); // 성공 메시지 상태 추가
+    const [courseAttribute, setCourseAttribute] = useState("JAVA");
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -41,6 +42,7 @@ const CourseUpdate = () => {
                 courseLevel,
                 coursePrice,
                 courseDescription,
+                courseAttribute,
                 memberNickname // 수정이 필요 없는 데이터도 함께 전송
             }, { withCredentials: true });
 
@@ -80,6 +82,10 @@ const CourseUpdate = () => {
                 <Label>
                     강좌 설명:
                     <Input type="text" value={courseDescription} onChange={(e) => setCourseDescription(e.target.value)} required />
+                </Label>
+                <Label>
+                    강좌 과목:
+                    <Input type="text" value={courseAttribute} onChange={(e) => setCourseAttribute(e.target.value)} required />
                 </Label>
                 <Button type="submit">수정</Button>
             </form>

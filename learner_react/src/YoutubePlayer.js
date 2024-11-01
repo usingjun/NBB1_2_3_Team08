@@ -72,7 +72,7 @@ const YoutubePlayer = () => {
                 const response = await axios.get(`http://localhost:8080/course/video/${courseId}`, { withCredentials: true });
                 const videos = response.data;
                 setCourseVideos(videos);
-                const index = videos.findIndex(v => v.video_Id === parseInt(videoId));
+                const index = videos.findIndex(v => v.videoId === parseInt(videoId));
                 setCurrentVideoIndex(index);
             } catch (error) {
                 console.error("강의 목록 가져오기 실패:", error);
@@ -181,9 +181,9 @@ const YoutubePlayer = () => {
         if (isLoading || currentVideoIndex <= 0) return;
 
         const prevVideo = courseVideos[currentVideoIndex - 1];
-        navigate(`/video/${prevVideo.video_Id}/play`, {
+        navigate(`/video/${prevVideo.videoId}/play`, {
             state: {
-                videoEntityId: prevVideo.video_Id,
+                videoEntityId: prevVideo.videoId,
                 youtubeId: extractVideoId(prevVideo.url),
                 courseId: courseId
             }
@@ -194,9 +194,9 @@ const YoutubePlayer = () => {
         if (isLoading || currentVideoIndex >= courseVideos.length - 1) return;
 
         const nextVideo = courseVideos[currentVideoIndex + 1];
-        navigate(`/video/${nextVideo.video_Id}/play`, {
+        navigate(`/video/${nextVideo.videoId}/play`, {
             state: {
-                videoEntityId: nextVideo.video_Id,
+                videoEntityId: nextVideo.videoId,
                 youtubeId: extractVideoId(nextVideo.url),
                 courseId: courseId
             }

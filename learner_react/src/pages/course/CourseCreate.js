@@ -11,6 +11,7 @@ const CourseCreate = () => {
     const [courseDescription, setCourseDescription] = useState("");
     const [coursePrice, setCoursePrice] = useState(0);
     const [courseLevel, setCourseLevel] = useState(1); // 기본값 1
+    const [courseAttribute, setCourtAttribute] = useState("");
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -36,6 +37,7 @@ const CourseCreate = () => {
                 courseDescription,
                 coursePrice,
                 courseLevel,
+                courseAttribute,
                 memberNickname,
             };
 
@@ -92,6 +94,15 @@ const CourseCreate = () => {
                         onChange={(e) => setCourseLevel(Number(e.target.value))}
                         min="1"
                         max="5"
+                        required
+                    />
+                </Label>
+                <Label>
+                    강좌 과목:
+                    <Input
+                        type="text"
+                        value={courseAttribute}
+                        onChange={(e) => setCourtAttribute((e.target.value))}
                         required
                     />
                 </Label>

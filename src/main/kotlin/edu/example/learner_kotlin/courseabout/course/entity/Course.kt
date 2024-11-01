@@ -2,6 +2,7 @@ package edu.example.learner_kotlin.courseabout.course.entity
 
 //import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.news.entity.NewsEntity
+import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.video.entity.Video
 import edu.example.learner_kotlin.member.entity.Member
 import jakarta.persistence.*
@@ -29,7 +30,7 @@ data class Course(
     @Enumerated(EnumType.STRING)
     var courseAttribute: CourseAttribute? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_nickname", referencedColumnName = "nickname")
     var member: Member?= null,
 
@@ -43,16 +44,22 @@ data class Course(
 
     @LastModifiedDate
     var courseModifiedDate: LocalDateTime? = null,
+    )
+{
 
-) {
     @OneToMany(mappedBy = "courseNews", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     var newsEntities: MutableList<NewsEntity> = mutableListOf()
-//    @OneToMany(mappedBy = "course",cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    var  orderItems : MutableList<OrderItem> = mutableListOf()
 
-//    //
-//    @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    var videos : MutableList<Video> = mutableListOf()
+    @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    val memberCourses: List<MemberCourse> = emptyList()
+    //    @OneToMany(mappedBy = "courseNews", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    //    private List<NewsEntity> newsEntities = new ArrayList<>();
+    //
+    @OneToMany(mappedBy = "course",cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    var  orderItems : MutableList<OrderItem> = mutableListOf()
+
+    @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    var videos : MutableList<Video> = mutableListOf()
     //
     //    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     //    private List<Review> reviews = new ArrayList<>();

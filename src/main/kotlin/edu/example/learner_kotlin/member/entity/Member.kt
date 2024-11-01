@@ -2,6 +2,7 @@ package edu.example.learner_kotlin.member.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import edu.example.learner_kotlin.courseabout.course.entity.Course
+import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
@@ -49,8 +50,8 @@ data class Member (
     //    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
 //    private val heartNewsList: List<HeartNews> = ArrayList<HeartNews>()
 //
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-//    private val memberCourses: List<MemberCourse> = ArrayList<MemberCourse>()
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val memberCourses: List<MemberCourse> = ArrayList<MemberCourse>()
 //
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     private val courses: List<Course> = ArrayList<Course>()

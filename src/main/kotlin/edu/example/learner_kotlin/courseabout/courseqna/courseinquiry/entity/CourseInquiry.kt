@@ -6,10 +6,12 @@ import edu.example.learner_kotlin.member.entity.Member
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "course_inquiry")
+@EntityListeners(AuditingEntityListener::class)
 data class CourseInquiry(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

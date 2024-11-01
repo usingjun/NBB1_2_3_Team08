@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from './axiosInstance';
 
 const CreateNews = () => {
     const { courseId } = useParams();
@@ -9,11 +10,10 @@ const CreateNews = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // 컴포넌트 마운트 시 권한 확인
         checkAuthorization();
     }, []);
 
-    const checkAuthorization = () => {
+    const checkAuthorization = async () => {
         try {
             const token = document.cookie
                 .split('; ')
@@ -26,7 +26,7 @@ const CreateNews = () => {
                 return;
             }
 
-            const decodedToken = jwtDecode(token); // jwtDecode 사용
+            const decodedToken = jwtDecode(token);
             const userRole = decodedToken.role;
 
             if (userRole !== 'INSTRUCTOR' && userRole !== 'ADMIN') {
@@ -39,49 +39,29 @@ const CreateNews = () => {
         }
     };
 
-    const handleCreateNews = (e) => {
+    const handleCreateNews = async (e) => {
         e.preventDefault();
         const newsRqDTO = {
             newsName,
             newsDescription,
         };
 
-        // JWT 토큰을 헤더에 포함하여 요청
-        const token = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('Authorization='))
-            ?.split('=')[1];
-
-        fetch(`http://localhost:8080/course/${courseId}/news`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // JWT 토큰을 Authorization 헤더에 추가
-            },
-            credentials: 'include',
-            body: JSON.stringify(newsRqDTO),
-        })
-            .then(res => {
-                if (!res.ok) {
-                    if (res.status === 403) {
-                        throw new Error('권한이 없습니다.');
-                    }
-                    throw new Error('Network response was not ok');
-                }
-                return res.json();
-            })
-            .then(data => {
-                alert('새소식이 성공적으로 등록되었습니다.');
-                navigate(`/courses/${courseId}`);
-            })
-            .catch(err => {
-                console.error("새소식 등록 실패:", err);
-                alert(err.message || '새소식 등록에 실패했습니다. 다시 시도해주세요.');
-            });
+        try {
+            await axiosInstance.post(`/course/${courseId}/news`, newsRqDTO);
+            alert('새소식이 성공적으로 등록되었습니다.');
+            navigate(`/courses/${courseId}`);
+        } catch (error) {
+            console.error("새소식 등록 실패:", error);
+            if (error.response?.status === 403) {
+                alert('권한이 없습니다.');
+            } else {
+                alert('새소식 등록에 실패했습니다. 다시 시도해주세요.');
+            }
+        }
     };
 
     const handleCancel = () => {
-        navigate(`/courses/${courseId}`); // 취소 시 코스 상세 페이지로 이동
+        navigate(`/courses/${courseId}`);
     };
 
     return (
