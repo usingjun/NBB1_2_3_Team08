@@ -1,8 +1,7 @@
-package edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.dto
+package edu.example.learner_kotlin.courseabout.courseqna.courseanswer.dto
 
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseAnswer
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseInquiry
-import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.QCourseInquiry.courseInquiry
 import edu.example.learner_kotlin.member.entity.Member
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime

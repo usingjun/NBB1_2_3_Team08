@@ -12,8 +12,7 @@ class VideoDTO(
     var description: String? = null,
     var totalVideoDuration: Long? = null,
     var currentVideoTime: Long? = null,
-    var createdAt: LocalDateTime? = null,
-    var updatedAt: LocalDateTime? = null
+    var createdAt: LocalDateTime? = null
 ) {
     constructor(video: Video) : this(
         videoId = video.video_Id,
@@ -23,7 +22,5 @@ class VideoDTO(
         description = video.description,
         totalVideoDuration = video.totalVideoDuration,
         currentVideoTime = video.currentVideoTime,
-        createdAt = video.createdAt,
-        updatedAt = video.updatedAt
     )
 }

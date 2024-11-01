@@ -1,6 +1,6 @@
 package edu.example.learner_kotlin.courseabout.courseqna.courseanswer.controller
 
-import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.dto.CourseAnswerDTO
+import edu.example.learner_kotlin.courseabout.courseqna.courseanswer.dto.CourseAnswerDTO
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.service.CourseAnswerService
 import edu.example.learner_kotlin.log
 import io.swagger.v3.oas.annotations.Operation
