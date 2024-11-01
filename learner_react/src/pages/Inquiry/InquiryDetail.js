@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import './Style/InquiryDetail.css';
 import {jwtDecode} from 'jwt-decode';
+import axiosInstance from "../axiosInstance";
 
 const InquiryDetail = () => {
-    const { inquiryId } = useParams();
+    const {inquiryId} = useParams();
     const [inquiry, setInquiry] = useState(null);
     const [answer, setAnswer] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -38,7 +38,7 @@ const InquiryDetail = () => {
 
     const fetchInquiry = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/inquiries/${inquiryId}`, { withCredentials: true });
+            const response = await axiosInstance.get(`/inquiries/${inquiryId}`);
             setInquiry(response.data);
             setTitle(response.data.inquiryTitle);
             setContent(response.data.inquiryContent);
@@ -50,7 +50,7 @@ const InquiryDetail = () => {
 
     const fetchAnswer = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/answers/${inquiryId}`, { withCredentials: true });
+            const response = await axiosInstance.get(`/answers/${inquiryId}`);
             setAnswer(response.data);
             setAnswerContent(response.data.answerContent);
         } catch (error) {
@@ -67,7 +67,7 @@ const InquiryDetail = () => {
         const confirmDelete = window.confirm('정말로 삭제하시겠습니까?');
         if (confirmDelete) {
             try {
-                await axios.delete(`http://localhost:8080/inquiries/${inquiryId}`, { withCredentials: true });
+                await axiosInstance.delete(`/inquiries/${inquiryId}`);
                 navigate('/inquiries');
             } catch (error) {
                 console.error('Failed to delete inquiry:', error);
@@ -79,15 +79,15 @@ const InquiryDetail = () => {
         const confirmDelete = window.confirm('정말로 답변을 삭제하시겠습니까?');
         if (confirmDelete) {
             try {
-                await axios.delete(`http://localhost:8080/answers/${inquiryId}`, { withCredentials: true });
+                await axiosInstance.delete(`/answers/${inquiryId}`);
                 setAnswer(null);
                 setAnswerContent('');
-                await axios.put(`http://localhost:8080/inquiries/${inquiryId}`, {
+                await axiosInstance.put(`/inquiries/${inquiryId}`, {
                     inquiryTitle: title,
                     inquiryContent: content,
                     memberId: memberId,
                     inquiryStatus: "CONFIRMING"
-                }, { withCredentials: true });
+                });
             } catch (error) {
                 console.error('Failed to delete answer:', error);
             }
@@ -109,12 +109,12 @@ const InquiryDetail = () => {
 
     const handleUpdate = async () => {
         try {
-            await axios.put(`http://localhost:8080/inquiries/${inquiryId}`, {
+            await axiosInstance.put(`/inquiries/${inquiryId}`, {
                 inquiryTitle: title,
                 inquiryContent: content,
                 memberId: memberId
-            }, { withCredentials: true });
-            setInquiry({ ...inquiry, inquiryTitle: title, inquiryContent: content });
+            });
+            setInquiry({...inquiry, inquiryTitle: title, inquiryContent: content});
             setIsEditing(false);
         } catch (error) {
             console.error('Failed to update inquiry:', error);
@@ -123,16 +123,16 @@ const InquiryDetail = () => {
 
     const handleAnswerUpdate = async () => {
         try {
-            await axios.put(`http://localhost:8080/answers/${answer.answerId}`, {
+            await axiosInstance.put(`/answers/${answer.answerId}`, {
                 answerContent: answerContent,
-            }, { withCredentials: true });
-            setAnswer({ ...answer, answerContent: answerContent });
-            await axios.put(`http://localhost:8080/inquiries/${inquiryId}`, {
+            });
+            setAnswer({...answer, answerContent: answerContent});
+            await axiosInstance.put(`/inquiries/${inquiryId}`, {
                 inquiryTitle: title,
                 inquiryContent: content,
                 memberId: memberId,
                 inquiryStatus: inquiryStatus
-            }, { withCredentials: true });
+            });
             await fetchInquiry();
             setIsAnswerEditing(false);
         } catch (error) {
@@ -142,17 +142,17 @@ const InquiryDetail = () => {
 
     const handleAnswerSave = async () => {
         try {
-            const response = await axios.post('http://localhost:8080/answers', {
+            const response = await axiosInstance.post('/answers', {
                 inquiryId: inquiryId,
                 answerContent: answerContent,
-            }, { withCredentials: true });
+            });
             setAnswer(response.data);
-            await axios.put(`http://localhost:8080/inquiries/${inquiryId}`, {
+            await axiosInstance.put(`/inquiries/${inquiryId}`, {
                 inquiryTitle: title,
                 inquiryContent: content,
                 memberId: memberId,
                 inquiryStatus: inquiryStatus
-            }, { withCredentials: true });
+            });
             await fetchInquiry();
             setIsAnswerCreating(false);
             setAnswerContent('');
@@ -220,7 +220,7 @@ const InquiryDetail = () => {
                     <h2>문의 답변</h2>
                     <div className="divider"></div>
                     {/* 시각적 구분선 추가 */}
-                    {answer ? (
+                    {answerContent ? (
                         <div>
                             <strong>답변 내용:</strong>
                             {isAnswerEditing ? (
@@ -249,10 +249,14 @@ const InquiryDetail = () => {
                         </div>
                     ) : (
                         <div>
-                            <strong>답변이 없습니다.</strong>
-                            {role === 'ADMIN' && (
-                                <button onClick={handleAnswerCreate}>답변 작성</button>
-                            )}
+                            <div>
+                                <strong>답변이 없습니다.</strong>
+                            </div>
+                            <div>
+                                {role === 'ADMIN' && (
+                                    <button onClick={handleAnswerCreate}>답변 작성</button>
+                                )}
+                            </div>
                         </div>
                     )}
                     {isAnswerCreating && (

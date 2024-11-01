@@ -1,5 +1,7 @@
-package edu.example.learner_kotlin.qna
+package edu.example.learner_kotlin
 
+import edu.example.learner_kotlin.attendance.entity.Attendance
+import edu.example.learner_kotlin.attendance.repository.AttendanceRepository
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.entity.Role
 import edu.example.learner_kotlin.member.repository.MemberRepository
@@ -23,16 +25,23 @@ class TestTaskExecutor(
     val inquiryRepository: InquiryRepository,
     val faqRepository: FAQRepository,
     val answerRepository: AnswerRepository,
-    val studyTableRepository: StudyTableRepository
+    val studyTableRepository: StudyTableRepository,
+    val attendanceRepository: AttendanceRepository
 ) :
     ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
-        val member = Member().apply {
-            email = "test@example.org"
-            nickname = "test"
+        val member1 = Member().apply {
+            email = "test1@example.org"
+            nickname = "test1"
             role = Role.USER
         }
-        memberRepository.save(member)
+        memberRepository.save(member1)
+        val member2 = Member().apply {
+            email = "test2@example.org"
+            nickname = "test2"
+            role = Role.ADMIN
+        }
+        memberRepository.save(member2)
 
         for (i in 1..10L) {
             val inquiry = Inquiry().apply {
@@ -88,5 +97,10 @@ class TestTaskExecutor(
             this.member = Member().apply { memberId = 1L }
         }
         studyTableRepository.save(studyTable)
+
+        val attendance = Attendance().apply {
+            this.member = Member().apply { memberId = 1L }
+        }
+        attendanceRepository.save(attendance)
     }
 }
