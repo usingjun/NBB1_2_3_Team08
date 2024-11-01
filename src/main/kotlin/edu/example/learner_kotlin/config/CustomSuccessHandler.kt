@@ -25,6 +25,7 @@ class CustomSuccessHandler(private val jwtUtil: JWTUtil) : SimpleUrlAuthenticati
         val user: CustomOauth2User = authentication.principal as CustomOauth2User
         val claims: MutableMap<String?, Any?> = user.attributes
 
+        //나중에 수정 필요
         val token: String = jwtUtil.createToken(claims, 30)
         log.info("token: $token")
 

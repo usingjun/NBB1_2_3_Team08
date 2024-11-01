@@ -8,24 +8,23 @@ import org.springframework.security.core.userdetails.UserDetails
 
 
 class CustomUserPrincipal(
-    private val username: String,
-    private val role: String
+    private val member : Member
 ): UserDetails {
-    constructor(member : Member) : this(
-        username = member.nickname.toString(),
-        role = member.role.toString()
-    )
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        return mutableListOf(SimpleGrantedAuthority("ROLE_" + this.role))
+        return mutableListOf(SimpleGrantedAuthority("ROLE_" + this.member.role))
     }
 
-    override fun getPassword(): String {
-        return ""
+    override fun getPassword(): String? {
+        return member.password
     }
 
-    override fun getUsername(): String {
-        return username
+    override fun getUsername(): String? {
+        return member.nickname
+    }
+
+    fun getMemberId(): Long? {
+        return member.memberId
     }
 
 }
