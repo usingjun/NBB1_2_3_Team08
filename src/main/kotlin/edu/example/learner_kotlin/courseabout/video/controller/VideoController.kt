@@ -1,7 +1,9 @@
 package edu.example.learner_kotlin.courseabout.video.controller
 
 
+import edu.example.learner_kotlin.courseabout.video.dto.VideoCreateDTO
 import edu.example.learner_kotlin.courseabout.video.dto.VideoDTO
+import edu.example.learner_kotlin.courseabout.video.dto.VideoUpdateDTO
 import edu.example.learner_kotlin.courseabout.video.service.VideoService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -55,8 +57,8 @@ class VideoController (
 
     @PostMapping
     @Operation(summary = "비디오 추가", description = "새로운 비디오를 추가합니다.")
-    fun addVideo(@Parameter(description = "추가할 비디오 데이터") @RequestBody videoDTO: VideoDTO): ResponseEntity<VideoDTO> {
-        val createdVideo = videoService.addVideo(videoDTO)
+    fun addVideo(@Parameter(description = "추가할 비디오 데이터") @RequestBody dto: VideoCreateDTO): ResponseEntity<VideoDTO> {
+        val createdVideo = videoService.addVideo(dto)
         return ResponseEntity.status(201).body(createdVideo)
     }
 
@@ -64,8 +66,8 @@ class VideoController (
     @Operation(summary = "비디오 수정", description = "특정 ID의 비디오 정보를 수정합니다.")
     fun updateVideo(
         @Parameter(description = "수정할 비디오 ID") @PathVariable id: Long,
-        @Parameter(description = "수정할 비디오 데이터") @RequestBody videoDTO: VideoDTO
-    )=ResponseEntity.ok(videoService.updateVideo(id, videoDTO))
+        @Parameter(description = "수정할 비디오 데이터") @RequestBody dto: VideoUpdateDTO
+    )=ResponseEntity.ok(videoService.updateVideo(id, dto))
 
 
     @DeleteMapping("/{id}")
