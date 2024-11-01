@@ -48,11 +48,18 @@ const OrderCreate = () => {
     const handleChange = (index, event) => {
         const values = [...orderItems];
         values[index][event.target.name] = event.target.value;
+        const selectedCourse = courses.find(course => course.courseId === event.target.value);
+        if (selectedCourse) {
+            values[index].price = selectedCourse.coursePrice; // 가격 설정
+        }
         setOrderItems(values);
+        console.log("Updated orderItems:", values); // 확인용 로그
     };
+
 
     const handleAddItem = () => {
         setOrderItems([...orderItems, { courseId: "", price: "" }]);
+        console.log(orderItems);
     };
 
     const handleRemoveItem = (index) => {
