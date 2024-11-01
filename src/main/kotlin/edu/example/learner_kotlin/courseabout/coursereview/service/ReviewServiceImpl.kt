@@ -10,7 +10,6 @@ import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.coursereview.entity.ReviewType
 import edu.example.learner_kotlin.courseabout.coursereview.repository.ReviewRepository
 import edu.example.learner_kotlin.courseabout.course.service.CourseServiceImpl
-import edu.example.learner_kotlin.courseabout.coursereview.entity.QReview.review
 import edu.example.learner_kotlin.courseabout.coursereview.exception.ReviewException
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member

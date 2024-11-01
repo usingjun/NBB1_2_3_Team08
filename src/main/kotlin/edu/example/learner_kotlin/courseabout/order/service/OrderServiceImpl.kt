@@ -6,7 +6,7 @@ import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
 import edu.example.learner_kotlin.courseabout.course.repository.MemberCourseRepository
 import edu.example.learner_kotlin.courseabout.exception.CourseException
-
+import edu.example.learner_kotlin.courseabout.order.dto.OrderCreateDTO
 import edu.example.learner_kotlin.courseabout.order.dto.OrderDTO
 import edu.leranermig.order.dto.OrderItemDTO
 import edu.example.learner_kotlin.courseabout.order.entity.Order
@@ -19,16 +19,12 @@ import edu.example.learner_kotlin.courseabout.order.repository.OrderRepository
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.repository.MemberRepository
 import jakarta.transaction.Transactional
-
-import org.modelmapper.ModelMapper
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.lang.String
-import java.util.*
 import kotlin.Exception
 import kotlin.Long
 import kotlin.RuntimeException
 import kotlin.collections.ArrayList
-import kotlin.math.log
 
 
 @Service
@@ -37,7 +33,6 @@ class OrderServiceImpl(
     val orderRepository: OrderRepository,
     val courseRepository: CourseRepository,
     val orderItemRepository: OrderItemRepository,
-    val modelMapper: ModelMapper,
     val memberRepository: MemberRepository,
     val memberCourseRepository: MemberCourseRepository,
 ) : OrderService {
@@ -87,39 +82,29 @@ class OrderServiceImpl(
     }
 
 
-    override fun add(orderDTO: OrderDTO, memberId: Long): OrderDTO {
-        log.info("add test {$orderDTO}")
-        orderDTO.memberId=memberId
+    override fun add(createDTO: OrderCreateDTO, memberId: Long): OrderCreateDTO {
+        log.info("add test {$createDTO}")
+        createDTO.memberId = memberId
 
-        var orderEntity= orderDTO.toEntity(orderDTO)
-        orderEntity.orderStatus=OrderStatus.PENDING
+        // 1. Order 엔티티를 먼저 저장합니다.
+        var orderEntity = OrderMapper.toEntity(createDTO)
         orderEntity = orderRepository.save(orderEntity) // Order 저장
-        var totalPrice = 0L
 
-        // orderDTO안에 orderItemDTOList를 orderItemList로 변환
-        // DTO안에 있는 강의 번호를 조회해 orderItemlist
-
-        for (orderItemDTO in orderDTO.orderItemDTOList!!) {
-            log.info("orderItem {$orderItemDTO} ")
-            //OrderItem 의 강의 찾기
-            var findCourse = courseRepository.findById(orderItemDTO.courseId!!).orElseThrow()
-            log.info("course {$findCourse} ")
-            val orderItem = OrderItem().apply {
-                order = orderEntity
-                course = Course(courseId = findCourse.courseId)
-                price =findCourse.coursePrice
-                courseAttribute = findCourse.courseAttribute
-                totalPrice+= findCourse.coursePrice!!
-            }
-            orderItemRepository.save(orderItem)
+        // 2. OrderItem 엔티티를 생성합니다.
+        val orderItems = createDTO.orderItemDTOList!!.map { orderItemDTO ->
+            val course = courseRepository.findById(orderItemDTO.courseId!!).get()
+            OrderItemMapper.toEntity(orderItemDTO, orderEntity, course) // 저장된 Order를 전달
         }
-        log.info("orderItem save success")
-        orderEntity.totalPrice=totalPrice
 
-        orderEntity = orderRepository.save(orderEntity)
-        orderDTO.totalPrice=totalPrice
-        return orderDTO
+        // 3. OrderItem을 저장합니다.
+        orderItems.forEach { orderItemRepository.save(it) }
+
+        // 4. 총금액을 계산합니다.
+        orderEntity.totalPrice=OrderMapper.totalPriceCir(orderItems)
+
+        return createDTO
     }
+
 
     override fun read(orderId: Long): OrderDTO {
         log.info("read Order By orderId {}", orderId)
@@ -127,12 +112,10 @@ class OrderServiceImpl(
             val order: Order =
                 orderRepository.findById(orderId).orElseThrow<RuntimeException>(OrderException.ORDER_NOT_FOUND::get)!!
 
-            val orderItemDTOS: MutableList<OrderItemDTO> = ArrayList<OrderItemDTO>()
-            for (orderItem in order.orderItems) {
-                val orderItemDTO: OrderItemDTO = OrderItemDTO()
-                orderItemDTO.price=orderItem.course!!.coursePrice
-                orderItemDTOS.add(OrderItemDTO(orderItem))
-            }
+            val orderItemDTOS =order.orderItems.map {
+                val course = courseRepository.findByIdOrNull(it.course?.courseId!!)?:throw OrderException.ORDER_NOT_FOUND.get()
+                OrderItemMapper.toDTO(it, course)
+            }.toMutableList()
 
             val orderDTO =OrderDTO(order)
             orderDTO.orderItemDTOList=orderItemDTOS
@@ -146,73 +129,56 @@ class OrderServiceImpl(
 
     @Transactional
     override fun update(orderDTO: OrderDTO, orderId: Long): OrderDTO {
-        try {
-            //given
-            val foundOrder: Order = orderRepository.findById(orderId)
-                .orElseThrow<RuntimeException>(OrderException.ORDER_NOT_FOUND::get)!!
+        val foundOrder: Order = orderRepository.findByIdOrNull(orderId)?: throw OrderException.ORDER_NOT_FOUND.get()
 
+        val existingItems: MutableList<OrderItem> = foundOrder.orderItems
+        // 새로운 아이템 추가 및 업데이트
+        orderDTO.orderItemDTOList?.forEach { dto ->
+            val existingItemOpt = existingItems.find { it.course?.courseId == dto.courseId }
 
-            // 기존 주문 아이템
-            val existingItems: MutableList<OrderItem> = foundOrder.orderItems
-            // when
-            // 새 아이템을 추가 및 업데이트
-            for (dto in orderDTO.orderItemDTOList!!) {
-                // 기존 아이템 중에서 해당 아이템을 찾습니다.
-                val existingItemOpt: Optional<OrderItem> = existingItems.stream()
-                    .filter { item: OrderItem ->
-                        item.course!!.courseId!! == dto.courseId
-                    }
-                    .findFirst()
-
-                if (existingItemOpt.isPresent) {
-                    // 아이템이 이미 존재하는 경우, 업데이트
-                    val existingItem: OrderItem = existingItemOpt.get()
-                    // 가격 업데이트 (필요시 추가 로직)
-                    orderItemRepository.save(existingItem) // 변경사항 저장
-                } else {
-                    // 새 아이템 추가
-                    val findCourse = courseRepository.findById(dto.courseId!!).orElseThrow(CourseException.COURSE_NOT_FOUND::courseException)
-                    dto.courseAttribute=String.valueOf(findCourse.courseAttribute)
-                    dto.orderId=orderId
-                    val newItem: OrderItem = OrderItem().apply {
-                        order =Order(orderId)
-                        course =Course(findCourse.courseId)
-                        courseAttribute = findCourse.courseAttribute
-                        price = findCourse.coursePrice
-                    }
-                    orderItemRepository.save(newItem) // 새로운 아이템 저장
-                    foundOrder.orderItems.add(newItem)
-                }
+            if (existingItemOpt != null) {
+                // 아이템이 이미 존재하는 경우, 업데이트
+                orderItemRepository.save(existingItemOpt)
+            } else {
+                // 새 아이템 추가
+                addNewItem(dto, orderId, foundOrder)
             }
-
-            // 삭제할 아이템 찾기
-            val updatedCourseIds: MutableList<Long?>? = orderDTO.orderItemDTOList!!.stream()
-                .map(OrderItemDTO::courseId)
-                .toList()
-
-            // 기존 아이템 중 삭제할 아이템 제거
-            existingItems.removeIf { existingItem: OrderItem ->
-                !updatedCourseIds!!.contains(
-                    existingItem.course!!.courseId
-                )
-            }
-
-            // 총 금액 계산
-            val totalPrice: Long = foundOrder.orderItems.stream()
-                .mapToLong { it.price!! } // 각 아이템의 가격을 가져와서
-                .sum() // 총합 계산
-            foundOrder.totalPrice=totalPrice // 총 금액을 주문에 설정
-            return OrderDTO(foundOrder)
-        } catch (e: Exception) {
-            log.error("수정 오류," + e.message)
-            throw OrderException.NOT_MODIFIED.get()
         }
+        // 삭제할 아이템 찾기
+        val updatedCourseIds = orderDTO.orderItemDTOList?.map(OrderItemDTO::courseId) ?: emptyList()
+        existingItems.removeIf { it.course?.courseId !in updatedCourseIds }
+
+        // 총 금액 계산
+        foundOrder.totalPrice = calculateTotalPrice(foundOrder.orderItems)
+
+        return OrderDTO(foundOrder)
     }
 
+    private fun addNewItem(dto: OrderItemDTO, orderId: Long, foundOrder: Order) {
+        val findCourse = courseRepository.findById(dto.courseId!!)
+            .orElseThrow { CourseException.COURSE_NOT_FOUND.courseException }
+
+        dto.courseAttribute = findCourse.courseAttribute.toString()
+        dto.orderId = orderId
+
+        val newItem = OrderItem().apply {
+            order = foundOrder // 이미 저장된 Order를 사용
+            course = Course(findCourse.courseId)
+            courseAttribute = findCourse.courseAttribute
+            price = findCourse.coursePrice
+        }
+
+        orderItemRepository.save(newItem) // 새로운 아이템 저장
+        foundOrder.orderItems.add(newItem)
+    }
+
+    private fun calculateTotalPrice(orderItems: List<OrderItem>): Long {
+        return orderItems.sumOf { it.price ?: 0L } // 각 아이템의 가격을 가져와서 총합 계산
+    }
 
     override fun delete(orderId: Long) {
         try {
-            if (!orderRepository!!.existsById(orderId)) {
+            if (!orderRepository.existsById(orderId)) {
                 throw OrderTaskException("주문이 존재하지 않습니다.", 404)
             }
             orderRepository.deleteById(orderId)
@@ -221,7 +187,6 @@ class OrderServiceImpl(
             throw OrderException.NOT_DELETED.get()
         }
     }
-
 
     //    @Override
     //    public List<OrderDTO> readAll()x {
@@ -237,41 +202,15 @@ class OrderServiceImpl(
     //    }
 
     override fun readAll(): List<OrderDTO> {
-        val orders: MutableList<Order?> = orderRepository.findAll()
-        val orderDTOList: MutableList<OrderDTO> = ArrayList<OrderDTO>()
-
-        for (order in orders) {
-            val orderDTO: OrderDTO = OrderDTO().apply {
-
-            }
-            orderDTO.orderItemDTOList=ArrayList()
-
-            for (orderItem in order!!.orderItems) {
-                (orderDTO.orderItemDTOList as ArrayList<OrderItemDTO>).add(OrderItemDTO(orderItem))
-            }
-            orderDTOList.add(orderDTO)
-        }
-
-        return orderDTOList
+        val orders = orderRepository.findAll()
+        return OrderMapper.entityListToDTO(orders)
     }
 
     override fun getOrdersById(memberId: Long): List<OrderDTO> {
         val member: Member = memberRepository.getReferenceById(memberId)
-        val orders: List<Order> = orderRepository.findByMember(member)
-        val orderDTOListByMember: MutableList<OrderDTO> = ArrayList()
-
-        for (order in orders) {
-            val orderDTO = OrderDTO(order)
-            orderDTO.orderItemDTOList=ArrayList()
-
-            for (orderItem in order.orderItems) {
-                orderDTO.orderItemDTOList!!.add(OrderItemDTO(orderItem))
-            }
-            orderDTOListByMember.add(orderDTO)
-        }
-        return orderDTOListByMember
+        val orders: MutableList<Order?> = orderRepository.findByMember(member).toMutableList()
+        return OrderMapper.entityListToDTO(orders)
     }
-
 
     override fun deleteAll() {
         orderRepository.deleteAll()
