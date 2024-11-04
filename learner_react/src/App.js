@@ -26,6 +26,7 @@ import InquiryDetail from "./pages/Inquiry/InquiryDetail";
 import InquiryRegistration from "./pages/Inquiry/InquiryRegistration";
 import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
+import SseComponent from "./components/SseComponent";
 import axios from "axios";
 axios.defaults.withCredentials = true;
 
@@ -73,6 +74,7 @@ function App() {
                 <Route path="/inquiries/:inquiryId" element={<InquiryDetail/>}/>
                 <Route path="/members/:memberId" element={<MemberDetail />} />
                 <Route path="/members/other/:nickname" element={<OtherUserPage/>}/>
+                <Route path="/alarm/count" element={<SseComponent />} />
             </Routes>
         </Router>
     );

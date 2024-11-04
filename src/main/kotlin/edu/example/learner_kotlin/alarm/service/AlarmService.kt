@@ -1,84 +1,60 @@
-//package edu.example.learner_kotlin.alarm.service
-//
-//
-//
-//import edu.example.learner_kotlin.alarm.alarm.AlarmDTO
-//import edu.example.learner_kotlin.alarm.entity.Alarm
-//import edu.example.learner_kotlin.alarm.entity.AlarmType
-//import edu.example.learner_kotlin.alarm.exception.AlarmException
-//import edu.example.learner_kotlin.alarm.repository.AlarmRepository
-//import edu.example.learner_kotlin.member.entity.Member
-//import edu.example.learner_kotlin.member.repository.MemberRepository
-//import jakarta.transaction.Transactional
-//
-//import org.springframework.stereotype.Service
-//
-//@Service
-//@Transactional
-//
-//class AlarmService (
-//    private val alarmRepository: AlarmRepository,
-//    private  val memberRepository: MemberRepository,)
-//{
-//
-//    fun findByAlarmTitle(alarmTitle: String?): AlarmDTO {
-//        val alarm = alarmRepository.findByAlarmTitle(alarmTitle!!)
-//
-//        return AlarmDTO(alarm)
-//    }
-//
-//    fun read(alarmId: Long): AlarmDTO {
-//        val alarm = alarmRepository.findById(alarmId).orElseThrow(AlarmException.ALARM_NOT_FOUND::get)
-//        return AlarmDTO(alarm)
-//    }
-//
-//    fun findAllAlarms(): List<AlarmDTO> {
-//        val alarms = alarmRepository!!.findAll()
-//        val alarmDTOs: MutableList<AlarmDTO> = ArrayList<AlarmDTO>()
-//        for (alarm in alarms) {
-//            alarmDTOs.add(AlarmDTO(alarm))
-//        }
-//        return alarmDTOs
-//    }
-//
-//    fun add(alarmDTO: AlarmDTO): AlarmDTO {
-//        val save: Alarm = alarmRepository!!.save(alarmDTO.toEntity(alarmDTO))
-//        val member: Member = memberRepository!!.findById(alarmDTO.getMemberId())
-//            .orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException)
-//        //        member.getAlarmList().add(save);
-//        return AlarmDTO(save)
-//    }
-//
-//    fun update(alarmDTO: AlarmDTO): AlarmDTO {
-//        //alarmDTO에 있는 번호로 알람 조회
-//        val alarm = alarmRepository!!.findById(alarmDTO.getAlarmId()).orElseThrow(AlarmException.ALARM_NOT_FOUND::get)
-//        //alrarm에 있는 정보들 변경
-//        alarm.changeAlarmTitle(alarmDTO.getAlarmTitle())
-//        alarm.changeAlarmStatus(alarmDTO.isAlarmStatus())
-//        alarm.changeAlarmType(AlarmType.valueOf(alarmDTO.getAlarmType()))
-//        alarm.changePriority(Priority.valueOf(alarmDTO.getPriority()))
-//        alarm.changeContent(alarmDTO.getAlarmContent())
-//        // 알람 저장
-//        alarmRepository.save(alarm)
-//
-//        return AlarmDTO(alarm)
-//    }
-//
-//    fun delete(alarmId: Long) {
-//        alarmRepository!!.deleteById(alarmId)
-//    }
-//
-//    fun listAlarmsForMember(memberId: Long): List<AlarmDTO> {
-//        val member: Member =
-//            memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException)
-//
-//        val byMember: List<Alarm> = alarmRepository.findByMember(member)
-//
-//        val alarmDTOs: MutableList<AlarmDTO> = ArrayList<AlarmDTO>()
-//        for (alarm in byMember) {
-//            alarmDTOs.add(AlarmDTO(alarm))
-//        }
-//
-//        return alarmDTOs
-//    }
-//}
+package edu.example.learner_kotlin.alarm.service
+
+import edu.example.learner_kotlin.alarm.entity.Alarm
+import edu.example.learner_kotlin.alarm.repository.AlarmRepository
+import edu.example.learner_kotlin.alarm.dto.AlarmDTO
+import edu.example.learner_kotlin.alarm.entity.AlarmType
+import edu.example.learner_kotlin.alarm.entity.Priority
+import edu.example.learner_kotlin.member.entity.Member
+import edu.example.learner_kotlin.member.service.MemberService
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+@Service
+class AlarmService(
+    private val alarmRepository: AlarmRepository,
+    private val sseService: SseService,
+    private val memberService: MemberService
+) {
+
+    @Transactional
+    fun createAlarm(memberId: Long, alarmContent: String, alarmTitle: String): AlarmDTO {
+
+        val alarm = Alarm(
+            member = Member().apply { this.memberId = memberId },
+            alarmContent = alarmContent,
+            alarmTitle = alarmTitle
+        )
+
+        alarmRepository.save(alarm)
+        sseService.sendToMember(memberId, alarmContent)
+
+        return AlarmMapper.toDTO(alarm)
+    }
+
+    fun getAlarmsByMember(memberId: Long): List<AlarmDTO> {
+        val alarms = alarmRepository.findByMember(Member(memberId))
+        return alarms.map { AlarmMapper.toDTO(it) }
+    }
+
+    fun getAlarmById(alarmId: Long): AlarmDTO {
+        val alarm = alarmRepository.findById(alarmId).orElseThrow { RuntimeException("Alarm not found") }
+        return AlarmMapper.toDTO(alarm)
+    }
+
+    @Transactional
+    fun updateAlarm(alarmId: Long, alarmDTO: AlarmDTO): AlarmDTO {
+        val alarm = alarmRepository.findById(alarmId).orElseThrow { RuntimeException("Alarm not found") }
+
+        alarm.alarmContent = alarmDTO.alarmContent
+        alarm.alarmType = AlarmType.valueOf(alarmDTO.alarmType ?: "INFO")
+        alarm.priority = Priority.valueOf(alarmDTO.priority ?: "MEDIUM")
+
+        return AlarmMapper.toDTO(alarmRepository.save(alarm))
+    }
+
+    fun deleteAlarm(alarmId: Long) {
+        val alarm = alarmRepository.findById(alarmId).orElseThrow { RuntimeException("Alarm not found") }
+        alarmRepository.delete(alarm)
+    }
+}

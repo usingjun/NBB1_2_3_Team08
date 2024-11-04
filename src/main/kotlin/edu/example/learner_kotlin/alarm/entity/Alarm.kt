@@ -35,4 +35,5 @@ data class Alarm (
     var alarmStatus: Boolean = false
 ){
 
+
 }
