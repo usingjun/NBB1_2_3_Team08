@@ -165,6 +165,7 @@ class SecurityConfig(
                 it.requestMatchers("/login").permitAll()
                 it.requestMatchers("/reissue").permitAll()
                 it.requestMatchers("/members/find/**").permitAll() // 비밀번호 찾기 및 아이디 찾기 모두 허용
+                it.requestMatchers("/join/**").permitAll()
 
                 it.anyRequest().authenticated()
         }
