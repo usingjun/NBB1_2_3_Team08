@@ -4,6 +4,7 @@ import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.entity.Role
 import edu.example.learner_kotlin.security.exception.JWTException
+import edu.example.learner_kotlin.security.exception.JWTTaskException
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
@@ -75,6 +76,7 @@ class JWTCheckFilter(
 
         // Authorization 헤더에서 accessToken 추출
         val authorizationHeader = request.getHeader("Authorization")
+        log.info("Authorization header : $authorizationHeader")
         val accessToken = authorizationHeader?.removePrefix("Bearer ")
 
         // 토큰이 없다면 다음 필터로 넘김
@@ -85,15 +87,18 @@ class JWTCheckFilter(
             return;
         }
 
-        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
-        try {
-            jwtUtil.isExpired(accessToken)
-        } catch (e: ExpiredJwtException) {
-            throw JWTException.ACCESS_TOKEN__EXPIRED.jwtTaskException
-        }
-
 
         try {
+            // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
+            try {
+                jwtUtil.isExpired(accessToken)
+                log.info("토큰 만료 인증 완료")
+            } catch (e: ExpiredJwtException) {
+                // 만료 예외 발생 시 바로 응답을 설정하고 종료
+                handleException(response, JWTException.ACCESS_TOKEN__EXPIRED.jwtTaskException)
+                return
+            }
+
             log.info("--- 토큰 유효성 검증 시작 ---")
             val claims = jwtUtil.validateToken(accessToken)
             log.info("--- 토큰 유효성 검증 완료 ---")
@@ -116,7 +121,7 @@ class JWTCheckFilter(
 
             fun convertRole(role: String): Role? {
                 return try {
-                    Role.valueOf(role.uppercase()) // 문자열을 대문자로 변환하여 enum과 일치시키기
+                    Role.valueOf(role.split("_")[1]) // 문자열을 대문자로 변환하여 enum과 일치시키기
                 } catch (e: IllegalArgumentException) {
                     null // 유효하지 않은 문자열인 경우 null 반환
                 }
@@ -125,7 +130,7 @@ class JWTCheckFilter(
             val customUserPrincipal = CustomUserPrincipal(Member(nickname = mid, role = convertRole(role)))
 
             log.info(claims.toString())
-            log.info("권한 : $role")
+            log.info("customUserPrincipal : ${customUserPrincipal.authorities}")
             // 토큰을 이용하여 인증된 정보 저장
             val authToken = UsernamePasswordAuthenticationToken(
                 customUserPrincipal, null, customUserPrincipal.authorities
@@ -134,28 +139,27 @@ class JWTCheckFilter(
             log.info("authToken : $authToken")
 
             // SecurityContext에 인증/인가 정보 저장
+            log.info("SecurityContext에 인증/인가 정보 저장")
             SecurityContextHolder.getContext().apply{
                 authentication = (authToken)
             }
 
-            log.info("SecurityContext에 인증/인가 정보 저장")
-
             // OAuth2 인증 생략, 다음 필터로 요청 전달
             filterChain.doFilter(request, response)
+            log.info("다음 필터로 요청 전달")
         } catch (e: Exception) {
-            handleException(response, e) // 예외 발생 시 처리
+            handleException(response, JWTException.JWT_AUTH_FAILURE.jwtTaskException) // 예외 발생 시 처리
         }
     }
 
 
     @Throws(IOException::class)
-    fun handleException(response: HttpServletResponse, e: Exception) {
-        log.info("--- handleException ---")
+    fun handleException(response: HttpServletResponse, e: JWTTaskException) {
+        log.info("--- handleException --- ${e.message}")
         response.apply {
-            status = HttpServletResponse.SC_UNAUTHORIZED
-            log.info(status)
+            status = e.statusCode
             contentType = "application/json"
-            writer.write(e.message ?: "")
+            writer.write("""{"error": "${e.message}"}""")
         }
     }
 }

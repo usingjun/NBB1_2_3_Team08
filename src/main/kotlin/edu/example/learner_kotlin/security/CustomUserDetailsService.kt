@@ -16,7 +16,6 @@ class CustomUserDetailsService(private val memberRepository: MemberRepository) :
         val memberData = memberRepository.getMemberByEmail(username) ?:
         throw MemberException.MEMBER_NOT_FOUND.memberTaskException
 
-
         return CustomUserPrincipal(memberData)
     }
 }

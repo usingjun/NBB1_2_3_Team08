@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.security
 
+import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.exception.MemberException
 import org.springframework.security.core.GrantedAuthority
@@ -26,5 +27,6 @@ class CustomUserPrincipal(
     fun getMemberId(): Long? {
         return member.memberId
     }
+
 
 }

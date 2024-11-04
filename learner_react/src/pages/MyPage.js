@@ -14,15 +14,22 @@ const MyPage = () => {
 
     useEffect(() => {
         const memberId = localStorage.getItem("memberId");
+
+        // 첫 번째 메서드 실행
         fetchUserInfo(memberId);
-        fetchAttendanceDays(memberId);
+
+        // 0.3초 후에 두 번째 메서드 실행
+        const timer = setTimeout(() => {
+            fetchAttendanceDays(memberId);
+        }, 300); // 300 밀리초 = 0.3초
+
+        // cleanup function to clear the timer if the component unmounts
+        return () => clearTimeout(timer);
     }, []);
 
     const fetchUserInfo = async (memberId) => {
         try {
-            const response = await axiosInstance.get(`/members/${memberId}`, {
-                // credentials: "include"가 필요 없으므로 제거
-            });
+            const response = await axiosInstance.get(`/members/${memberId}`);
 
             if (response.status === 200) {
                 const data = await response.data; // 응답 데이터는 이미 axiosInstance에서 처리됨
@@ -32,6 +39,7 @@ const MyPage = () => {
             }
         } catch (error) {
             handleFetchError("API 호출 중 오류 발생", error);
+            console.error("API 호출 중 오류 발생:", error.response ? error.response.data : error.message);
         }
     };
 
