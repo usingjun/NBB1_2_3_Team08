@@ -132,7 +132,7 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.POST, "/attendances").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 토큰 디코딩 권한 설정
-                it.requestMatchers(HttpMethod.GET, "/token/decode").permitAll()
+                it.requestMatchers(HttpMethod.GET, "/token/decode").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 회원 권한 설정
                 it.requestMatchers("/members/{id}/other").permitAll()

@@ -7,11 +7,12 @@ import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
 import org.modelmapper.ModelMapper
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AnswerServiceImpl(private val answerRepository: AnswerRepository, private val modelMapper: ModelMapper) :
     AnswerService {
-    override fun readByInquiryId(inquiryId: Long): AnswerDTO = answerRepository.findByInquiryId(inquiryId) ?: throw NoSuchElementException("Answer not found")
+    override fun readByInquiryId(inquiryId: Long): AnswerDTO? = answerRepository.findByInquiryId(inquiryId)
 
     override fun readAll(): List<AnswerDTO> = answerRepository.readAll()
 
@@ -21,6 +22,7 @@ class AnswerServiceImpl(private val answerRepository: AnswerRepository, private 
             inquiry = Inquiry().apply { inquiryId = answerDTO.inquiryId }
         }))
 
+    @Transactional
     override fun update(answerDTO: AnswerDTO): AnswerDTO = run {
         val answer =
             answerRepository.findByIdOrNull(answerDTO.answerId) ?: throw NoSuchElementException("Answer not found")
