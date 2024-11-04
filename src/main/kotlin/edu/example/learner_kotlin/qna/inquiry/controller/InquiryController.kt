@@ -1,6 +1,5 @@
 package edu.example.learner_kotlin.qna.inquiry.controller
 
-import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.qna.inquiry.dto.InquiryDTO
 import edu.example.learner_kotlin.qna.inquiry.service.InquiryService
 import org.springframework.http.ResponseEntity
@@ -29,10 +28,9 @@ class InquiryController(private val inquiryService: InquiryService) {
         ResponseEntity.ok(inquiryService.update(inquiryDTO.apply { this.inquiryId = inquiryId }))
 
     @PutMapping("/{inquiryId}/status")
-    fun updateStatus(@PathVariable("inquiryId") inquiryId: Long, @RequestBody inquiryStatus: String) = run {
-        val inquiryDTO = inquiryService.read(inquiryId).apply { this.inquiryStatus = inquiryStatus }
-        log.info("inquiryDTO: ${inquiryDTO.toString()}")
-        ResponseEntity.ok(inquiryService.update(inquiryDTO))
+    fun updateStatus(@PathVariable("inquiryId") inquiryId: Long, @RequestBody inquiryDTO: InquiryDTO) = run {
+        val foundInquiryDTO = inquiryService.read(inquiryId).apply { this.inquiryStatus = inquiryDTO.inquiryStatus }
+        ResponseEntity.ok(inquiryService.update(foundInquiryDTO))
     }
 
     @DeleteMapping("/{inquiryId}")

@@ -15,10 +15,11 @@ const InquiryDetail = () => {
     const [info, setInfo] = useState(null);
     const [inquiryAuthorId, setInquiryAuthorId] = useState(null); // 작성자 ID 추가
     const navigate = useNavigate();
-    const memberId = parseInt(localStorage.getItem("memberId"), 10)
+    const memberId = parseInt(localStorage.getItem("memberId"), 10);
+    const [inquiryStatus, setInquiryStatus] = useState('ANSWERED');
 
     // role 가져오는 함수
-    const getRoleFromToken = async () => {
+    const getInfoFromToken = async () => {
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             try {
@@ -54,7 +55,7 @@ const InquiryDetail = () => {
     };
 
     useEffect(() => {
-        getRoleFromToken();
+        getInfoFromToken();
         fetchInquiry();
         fetchAnswer();
     }, [inquiryId]);
@@ -66,9 +67,13 @@ const InquiryDetail = () => {
                 inquiryId: inquiryId,
                 answerContent: answerContent,
             });
+            await axiosInstance.put(`/inquiries/${inquiryId}/status`, {
+                inquiryStatus: inquiryStatus,
+            });
             setAnswerContent('');
             setIsAnswerCreating(false);
             fetchAnswer(); // 답변을 새로고침
+            fetchInquiry();
         } catch (error) {
             console.error('Failed to save answer:', error);
         }
@@ -102,7 +107,11 @@ const InquiryDetail = () => {
             try {
                 await axiosInstance.delete(`/answers/${inquiryId}`);
                 setAnswer(null);
+                await axiosInstance.put(`/inquiries/${inquiryId}/status`, {
+                    inquiryStatus: 'CONFIRMING',
+                })
                 fetchAnswer(); // 답변 새로고침
+                fetchInquiry();
             } catch (error) {
                 console.error('Failed to delete answer:', error);
             }
