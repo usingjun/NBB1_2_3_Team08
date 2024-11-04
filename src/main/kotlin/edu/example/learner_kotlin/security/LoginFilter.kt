@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.security
 
+import edu.example.learner_kotlin.log
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -38,11 +39,11 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
 
         val username: String? = customUserPrincipal.username
         val memberId: Long? = customUserPrincipal.getMemberId()
-        val role = customUserPrincipal.authorities
+        val role: String = customUserPrincipal.authorities.joinToString(",") { it.authority }
 
         // JWT 생성
         val accessToken: String = jwtUtil.createToken(
-            mutableMapOf("category" to "access", "username" to username, "role" to role, "mid" to memberId), 30
+            mutableMapOf("category" to "access", "username" to username, "role" to role, "mid" to memberId), 1
         ) // 30분
         val refreshToken: String = jwtUtil.createToken(
             mutableMapOf("category" to "refresh", "username" to username, "role" to role, "mid" to memberId), 1440

@@ -1,30 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import axiosInstance from '../pages/axiosInstance';
 
 const EditProfile = () => {
-    const navigate = useNavigate();
+    // React Hook을 컴포넌트 내에서 호출
     const [userInfo, setUserInfo] = useState({
         nickname: "",
         email: "",
         introduction: "",
         password: "",
     });
+    const [isOAuthUser, setIsOAuthUser] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [isPasswordVerified, setIsPasswordVerified] = useState(false);
-    const [isOAuthUser, setIsOAuthUser] = useState(false);
 
     useEffect(() => {
         const memberId = localStorage.getItem("memberId");
+
         const fetchUserInfo = async () => {
+            if (!memberId) {
+                console.error("회원 ID가 없습니다.");
+                return;
+            }
             try {
                 const response = await axiosInstance.get(`/members/${memberId}`);
-                if (response.ok) {
-                    const data = await response.json();
+
+                // 성공적으로 데이터를 가져온 경우
+                if (response.status === 200) {
+                    const data = response.data; // 응답 데이터
                     setUserInfo(data);
+
+                    // OAuth 사용자 확인
                     if (data.password.includes("naver") || data.password.includes("google")) {
                         setIsOAuthUser(true);
                     } else {
@@ -39,7 +47,7 @@ const EditProfile = () => {
         };
 
         fetchUserInfo();
-    }, []);
+    }, []); // 빈 배열을 의존성으로 전달하여 컴포넌트 마운트 시 한 번만 실행
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -159,7 +167,7 @@ const EditProfile = () => {
                         <Label>
                             새로운 비밀번호:
                             <Input
-                                type="text"
+                                type="password" // 비밀번호 입력 시 보안을 위해 type을 password로 변경
                                 name="password"
                                 onChange={handleChange}
                                 placeholder="변경할 비밀번호를 입력하세요."
@@ -176,8 +184,6 @@ const EditProfile = () => {
 };
 
 export default EditProfile;
-
-
 
 // 스타일 컴포넌트들
 const Container = styled.div`

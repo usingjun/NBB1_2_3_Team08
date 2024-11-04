@@ -138,7 +138,8 @@ const MyPage = () => {
         try {
             const response = await axiosInstance.delete(`/members/${memberId}`);
 
-            if (response.ok) {
+            // 응답 상태가 200인 경우에만 처리
+            if (response.status === 200) {
                 alert("회원탈퇴가 완료되었습니다.");
                 handleLogout();
             } else {
@@ -148,6 +149,7 @@ const MyPage = () => {
             handleFetchError("회원탈퇴 중 오류 발생", error);
         }
     };
+
 
     if (!userInfo) {
         return <LoadingMessage>로딩 중...</LoadingMessage>;
