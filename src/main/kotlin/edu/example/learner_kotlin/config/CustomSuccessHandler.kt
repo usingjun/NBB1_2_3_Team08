@@ -25,25 +25,29 @@ class CustomSuccessHandler(private val jwtUtil: JWTUtil) : SimpleUrlAuthenticati
         val user: CustomOauth2User = authentication.principal as CustomOauth2User
         val claims: MutableMap<String?, Any?> = user.attributes
 
-        //나중에 수정 필요
-        val token: String = jwtUtil.createToken(claims, 30)
-        log.info("token: $token")
+        log.info(claims.toString())
 
-        response.addCookie(createCookie("Authorization", token))
+        // JWT 생성
+        val accessToken: String = jwtUtil.createToken(claims, 30) // 30분
+        val refreshToken: String = jwtUtil.createToken(claims, 1440) // 24시간
 
-        // memberId를 가져와서 리디렉션 URL에 추가
-        val memberId: Long? = user.memberId
-        val redirectUrl = "http://localhost:3000/courses?memberId=$memberId"
+        // Refresh 토큰을 쿠키에 저장
+        response.addCookie(createCookie("RefreshToken", refreshToken))
 
+        // Redirect URL에 쿼리 파라미터 추가
+        val memberId = claims["mid"]
+        val redirectUrl = "http://localhost:3000/courses?accessToken=$accessToken&memberId=$memberId"
+
+        // 리다이렉션
         response.sendRedirect(redirectUrl)
     }
 
-    fun createCookie(key: String?, value: String?): Cookie {
+    private fun createCookie(key: String, value: String): Cookie {
         val cookie = Cookie(key, value)
-        cookie.maxAge = 60 * 60 * 60            // 60시간
-        cookie.path = "/"                       // 전체 경로에서 접근 가능
-        cookie.isHttpOnly = false               // JavaScript에서 접근 가능
-        cookie.secure = false                   // 로컬 개발 시 false로 설정
+        cookie.maxAge = 24 * 60 * 60
+        cookie.secure = false;
+        cookie.path = "/";
+        cookie.isHttpOnly = true
 
         return cookie
     }

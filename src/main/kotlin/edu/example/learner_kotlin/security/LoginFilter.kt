@@ -38,11 +38,7 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
 
         val username: String? = customUserPrincipal.username
         val memberId: Long? = customUserPrincipal.getMemberId()
-
-        val authorities = authentication.authorities
-        val iterator: Iterator<GrantedAuthority> = authorities.iterator()
-        val auth = iterator.next()
-        val role = auth.authority
+        val role = customUserPrincipal.authorities
 
         // JWT 생성
         val accessToken: String = jwtUtil.createToken(

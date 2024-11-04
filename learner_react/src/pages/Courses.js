@@ -18,7 +18,7 @@ const Courses = () => {
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
         const memberId = query.get('memberId');
-        const role = query.get('role');
+        const accessToken = query.get('accessToken');
         const searchQuery = query.get('searchId'); // URL에서 searchId 가져오기
 
         // sessionExpired 쿼리 매개변수 확인
@@ -29,11 +29,15 @@ const Courses = () => {
 
         }
 
+        // memberId와 accessToken이 존재하면 로컬 스토리지에 저장
         if (memberId) {
             localStorage.setItem('memberId', memberId);
             console.log('Member ID stored in local storage:', memberId);
-            console.log('Member ROLE stored in local storage:', role);
-            // 페이지 리디렉션
+        }
+
+        if (accessToken) {
+            localStorage.setItem('accessToken', accessToken);
+            console.log('Access Token stored in local storage:', accessToken);
             window.location.href = "http://localhost:3000/courses";
         }
 

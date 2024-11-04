@@ -62,8 +62,14 @@ const MyPage = () => {
     };
 
     const handleLogout = () => {
-        Cookies.remove('Authorization'); // Authorization 쿠키 제거
+        // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
+        localStorage.removeItem("accessToken");
         localStorage.removeItem("memberId");
+
+        // 쿠키에서 Authorization 및 RefreshToken 제거
+        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax;"; // RefreshToken 제거
+
         window.location.href = "/"; // 메인 페이지로 이동
     };
 
