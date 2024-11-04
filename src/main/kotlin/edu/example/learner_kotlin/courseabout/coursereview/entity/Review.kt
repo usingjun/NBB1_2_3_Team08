@@ -38,11 +38,11 @@ data class Review (
     @Column(nullable = false)
     var reviewType: ReviewType? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY,  cascade = [CascadeType.REMOVE])
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     var member: Member? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY,  cascade = [CascadeType.REMOVE])
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     var course: Course? = null
 ){

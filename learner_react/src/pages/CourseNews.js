@@ -36,15 +36,21 @@ export default function CourseNews() {
 
     const checkUserRole = async () => {
         try {
-            const token = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('Authorization='))
-                ?.split('=')[1];
+            const token = localStorage.getItem('accessToken');
 
             if (token) {
-                const decodedToken = jwtDecode(token);
-                setUserRole(decodedToken.role);
-                setUserName(decodedToken.mid);
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/auth/user-info', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 역할 및 이름 설정
+                setUserRole(response.data.role);  // role 설정
+                setUserName(response.data.mid);   // 사용자 ID 설정
+                // console.log("User Role:", response.data.role);
+                // console.log("User Name:", response.data.mid);
             }
         } catch (error) {
             console.error("토큰 확인 중 오류 발생:", error);
@@ -131,8 +137,8 @@ export default function CourseNews() {
     };
 
     const canCreateNews = () => {
-        return (userRole === 'INSTRUCTOR' && userName === instructorName) ||
-            userRole === 'ADMIN';
+        return (userRole === 'ROLE_INSTRUCTOR' && userName === instructorName) ||
+            userRole === 'ROLE_ADMIN';
     };
 
     const handleUpdateNews = () => {

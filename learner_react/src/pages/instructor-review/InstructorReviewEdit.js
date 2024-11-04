@@ -62,10 +62,12 @@ const InstructorReviewEdit = () => {
 
         console.log("전송할 데이터:", reviewData);
 
+        const token = localStorage.getItem("accessToken");
         // PUT 요청에 reviewId 포함
         fetch(`http://localhost:8080/members/instructor/${nickname}/reviews/${reviewId}`, {
             method: "PUT",
             headers: {
+                "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(reviewData),
