@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import axiosInstance from './axiosInstance';
 
 const UpdateNews = () => {
@@ -15,10 +14,7 @@ const UpdateNews = () => {
 
     const checkAuthorization = async () => {
         try {
-            const token = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('Authorization='))
-                ?.split('=')[1];
+            const token = localStorage.getItem('accessToken');
 
             if (!token) {
                 alert('로그인이 필요합니다.');
@@ -26,10 +22,14 @@ const UpdateNews = () => {
                 return;
             }
 
-            const decodedToken = jwtDecode(token);
-            const userRole = decodedToken.role;
+            const response = await axiosInstance.get('/auth/user-info', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const userRole = response.data.role;
 
-            if (userRole !== 'INSTRUCTOR' && userRole !== 'ADMIN') {
+            if (userRole !== 'ROLE_INSTRUCTOR' && userRole !== 'ROLE_ADMIN') {
                 alert('새소식 등록 권한이 없습니다.');
                 navigate(`/courses/${courseId}`);
             }

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import axiosInstance from './axiosInstance'; // axiosInstance import
 
 const CourseNewsList = ({ courseId }) => {
@@ -14,6 +13,7 @@ const CourseNewsList = ({ courseId }) => {
     const newsPerPage = 5;
     const navigate = useNavigate();
 
+    // 강사 이름 가져오기
     const fetchInstructorName = async () => {
         try {
             const response = await axiosInstance.get(`/course/${courseId}/member-nickname`);
@@ -25,23 +25,33 @@ const CourseNewsList = ({ courseId }) => {
         }
     };
 
+    // 사용자 역할 확인 (서버로 요청)
     const checkUserRole = async () => {
+        // console.log("Checking user role...");
         try {
-            const token = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('Authorization='))
-                ?.split('=')[1];
-
+            // 로컬 스토리지에서 JWT 토큰 가져오기
+            const token = localStorage.getItem('accessToken');
+            // console.log("Token:", token);
             if (token) {
-                const decodedToken = jwtDecode(token);
-                setUserRole(decodedToken.role);
-                setUserName(decodedToken.mid);
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/auth/user-info', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 역할 및 이름 설정
+                setUserRole(response.data.role);  // role 설정
+                setUserName(response.data.mid);   // 사용자 ID 설정
+                // console.log("User Role:", response.data.role);
+                // console.log("User Name:", response.data.mid);
             }
         } catch (error) {
             console.error("토큰 확인 중 오류 발생:", error);
         }
     };
 
+    // 새소식 목록 가져오기
     const fetchNews = (page) => {
         fetch(`http://localhost:8080/course/${courseId}/news?page=${page}&size=${newsPerPage}`)
             .then(res => res.json())
@@ -52,39 +62,41 @@ const CourseNewsList = ({ courseId }) => {
             .catch(err => console.error("새소식 가져오기 실패:", err));
     };
 
-
+    // 페이지 로드 시 사용자 역할 확인 및 강사 이름 가져오기
     useEffect(() => {
         checkUserRole();
         fetchInstructorName();
     }, [courseId]);
 
+    // 페이지 변경 시 새소식 목록 가져오기
     useEffect(() => {
         fetchNews(currentPage);
     }, [courseId, currentPage]);
 
-    // 나머지 코드는 동일하게 유지
+    // 사용자 역할과 강사 이름이 설정된 후에 새소식 작성 가능 여부 확인
     const canCreateNews = () => {
-        return (userRole === 'INSTRUCTOR' && userName === instructorName) ||
-            userRole === 'ADMIN';
+        return (userRole === 'ROLE_INSTRUCTOR' && userName === instructorName) ||
+            userRole === 'ROLE_ADMIN';
     };
 
+    // 이전 페이지로 이동
     const handlePrevPage = () => {
         if (currentPage > 0) {
             setCurrentPage(currentPage - 1);
         }
     };
 
+    // 다음 페이지로 이동
     const handleNextPage = () => {
         if (currentPage < totalPages - 1) {
             setCurrentPage(currentPage + 1);
         }
     };
 
+    // 새소식 작성 버튼 클릭 시 처리
     const handleCreateNews = () => {
-        if (isLoading) {
-            return; // 로딩 중일 때는 처리하지 않음
-        }
-        // console.log("Can create news?", canCreateNews());
+        if (isLoading) return;  // 로딩 중일 때는 처리하지 않음
+
         if (canCreateNews()) {
             navigate(`/courses/${courseId}/news/create`);
         } else {
@@ -95,11 +107,13 @@ const CourseNewsList = ({ courseId }) => {
     return (
         <div style={styles.newsContainer}>
             <h2 style={styles.newsHeader}>과정 새소식</h2>
+
             {canCreateNews() && (
                 <button onClick={handleCreateNews} style={styles.createNewsButton}>
                     새소식 등록하기
                 </button>
             )}
+
             <ul style={styles.newsList}>
                 {newsList.map(news => (
                     <li key={news.newsId} style={styles.newsItem}>
@@ -113,6 +127,7 @@ const CourseNewsList = ({ courseId }) => {
                     </li>
                 ))}
             </ul>
+
             <div style={styles.pagination}>
                 <button
                     onClick={handlePrevPage}
@@ -121,7 +136,9 @@ const CourseNewsList = ({ courseId }) => {
                 >
                     이전
                 </button>
+
                 <span>{currentPage + 1} / {totalPages}</span>
+
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages - 1}
