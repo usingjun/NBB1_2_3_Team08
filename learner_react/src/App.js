@@ -28,6 +28,7 @@ import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
 import SseComponent from "./components/SseComponent";
 import axios from "axios";
+import {NotificationProvider} from "./components/NotificationContext";
 axios.defaults.withCredentials = true;
 
 
@@ -43,6 +44,7 @@ function App() {
     };
 
     return (
+        <NotificationProvider>
         <Router>
             <Header openModal={openModal} />
             {isModalOpen && <LoginModal closeModal={closeModal} />}
@@ -77,6 +79,7 @@ function App() {
                 <Route path="/alarm/count" element={<SseComponent />} />
             </Routes>
         </Router>
+            </NotificationProvider>
     );
 }
 

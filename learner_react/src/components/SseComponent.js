@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNotification } from "./NotificationContext";
 
 const SseComponent = () => {
-    const [messages, setMessages] = useState([]);
+    const { addNotification } = useNotification(); // 알림 추가 훅
     const [eventSource, setEventSource] = useState(null);
     const [notificationMessage, setNotificationMessage] = useState('');
     const [memberId, setMemberId] = useState(null);
@@ -48,7 +49,7 @@ const SseComponent = () => {
 
         newEventSource.onmessage = (event) => {
             const parsedData = JSON.parse(event.data);
-            setMessages((prev) => [...prev, `Message: ${parsedData.message}`]);
+            addNotification(`Message: ${parsedData.message}`); // 알림 추가
             showNotification(parsedData.message); // 푸시 알림 표시
         };
 
@@ -110,12 +111,6 @@ const SseComponent = () => {
                 placeholder="Notification message"
             />
             <button onClick={sendNotification}>Send Notification</button>
-            <div>
-                <h2>Received Messages:</h2>
-                {messages.map((msg, index) => (
-                    <div key={index}>{msg}</div>
-                ))}
-            </div>
         </div>
     );
 };
