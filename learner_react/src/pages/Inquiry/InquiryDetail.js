@@ -107,6 +107,7 @@ const InquiryDetail = () => {
             try {
                 await axiosInstance.delete(`/answers/${inquiryId}`);
                 setAnswer(null);
+                setAnswerContent('')
                 await axiosInstance.put(`/inquiries/${inquiryId}/status`, {
                     inquiryStatus: 'CONFIRMING',
                 })
@@ -155,6 +156,10 @@ const InquiryDetail = () => {
         navigate('/inquiries');
     };
 
+    const isButtonDisabled1 = answerContent.trim() === ''; // 공백 체크
+    const isButtonDisabled2 = inquiryContent.trim() === ''; // 공백 체크
+
+
     if (!inquiry) return <p>로딩 중...</p>;
 
     return (
@@ -176,11 +181,13 @@ const InquiryDetail = () => {
                     {isInquiryEditing ? (
                         <div>
                             <textarea
+                                typeof={"text"}
                                 value={inquiryContent}
                                 onChange={(e) => setInquiryContent(e.target.value)}
                                 placeholder="문의 내용을 수정하세요"
+                                required
                             />
-                            <button onClick={handleInquiryUpdate}>완료</button>
+                            <button onClick={handleInquiryUpdate} disabled={isButtonDisabled2}>완료</button>
                             <button onClick={() => setIsInquiryEditing(false)}>취소</button>
                         </div>
                     ) : (
@@ -207,8 +214,9 @@ const InquiryDetail = () => {
                                     value={answerContent}
                                     onChange={(e) => setAnswerContent(e.target.value)}
                                     placeholder="답변을 수정하세요"
+                                    required
                                 />
-                                <button onClick={handleAnswerUpdate}>완료</button>
+                                <button onClick={handleAnswerUpdate} disabled={isButtonDisabled1}>완료</button>
                                 <button onClick={() => setIsAnswerEditing(false)}>취소</button>
                             </div>
                         ) : (
@@ -237,8 +245,9 @@ const InquiryDetail = () => {
                             value={answerContent}
                             onChange={(e) => setAnswerContent(e.target.value)}
                             placeholder="답변을 작성하세요"
+                            required = {true}
                         />
-                        <button onClick={handleAnswerSave}>등록</button>
+                        <button onClick={handleAnswerSave} disabled={isButtonDisabled2}>등록</button>
                         <button onClick={() => setIsAnswerCreating(false)}>취소</button>
                     </div>
                 )}
