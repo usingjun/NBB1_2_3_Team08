@@ -30,7 +30,7 @@ const CourseReviewCreate = () => {
             courseId,
         };
 
-        const token = localStorage.getItem("Authorization"); // 저장된 키에 따라 변경
+        const token = localStorage.getItem("accessToken"); // 저장된 키에 따라 변경
 
         // 코스 리뷰 API 엔드포인트
         const endpoint = `http://localhost:8080/course/${courseId}/reviews/create`;
@@ -39,7 +39,7 @@ const CourseReviewCreate = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+                "Authorization": `Bearer ${token}`,
             },
             body: JSON.stringify(reviewData),
             credentials: 'include',
@@ -49,16 +49,21 @@ const CourseReviewCreate = () => {
                     alert("리뷰가 성공적으로 등록되었습니다.");
                     navigate(`/courses/${courseId}`);
                 } else {
-                    res.json().then((data) => {
-                        alert(data.message || "로그인한 사용자만 리뷰 등록 가능합니다");
+                    // 먼저 텍스트로 응답을 받아서 JSON 여부를 확인
+                    return res.text().then(async (text) => {
+                        const data = await res.text(); // 응답 데이터를 텍스트로 가져옴
+                        const jsonData = data ? JSON.parse(data) : {}; // 데이터가 있으면 JSON으로 파싱, 없으면 빈 객체
+                        alert(jsonData.message || "로그인한 사용자만 리뷰 등록 가능합니다");
+                        throw new Error("로그인한 사용자만 리뷰 등록 가능합니다");
+
                     });
-                    throw new Error("로그인한 사용자만 리뷰 등록 가능합니다");
                 }
             })
             .catch((err) => {
-                console.error(err);
+                console.error("리뷰 등록 오류:", err);
                 alert("리뷰 등록 중 오류가 발생했습니다.");
             });
+
     };
 
     return (

@@ -1,6 +1,8 @@
 package edu.example.learner_kotlin.courseabout.course.entity
 
 //import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
+import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseInquiry
+import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.news.entity.NewsEntity
 import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.video.entity.Video
@@ -60,12 +62,12 @@ data class Course(
 
     @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     var videos : MutableList<Video> = mutableListOf()
-    //
-    //    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    //    private List<Review> reviews = new ArrayList<>();
-    //
-    //    @OneToMany(mappedBy = "course",cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    //    private List<CourseInquiry> courseInquiries = new ArrayList<>();
-    //
+
+    @OneToMany(mappedBy = "course", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    var reviews : MutableList<Review> = mutableListOf()
+
+    @OneToMany(mappedBy = "course",cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    var courseInquiries : MutableList<CourseInquiry> = mutableListOf()
+
 
 }

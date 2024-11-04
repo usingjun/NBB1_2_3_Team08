@@ -162,7 +162,7 @@ class CourseController(
         }
     }
 
-    @GetMapping("/instruct/list/{nickname}")
+    @GetMapping("/instructor/list/{nickname}")
     @Operation(summary = "강사의 본인 강의 조회", description = "강사가 본인의 강의를 조회")
     fun readInstructList(@PathVariable nickname: String): ResponseEntity<List<CourseDTO>> {
         log.info("Reading course instruct list {}", nickname)

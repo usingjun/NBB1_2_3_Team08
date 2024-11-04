@@ -54,7 +54,7 @@ const InstructorReviewCreate = () => {
             courseId: selectedCourseId, // 선택한 강의 ID 추가
         };
 
-        const token = localStorage.getItem("Authorization"); // 토큰 가져오기
+        const token = localStorage.getItem("accessToken"); // 토큰 가져오기
 
         const endpoint = `http://localhost:8080/members/instructor/${nickname}/reviews/create`;
 
