@@ -45,7 +45,8 @@ const MyPage = () => {
 
     const fetchAttendanceDays = async (memberId) => {
         try {
-            const response = await axiosInstance.get(`/attendances/${memberId}/continuous`);
+            const token = localStorage.getItem('accessToken');
+            const response = await axios.get(`http://localhost:8080/attendances/${memberId}/continuous`,{headers: {'Authorization' : `Bearer ${token}`}});
             if (response.status === 200) {
                 setAttendanceDays(response.data.continuous);
             } else {

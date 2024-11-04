@@ -65,7 +65,7 @@ class AttendanceServiceImpl(private val attendanceRepository: AttendanceReposito
     override fun getYearlySummary(memberId: Long, year: Int): List<Array<Any>> =
         attendanceRepository.findByMemberIdAndYear(memberId, year)
 
-    override fun getContinuous(memberId: Long, date: LocalDate): Int =
+    override fun getContinuous(memberId: Long, date: LocalDate): Int? =
         attendanceRepository.findContinuousByMemberIdAndDate(memberId, date)
 
     override fun getYearlyAttendanceDays(memberId: Long, year: Int): Int =

@@ -128,7 +128,11 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/yearly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 출석 체크 권한 설정
-                it.requestMatchers(HttpMethod.GET, "/attendances/{memberId}/continuous").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.GET, "/attendances/**").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/attendances").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // 토큰 디코딩 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/token/decode").permitAll()
 
                 // 회원 권한 설정
                 it.requestMatchers("/members/{id}/other").permitAll()
