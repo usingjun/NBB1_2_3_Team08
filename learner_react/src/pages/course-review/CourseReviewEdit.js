@@ -31,6 +31,7 @@ const CourseReviewEdit = () => {
     }, [courseId, reviewId]);
 
     const handleSubmit = (e) => {
+        const token = localStorage.getItem("accessToken");
         e.preventDefault();
 
         const reviewData = {
@@ -47,6 +48,7 @@ const CourseReviewEdit = () => {
         fetch(`http://localhost:8080/course/${courseId}/reviews/${reviewId}`, {
             method: "PUT",
             headers: {
+                "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(reviewData),

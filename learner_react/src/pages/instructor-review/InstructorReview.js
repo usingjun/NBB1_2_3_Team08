@@ -21,7 +21,7 @@ const InstructorReview = () => {
 
     useEffect(() => {
         const memberId = localStorage.getItem("memberId");
-        const token = localStorage.getItem("Authorization");
+        const token = localStorage.getItem("accessToken");
         if (memberId) {
             fetch(`http://localhost:8080/members/${memberId}`, {
                 headers:{
@@ -52,18 +52,15 @@ const InstructorReview = () => {
     };
 
     const fetchCourses = () => {
-        const memberId = localStorage.getItem("memberId");
-        if (memberId) {
-            fetch(`http://localhost:8080/courses/list/${memberId}`, {
-                credentials: 'include',
+        fetch(`http://localhost:8080/courses/instructor/list/${nickname}`, {
+            credentials: 'include',
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Fetched courses:", data);
+                setCourseList(data); // courseList에 데이터를 설정
             })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Fetched courses:", data);
-                    setCourseList(data); // courseList에 데이터를 설정
-                })
-                .catch(err => console.error("강의 목록 가져오기 실패:", err));
-        }
+            .catch(err => console.error("강의 목록 가져오기 실패:", err));
     };
 
     const calculateAverageRating = (reviews) => {
@@ -81,7 +78,7 @@ const InstructorReview = () => {
     }, [nickname]); // nickname에 따라 API 호출
 
     const handleDelete = (reviewId) => {
-        const token = localStorage.getItem("Authorization");
+        const token = localStorage.getItem("accessToken");
         if (window.confirm("정말 삭제하시겠습니까?")) {
             fetch(`http://localhost:8080/members/instructor/${nickname}/reviews/${reviewId}`, {
                 method: "DELETE",
@@ -179,11 +176,8 @@ const InstructorReview = () => {
                             <div className="button-group">
                                 {userId === review.writerId && ( // userId와 review의 writerId가 일치할 때만 버튼 표시
                                     <>
-                                        <button onClick={() => handleDelete(review.reviewId)}
-                                                className="delete-button">삭제
-                                        </button>
-                                        <Link to={`/members/instructor/${nickname}/reviews/${review.reviewId}`}
-                                              className="edit-button">수정</Link> {/* 수정 페이지로 이동 */}
+                                        <button onClick={() => handleDelete(review.reviewId)} className="delete-button">삭제</button>
+                                        <Link to={`/members/instructor/${nickname}/reviews/${review.reviewId}`} className="edit-button">수정</Link> {/* 수정 페이지로 이동 */}
                                     </>
                                 )}
                             </div>
