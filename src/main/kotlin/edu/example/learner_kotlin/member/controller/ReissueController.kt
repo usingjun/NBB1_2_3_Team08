@@ -66,7 +66,7 @@ class ReissueController(private val jwtUtil: JWTUtil) {
         // Access 토큰을 JSON 응답 본문에 추가
         response.contentType = "application/json"
         response.characterEncoding = "UTF-8"
-        response.writer.write("""{ "NewAccessToken": "$accessToken" }""")
+        response.writer.write("""{ "accessToken": "$accessToken" }""")
 
         return ResponseEntity<Any>(HttpStatus.OK)
     }
