@@ -2,8 +2,6 @@ package edu.example.learner_kotlin.attendance.controller
 
 import edu.example.learner_kotlin.attendance.dto.AttendanceDTO
 import edu.example.learner_kotlin.attendance.service.AttendanceService
-import edu.example.learner_kotlin.log
-import edu.example.learner_kotlin.member.exception.MemberException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -41,12 +39,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
     @GetMapping("/{memberId}/continuous")
     fun getTodayContinuous(@PathVariable("memberId") memberId: Long) = run {
         val response = mutableMapOf<String, Any>()
-        //수정 필요
-        try {
-            response["continuous"] = attendanceService.getContinuous(memberId, LocalDate.now())
-        }catch (e:Exception){
-            throw MemberException.MEMBER_NOT_FOUND.memberTaskException
-        }
+        response["continuous"] = attendanceService.getContinuous(memberId, LocalDate.now())  ?: throw NoSuchElementException("Continuous not counted")
         ResponseEntity.ok(response)
     }
 
@@ -59,11 +52,10 @@ class AttendanceController(private val attendanceService: AttendanceService) {
             )
         ) {
             val result = attendanceService.create(attendanceDTO.apply {
-                this.continuous = attendanceService.getContinuous(attendanceDTO.memberId!!, yesterday) + 1
+                this.continuous = attendanceService.getContinuous(attendanceDTO.memberId!!, yesterday)!! + 1
             })
             ResponseEntity.ok(result)
         } else {
-            log.error("You did not attend yesterday!")
             val result = attendanceService.create(attendanceDTO)
             ResponseEntity.ok(result)
         }

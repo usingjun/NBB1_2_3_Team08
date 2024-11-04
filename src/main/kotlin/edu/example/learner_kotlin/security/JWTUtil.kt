@@ -78,4 +78,6 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
         }
 
     }
+
+    fun decodeToken(token: String): Claims? = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload
 }
