@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
+import axiosInstance from '../../pages/axiosInstance';
 
 const AttendanceCheck = () => {
     const memberId = localStorage.getItem('memberId');
@@ -9,11 +10,12 @@ const AttendanceCheck = () => {
 
     const checkAndMarkAttendance = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/attendances/${memberId}/today`);
+            const response = await axiosInstance.get(`attendances/${memberId}/today`);
             const isAttendedToday = response.data.attendance;
 
             if (!isAttendedToday) {
-                await axios.post('http://localhost:8080/attendances', {memberId: Number(memberId)}, {withCredentials: true});
+                const token = localStorage.getItem('accessToken');
+                await axiosInstance.post('attendances', {memberId: Number(memberId)}, {headers: {'Authorization' : `Bearer ${token}`}});
             }
             setAttendanceChecked(true); // 출석 체크 완료
         } catch (error) {
