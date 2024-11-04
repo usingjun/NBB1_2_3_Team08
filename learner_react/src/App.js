@@ -28,6 +28,7 @@ import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
 import axios from "axios";
 import AttendanceCheck from "./components/attendance/AttendanceCheck";
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 axios.defaults.withCredentials = true;
 
@@ -75,6 +76,7 @@ function App() {
                 <Route path="/inquiries/:inquiryId" element={<InquiryDetail/>}/>
                 <Route path="/members/:memberId" element={<MemberDetail />} />
                 <Route path="/members/other/:nickname" element={<OtherUserPage/>}/>
+                <Route path="/admin/*" element={<AdminDashboard />} />
             </Routes>
         </Router>
     );
