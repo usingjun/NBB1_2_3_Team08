@@ -144,6 +144,7 @@ class SecurityConfig(
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용
                 it.requestMatchers(HttpMethod.GET, "/course/list").permitAll() // GET 요청 course 모두 허용
+                it.requestMatchers(HttpMethod.GET, "/course/instructor/list/{nickname}").permitAll() // GET 요청 course 모두 허용
                 it.requestMatchers(HttpMethod.POST, "/course").hasAnyRole("INSTRUCTOR", "ADMIN") // POST 요청 course 권한 설정
                 it.requestMatchers(HttpMethod.DELETE, "/course/**").hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 course 권한 설정
                 it.requestMatchers(HttpMethod.PUT, "/course/**").hasAnyRole("INSTRUCTOR", "ADMIN") // PUT 요청 course 권한 설정
