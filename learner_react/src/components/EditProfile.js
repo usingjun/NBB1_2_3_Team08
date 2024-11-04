@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import axiosInstance from '../pages/axiosInstance';
 
 const EditProfile = () => {
     const navigate = useNavigate();
@@ -20,9 +21,7 @@ const EditProfile = () => {
         const memberId = localStorage.getItem("memberId");
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/members/${memberId}`, {
-                    credentials: "include",
-                });
+                const response = await axiosInstance.get(`/members/${memberId}`);
                 if (response.ok) {
                     const data = await response.json();
                     setUserInfo(data);

@@ -3,6 +3,7 @@ package edu.example.learner_kotlin.attendance.controller
 import edu.example.learner_kotlin.attendance.dto.AttendanceDTO
 import edu.example.learner_kotlin.attendance.service.AttendanceService
 import edu.example.learner_kotlin.log
+import edu.example.learner_kotlin.member.exception.MemberException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -40,7 +41,12 @@ class AttendanceController(private val attendanceService: AttendanceService) {
     @GetMapping("/{memberId}/continuous")
     fun getTodayContinuous(@PathVariable("memberId") memberId: Long) = run {
         val response = mutableMapOf<String, Any>()
-        response["continuous"] = attendanceService.getContinuous(memberId, LocalDate.now())
+        //수정 필요
+        try {
+            response["continuous"] = attendanceService.getContinuous(memberId, LocalDate.now())
+        }catch (e:Exception){
+            throw MemberException.MEMBER_NOT_FOUND.memberTaskException
+        }
         ResponseEntity.ok(response)
     }
 

@@ -73,32 +73,24 @@ class SecurityConfig(
             }
             .exceptionHandling {
                 it.authenticationEntryPoint { request, response, _ ->
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "SC_BAD_REQUEST") // 로그인 페이지로 리다이렉트하지 않음
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Oauth2 인증 실패") // 로그인 페이지로 리다이렉트하지 않음
                 }
             }
 
         //경로별 인가 작업
         http.authorizeHttpRequests {
                 // 리뷰 권한 설정
-                it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/list")
-                    .permitAll() // GET 요청 reviews 권한 설정
-                it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/{reviewId}")
-                    .permitAll() // GET 요청 course 모두 허용
-                it.requestMatchers(HttpMethod.DELETE, "/course/{courseId}/reviews/{reviewId}")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // DELETE 요청 reviews 권한 설정
-                it.requestMatchers(HttpMethod.PUT, "/course/{courseId}/reviews/{reviewId}")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // PUT 요청 reviews 권한 설정
-                it.requestMatchers(HttpMethod.POST, "/course/{courseId}/reviews/create")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // POST 요청 reviews 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/list").permitAll() // GET 요청 reviews 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/{reviewId}").permitAll() // GET 요청 course 모두 허용
+                it.requestMatchers(HttpMethod.DELETE, "/course/{courseId}/reviews/{reviewId}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // DELETE 요청 reviews 권한 설정
+                it.requestMatchers(HttpMethod.PUT, "/course/{courseId}/reviews/{reviewId}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // PUT 요청 reviews 권한 설정
+                it.requestMatchers(HttpMethod.POST, "/course/{courseId}/reviews/create").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // POST 요청 reviews 권한 설정
 
                 // 강의 문의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course-inquiry/**").permitAll() // GET 요청 course 모두 허용
-                it.requestMatchers(HttpMethod.POST, "/course-inquiry/**")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // POST 요청 course 권한 설정
-                it.requestMatchers(HttpMethod.POST, "/course/{courseId}/course-inquiry")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // POST 요청 course 권한 설정
-                it.requestMatchers(HttpMethod.DELETE, "/course-inquiry/**")
-                    .hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 course 권한 설정
+                it.requestMatchers(HttpMethod.POST, "/course-inquiry/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // POST 요청 course 권한 설정
+                it.requestMatchers(HttpMethod.POST, "/course/{courseId}/course-inquiry").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // POST 요청 course 권한 설정
+                it.requestMatchers(HttpMethod.DELETE, "/course-inquiry/**").hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 course 권한 설정
 
                 // 주문 권한 설정
                 it.requestMatchers("/order/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // 주문 관련 모두 허용
@@ -107,15 +99,13 @@ class SecurityConfig(
                 // 비디오 권한 설정
                 it.requestMatchers(HttpMethod.POST, "video/**").hasAnyRole("INSTRUCTOR", "ADMIN") // POST video 권한 설정
                 it.requestMatchers(HttpMethod.PUT, "video/**").hasAnyRole("INSTRUCTOR", "ADMIN") // PUT video 권한 설정
-                it.requestMatchers(HttpMethod.DELETE, "video/**")
-                    .hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE video 권한 설정
+                it.requestMatchers(HttpMethod.DELETE, "video/**").hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE video 권한 설정
 
                 // 새소식 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/news/**").permitAll() // GET 요청 news 모두 허용
                 it.requestMatchers(HttpMethod.PUT, "/news/**").hasAnyRole("INSTRUCTOR", "ADMIN") // PUT 요청 news 권한 설정
                 it.requestMatchers(HttpMethod.POST, "/news/**").hasAnyRole("INSTRUCTOR", "ADMIN") // POST 요청 news 권한 설정
-                it.requestMatchers(HttpMethod.DELETE, "/news/**")
-                    .hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 news 권한 설정
+                it.requestMatchers(HttpMethod.DELETE, "/news/**").hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 news 권한 설정
 
                 // 좋아요
                 it.requestMatchers(HttpMethod.GET, "/like/**").permitAll() // 좋아요 요청 모두 허용
@@ -134,10 +124,11 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.DELETE, "/answers/**").hasAnyRole("ADMIN")
 
                 // 스터디 테이블 권한 설정
-                it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/weekly-summary")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
-                it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/yearly-summary")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/weekly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/yearly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // 출석 체크 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/attendances/{memberId}/continuous").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 회원 권한 설정
                 it.requestMatchers("/members/{id}/other").permitAll()
@@ -145,23 +136,18 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/members/instructor/*").permitAll()
                 it.requestMatchers(HttpMethod.GET, "/members/instructor/{nickname}/reviews/list").permitAll()
                 it.requestMatchers("/members/nickname").permitAll() // 강사 프로필 보기
-                it.requestMatchers("/members/{memberId}")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // 로그인된 사용자만 회원정보 수정 가능
+                it.requestMatchers("/members/{memberId}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // 로그인된 사용자만 회원정보 수정 가능
                 it.requestMatchers(HttpMethod.GET, "/members/list").hasRole("ADMIN") // 회원 목록 조회 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/members/instructor/**").permitAll() // 강사 관련 프로필 GET 요청 허용
-                it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용
                 it.requestMatchers(HttpMethod.GET, "/course/list").permitAll() // GET 요청 course 모두 허용
                 it.requestMatchers(HttpMethod.POST, "/course").hasAnyRole("INSTRUCTOR", "ADMIN") // POST 요청 course 권한 설정
-                it.requestMatchers(HttpMethod.DELETE, "/course/**")
-                    .hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 course 권한 설정
-                it.requestMatchers(HttpMethod.PUT, "/course/**")
-                    .hasAnyRole("INSTRUCTOR", "ADMIN") // PUT 요청 course 권한 설정
-                it.requestMatchers(HttpMethod.GET, "/course/{id}/list")
-                    .hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // 본인 수강 강의 조회
+                it.requestMatchers(HttpMethod.DELETE, "/course/**").hasAnyRole("INSTRUCTOR", "ADMIN") // DELETE 요청 course 권한 설정
+                it.requestMatchers(HttpMethod.PUT, "/course/**").hasAnyRole("INSTRUCTOR", "ADMIN") // PUT 요청 course 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/course/{id}/list").hasAnyRole("USER", "INSTRUCTOR", "ADMIN") // 본인 수강 강의 조회
 
                 // 정적 리소스 허용
                 it.requestMatchers("/images/**").permitAll() // images 폴더에 있는 리소스 허용
@@ -189,7 +175,7 @@ class SecurityConfig(
             cors.configurationSource(CorsConfigurationSource {
                 CorsConfiguration().apply {
                     // 허용된 origin 설정
-                    allowedOrigins = (listOf("http://localhost:3000", "http://localhost:8080"))
+                    allowedOrigins = (listOf("http://localhost:3000"))
                     // 모든 HTTP 메소드 허용
                     allowedMethods = (listOf("*"))
                     // 인증 관련 쿠키 전송을 허용

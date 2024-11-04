@@ -186,7 +186,6 @@ class MemberRestController(
     //강사 이름으로 조회
     @GetMapping("/instructor/{nickname}")
     fun getInstructorByNickname(@PathVariable nickname: String?): ResponseEntity<MemberDTO> {
-        log.info("--- myPageRead()")
         log.info(nickname)
         return ResponseEntity.ok(memberService.getMemberInfoNickName(nickname))
     }
