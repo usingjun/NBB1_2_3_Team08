@@ -57,7 +57,7 @@ const CourseReview = ({ courseId }) => {
     }, [courseId]);
 
     const handleDelete = (reviewId) => {
-        const token = localStorage.getItem("Authorization");
+        const token = localStorage.getItem("accessToken");
         if (window.confirm("정말 삭제하시겠습니까?")) {
             fetch(`http://localhost:8080/course/${courseId}/reviews/${reviewId}`, {
                 method: "DELETE",

@@ -3,52 +3,53 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
-
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // 하위 메뉴 상태
-    const [searchId, setSearchId] = useState(""); // 검색어 상태 추가
-    const [role, setRole] = useState(""); // 사용자 역할 상태 추가
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchId, setSearchId] = useState("");
+    const [role, setRole] = useState("");
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem("accessToken"); // 로컬 저장소에서 액세스 토큰 가져오기
+
+        if (token) {
+            setIsLoggedIn(true);
+            try {
+                const decodedToken = jwtDecode(token);
+                setRole(decodedToken.role);
+            } catch (decodeError) {
+                console.error("토큰 디코딩 실패:", decodeError);
+                handleLogout(); // 로그아웃 처리
+            }
+        } else {
+            setIsLoggedIn(false);
+            setRole(""); // 역할 초기화
+        }
+    };
 
     useEffect(() => {
-        try {
-            const token = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('Authorization='))
-                ?.split('=')[1];
+        checkLoginStatus(); // 처음 렌더링 시 상태 체크
+        const intervalId = setInterval(checkLoginStatus, 5000); // 5초마다 로그인 상태 체크
 
-            if (token) {
-                setIsLoggedIn(true);
-                // Bearer 접두사 제거
-                const tokenWithoutBearer = token.replace('Bearer ', '');
-
-                try {
-                    const decodedToken = jwtDecode(tokenWithoutBearer);
-                    setRole(decodedToken.role);
-                } catch (decodeError) {
-                    console.error("토큰 디코딩 실패:", decodeError);
-                    // 잘못된 토큰인 경우 로그아웃 처리
-                    setIsLoggedIn(false);
-                    document.cookie = 'Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                    localStorage.removeItem('memberId');
-                }
-            }
-        } catch (error) {
-            console.error("토큰 확인 중 오류 발생:", error);
-            setIsLoggedIn(false);
-        }
+        return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 interval 정리
     }, []);
 
-
     const handleLogout = () => {
-        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
+        localStorage.removeItem("accessToken");
         localStorage.removeItem("memberId");
 
+        // 쿠키에서 Authorization 및 RefreshToken 제거
+        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax;"; // RefreshToken 제거
+
         setIsLoggedIn(false);
+        setRole(""); // 역할 초기화
         navigate('/courses');
     };
+
 
     const handleSearch = () => {
         if (searchId.trim()) {
@@ -70,7 +71,7 @@ const Header = ({ openModal }) => {
                             value={searchId}
                             onChange={(e) => setSearchId(e.target.value)}
                             onKeyPress={(e) => {
-                                if (e.key === 'Enter') handleSearch(); // Enter 키 감지
+                                if (e.key === 'Enter') handleSearch();
                             }}
                         />
                         <button onClick={handleSearch}>🔍</button>
@@ -89,7 +90,7 @@ const Header = ({ openModal }) => {
                         {isMenuOpen && (
                             <SubMenu>
                                 <SubMenuItem onClick={() => navigate('/내정보')}>내정보</SubMenuItem>
-                                {role === 'INSTRUCTOR' && ( // INSTRUCTOR 역할인 경우에만 표시
+                                {role === 'INSTRUCTOR' && (
                                     <SubMenuItem onClick={() => navigate('/courses/list')}>내 강의</SubMenuItem>
                                 )}
                                 <SubMenuItem onClick={() => navigate('/orders')}>장바구니</SubMenuItem>

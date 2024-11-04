@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import styled from "styled-components";
 import WeeklyStudyTable from "../components/study-table/WeeklyStudyTable";
 import YearlyStudyTable from "../components/study-table/YearlyStudyTable";
@@ -10,17 +10,26 @@ const MyPage = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
     const [isHover, setIsHover] = useState(false);
+    const [attendanceDays, setAttendanceDays] = useState(0);
 
     useEffect(() => {
         const memberId = localStorage.getItem("memberId");
+
+        // 첫 번째 메서드 실행
         fetchUserInfo(memberId);
+
+        // 0.3초 후에 두 번째 메서드 실행
+        const timer = setTimeout(() => {
+            fetchAttendanceDays(memberId);
+        }, 300); // 300 밀리초 = 0.3초
+
+        // cleanup function to clear the timer if the component unmounts
+        return () => clearTimeout(timer);
     }, []);
 
     const fetchUserInfo = async (memberId) => {
         try {
-            const response = await axiosInstance.get(`/members/${memberId}`, {
-                // credentials: "include"가 필요 없으므로 제거
-            });
+            const response = await axiosInstance.get(`/members/${memberId}`);
 
             if (response.status === 200) {
                 const data = await response.data; // 응답 데이터는 이미 axiosInstance에서 처리됨
@@ -30,6 +39,20 @@ const MyPage = () => {
             }
         } catch (error) {
             handleFetchError("API 호출 중 오류 발생", error);
+            console.error("API 호출 중 오류 발생:", error.response ? error.response.data : error.message);
+        }
+    };
+
+    const fetchAttendanceDays = async (memberId) => {
+        try {
+            const response = await axiosInstance.get(`/attendances/${memberId}/continuous`);
+            if (response.status === 200) {
+                setAttendanceDays(response.data.continuous);
+            } else {
+                handleFetchError("연속 출석 일수 로드 실패", response.status);
+            }
+        } catch (error) {
+            handleFetchError("연속 출석 일수 API 호출 중 오류 발생", error);
         }
     };
 
@@ -60,7 +83,7 @@ const MyPage = () => {
         try {
             const response = await axiosInstance.put(`/members/${memberId}/image`, formData);
             if (response.ok) {
-                setUserInfo((prev) => ({ ...prev, profileImage: response.data.profileImage })); // 수정
+                setUserInfo((prev) => ({...prev, profileImage: response.data.profileImage})); // 수정
                 alert(response.data.message || "이미지 업로드 성공!");
                 window.location.reload();
             } else {
@@ -81,7 +104,7 @@ const MyPage = () => {
             const response = await axiosInstance.delete(`/members/${memberId}/image`);
 
             if (response.ok) {
-                setUserInfo((prev) => ({ ...prev, profileImage: null }));
+                setUserInfo((prev) => ({...prev, profileImage: null}));
                 alert("이미지가 성공적으로 삭제되었습니다.");
                 window.location.reload();
             } else {
@@ -123,7 +146,7 @@ const MyPage = () => {
                 onMouseEnter={() => setIsHover(true)}
                 onMouseLeave={() => setIsHover(false)}
             >
-                <ProfilePicture src={profileImageSrc} alt="Profile" />
+                <ProfilePicture src={profileImageSrc} alt="Profile"/>
                 {isHover && (
                     <UploadButton onClick={handleUploadClick}>+</UploadButton>
                 )}
@@ -133,7 +156,7 @@ const MyPage = () => {
                 <input
                     type="file"
                     id="fileInput"
-                    style={{ display: "none" }}
+                    style={{display: "none"}}
                     accept="image/*"
                     onChange={handleFileChange}
                 />
@@ -149,8 +172,14 @@ const MyPage = () => {
                     <AboutContent>{userInfo.introduction || "자기소개가 없습니다."}</AboutContent>
                 </AboutSection>
                 <TableContainer>
-                    <WeeklyStudyTable />
-                    <YearlyStudyTable />
+                    <WeeklyStudyTable/>
+                    <AttendanceDaysContainer>
+                        <DaysTitle>연속 출석 일수</DaysTitle>
+                        <DaysCount>{attendanceDays}일</DaysCount>
+                    </AttendanceDaysContainer>
+                </TableContainer>
+                <TableContainer>
+                    <YearlyStudyTable/>
                 </TableContainer>
             </UserInfoSection>
             {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
@@ -169,7 +198,7 @@ export default MyPage;
 
 const Container = styled.div`
     padding: 4rem;
-    max-width: 800px;
+    max-width: 870px;
     margin: auto;
     text-align: center;
 `;
@@ -204,6 +233,7 @@ const UploadButton = styled.button`
     align-items: center;
     justify-content: center;
     z-index: 1;
+
     &:hover {
         background-color: #218838;
     }
@@ -224,6 +254,7 @@ const DeleteButton = styled.button`
     align-items: center;
     justify-content: center;
     z-index: 1;
+
     &:hover {
         background-color: #c82333;
     }
@@ -268,6 +299,8 @@ const AboutContent = styled.p`
 `;
 
 const TableContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
     margin-top: 2rem;
 `;
 
@@ -290,6 +323,7 @@ const StyledButton = styled.button`
     background-color: #007bff;
     color: white;
     cursor: pointer;
+
     &:hover {
         background-color: #0056b3;
     }
@@ -301,3 +335,25 @@ const ErrorMessage = styled.div`
     margin-top: 1rem;
 `;
 
+const AttendanceDaysContainer = styled.div`
+    background-color: #f0f8ff;
+    border: 1px solid #3cb371;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    width: 200px;
+    height: 80px;
+    margin-left: 1rem;
+`;
+
+const DaysTitle = styled.h3`
+    font-size: 1.2rem;
+    margin: 0;
+    color: #3cb371;
+`;
+
+const DaysCount = styled.p`
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0.5rem 0 0;
+`;

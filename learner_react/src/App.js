@@ -28,9 +28,10 @@ import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
 import SseComponent from "./components/SseComponent";
 import axios from "axios";
+import AttendanceCheck from "./components/attendance/AttendanceCheck";
+
 import {NotificationProvider} from "./components/NotificationContext";
 axios.defaults.withCredentials = true;
-
 
 function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,8 +47,9 @@ function App() {
     return (
         <NotificationProvider>
         <Router>
-            <Header openModal={openModal} />
-            {isModalOpen && <LoginModal closeModal={closeModal} />}
+            <AttendanceCheck/>
+            <Header openModal={openModal}/>
+            {isModalOpen && <LoginModal closeModal={closeModal}/>}
             <Routes>
                 <Route path="/" element={<Navigate to="/courses" />} />
                 <Route path="/signup" element={<SignUp />} />

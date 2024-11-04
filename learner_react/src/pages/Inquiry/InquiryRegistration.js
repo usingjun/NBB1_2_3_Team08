@@ -1,7 +1,7 @@
-import React, { useState } from 'react'; // React 및 훅스 가져오기
-import { useNavigate } from 'react-router-dom'; // 페이지 이동을 위한 useNavigate 훅 가져오기
-import axios from 'axios'; // HTTP 요청을 위해 axios 가져오기
+import React, {useState} from 'react'; // React 및 훅스 가져오기
+import {useNavigate} from 'react-router-dom'; // 페이지 이동을 위한 useNavigate 훅 가져오기
 import './Style/InquiryRegistration.css'
+import axiosInstance from "../axiosInstance";
 
 const InquiryRegistration = () => {
     const [inquiryTitle, setInquiryTitle] = useState(''); // 문의 제목 상태
@@ -31,7 +31,7 @@ const InquiryRegistration = () => {
 
         try {
             // 서버에 문의 등록 요청 보내기
-            await axios.post('http://localhost:8080/inquiries', inquiryDTO, { withCredentials: true });
+            await axiosInstance.post('/inquiries', inquiryDTO);
             alert('문의가 등록되었습니다.'); // 성공 시 메시지
             navigate('/inquiries'); // 문의 목록 페이지로 이동
         } catch (error) {

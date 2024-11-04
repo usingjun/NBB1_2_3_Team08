@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, {useEffect, useState} from 'react';
+import axiosInstance from "../../pages/axiosInstance";
 
 const WeeklyStudyTable = () => {
     const [studyData, setStudyData] = useState([]); // weeklySummary 배열을 저장할 state
+    const [attendanceData, setAttendanceData] = useState([]); // 출석 체크 데이터 저장
     const [totalStudyTime, setTotalStudyTime] = useState(0); // 총 학습 시간
     const [totalCompleted, setTotalCompleted] = useState(0); // 총 완료 수업
     const [currentDate, setCurrentDate] = useState(new Date()); // 현재 주차의 기준 날짜
@@ -17,13 +18,13 @@ const WeeklyStudyTable = () => {
     }, []);
 
     // 데이터 fetch 함수
-    const fetchData = async (selectedDate) => { // 주차 변경에 따른 데이터 fetch
+    const fetchData = async (selectedDate) => {
         if (!memberId) return; // memberId가 없으면 fetch하지 않음
         try {
             const formattedDate = selectedDate.toISOString().split('T')[0]; // 선택한 날짜를 "YYYY-MM-DD" 형식으로 변환
-            const response = await axios.get(`http://localhost:8080/study-tables/${memberId}/weekly-summary?date=${formattedDate}`, { withCredentials: true }); // 날짜를 query parameter로 전송
+            const response = await axiosInstance.get(`/study-tables/${memberId}/weekly-summary?date=${formattedDate}`);
 
-            const { weeklyStudyTime, weeklyCompleted, weeklySummary } = response.data;
+            const {weeklyStudyTime, weeklyCompleted, weeklySummary} = response.data;
             setTotalStudyTime(weeklyStudyTime); // 총 학습 시간 설정
             setTotalCompleted(weeklyCompleted); // 총 완료한 수업 설정
             setStudyData(weeklySummary); // 주간 학습 데이터 배열 설정
@@ -32,8 +33,22 @@ const WeeklyStudyTable = () => {
         }
     };
 
+    // 출석 데이터 fetch 함수
+    const fetchAttendanceData = async (selectedDate) => {
+        if (!memberId) return; // memberId가 없으면 fetch하지 않음
+        try {
+            const formattedDate = selectedDate.toISOString().split('T')[0]; // 선택한 날짜를 "YYYY-MM-DD" 형식으로 변환
+            const response = await axiosInstance.get(`/attendances/${memberId}/weekly-summary?date=${formattedDate}`);
+            const {weeklySummary} = response.data; // weeklySummary는 AttendanceDTO 리스트
+            setAttendanceData(weeklySummary); // 출석 데이터 설정
+        } catch (error) {
+            console.error("출석 데이터를 가져오는 중 오류 발생:", error);
+        }
+    };
+
     useEffect(() => {
         fetchData(currentDate); // 현재 날짜로 데이터 fetch
+        fetchAttendanceData(currentDate); // 출석 데이터 fetch
     }, [memberId, currentDate]); // memberId와 currentDate가 변경될 때마다 fetch
 
     const getColorByCompleted = (completed, date) => {
@@ -45,6 +60,11 @@ const WeeklyStudyTable = () => {
         else if (completed <= 2) return 'light-green';
         else if (completed <= 5) return 'medium-green';
         else return 'dark-green';
+    };
+
+    const getAttendanceByDate = (dateString) => {
+        const attendance = attendanceData.find(att => att.attendanceDate === dateString); // 출석 정보 찾기
+        return attendance ? true : false; // 출석 정보가 있으면 true, 없으면 false
     };
 
     const handlePreviousWeek = () => {
@@ -85,7 +105,7 @@ const WeeklyStudyTable = () => {
 
     return (
         <div className="weekly-study-table">
-            <h2>주간 학습</h2>
+            <h2>주간 통계</h2>
             <div className="week-navigation">
                 <div className="arrow left-arrow" onClick={handlePreviousWeek}>{"<"}</div>
                 <span>{getWeekInfo(currentDate)}</span>
@@ -100,13 +120,17 @@ const WeeklyStudyTable = () => {
                         const dateString = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 변환
 
                         const isToday = dateString === new Date().toISOString().split('T')[0]; // 오늘 날짜 확인
+                        const hasAttendance = getAttendanceByDate(dateString); // 출석 여부 확인
 
                         return (
                             <div key={index} className="day-circle-wrapper">
                                 <div
-                                    className={`circle ${getColorByCompleted(getCompletedByDate(dateString), date)} ${isToday ? 'today-circle' : ''}`}
-                                    style={{ transform: isToday ? 'scale(1.3)' : 'scale(1)' }} // 오늘 날짜 원 크기 조절
-                                    title={`${day}: ${getCompletedByDate(dateString)} 완료`}
+                                    className={`circle ${getColorByCompleted(getCompletedByDate(dateString), date)} ${hasAttendance ? 'attendance-circle' : ''} ${isToday ? 'today-circle' : ''}`}
+                                    style={{
+                                        transform: isToday ? 'scale(1.3)' : 'scale(1)',
+                                        borderColor: hasAttendance ? 'coral' : 'lightgrey' // 출석이 있으면 빨간색 테두리
+                                    }} // 오늘 날짜 원 크기 조절
+                                    title={`${day}: ${getCompletedByDate(dateString)} 완료${hasAttendance ? ', 출석' : ''}`}
                                 />
                                 <div className={`day-label ${isToday ? 'today-label' : ''}`}>{day}</div>
                             </div>
@@ -129,10 +153,10 @@ const styles = `
     border: 1px solid #e0e0e0; /* 테두리 색상 */
     border-radius: 8px; /* 모서리 둥글기 */
     padding: 20px; /* 내부 여백 */
-    width: 500px; /* 전체 폭을 더 넓혀줌 */
+    width: 550px; /* 전체 폭을 더 넓혀줌 */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
     background-color: #ffffff; /* 배경 색상 */
-    margin-bottom: 3rem;
+    margin-bottom: 1rem;
 }
 
 .circle-area {
@@ -165,22 +189,26 @@ const styles = `
 
 .default-color {
     background-color: white; /* 기본 색을 흰색으로 변경 */
-    border: 1px solid lightgray; /* 흰색 원을 강조하기 위한 테두리 추가 */
+    border: 2px solid lightgray; /* 흰색 원을 강조하기 위한 테두리 추가 */
 }
 
 .light-green {
     background-color: #c6e48b;
-    border: 1px solid lightgray;
+    border: 2px solid lightgray;
 }
 
 .medium-green {
     background-color: #b2e0b2;
-    border: 1px solid lightgray;
+    border: 2px solid lightgray;
+}
+
+.attendance-circle {
+    border: 2px solid red; /* 출석 원 테두리 */
 }
 
 .dark-green {
     background-color: #7ee6b7;
-    border: 1px solid lightgray;
+    border: 2px solid lightgray;
 }
 
 .day-label {
@@ -205,7 +233,7 @@ const styles = `
 
 .light-gray {
     background-color: #f0f0f0; /* 연한 회색 */
-    border: 1px solid lightgray;
+    border: 2px solid lightgray;
 }
 
 .week-navigation {
