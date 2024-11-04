@@ -3,7 +3,8 @@ import styled from "styled-components";
 import WeeklyStudyTable from "../components/study-table/WeeklyStudyTable";
 import YearlyStudyTable from "../components/study-table/YearlyStudyTable";
 import axiosInstance from './axiosInstance'; // axiosInstance import
-import Cookies from 'js-cookie'; // js-cookie 패키지 import
+import Cookies from 'js-cookie';
+import axios from "axios"; // js-cookie 패키지 import
 
 const MyPage = () => {
     const [userInfo, setUserInfo] = useState(null);
