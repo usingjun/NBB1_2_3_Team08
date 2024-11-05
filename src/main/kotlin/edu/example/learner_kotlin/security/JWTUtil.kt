@@ -29,7 +29,7 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
             header().add(headers)                                               // 헤더 설정
             issuedAt(now)                                                       // 토큰 발행 시간
             expiration(Date(
-                now.time + Duration.ofMinutes(min.toLong()).toMillis()))   // 토큰 만료 시간
+                now.time + Duration.ofMinutes(min.toLong()).toMillis()*60))   // 토큰 만료 시간
             claims(valueMap)                                                    // 저장 데이터
             signWith(key)                                                       // 서명
         }.compact()

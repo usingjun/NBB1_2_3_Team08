@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.courseabout.course.service
 
+import edu.example.learner_kotlin.alarm.service.AlarmService
 import edu.example.learner_kotlin.courseabout.course.dto.CourseCreateDTO
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.course.dto.CourseDTO
@@ -19,7 +20,8 @@ import org.springframework.stereotype.Service
 class CourseServiceImpl(
     private val courseRepo: CourseRepository,
     private val memberCourseRepo: MemberCourseRepository,
-    private val memberRepo: MemberRepository
+    private val memberRepo: MemberRepository,
+    private val alarmService: AlarmService,
 ) : CourseService {
 
     override fun addCourse(dto: CourseCreateDTO): CourseCreateDTO {
@@ -29,6 +31,7 @@ class CourseServiceImpl(
         courseRepo.save(course)
 
         log.info("successfully added course")
+        alarmService.createAlarmToUser("{${member.nickname} 님의 강의가 생성되었습니다}","강의 생성" )
         return dto
     }
 
@@ -58,7 +61,7 @@ class CourseServiceImpl(
         try {
             val updateCourse= CourseMapper.toUpdateEntity(dto,course)
             courseRepo.save(updateCourse)
-            log.info("저장된 데이터 확인: {}", course)
+            log.info("저장된 데이터 확인: {$course}")
 
     } catch (e: Exception) {
             log.error("Error updating course: ", e)

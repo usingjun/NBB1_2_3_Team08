@@ -5,7 +5,11 @@ import edu.example.learner_kotlin.alarm.repository.AlarmRepository
 import edu.example.learner_kotlin.alarm.dto.AlarmDTO
 import edu.example.learner_kotlin.alarm.entity.AlarmType
 import edu.example.learner_kotlin.alarm.entity.Priority
+import edu.example.learner_kotlin.alarm.entity.QAlarm.alarm
+import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member
+import edu.example.learner_kotlin.member.entity.Role
+import edu.example.learner_kotlin.member.repository.MemberRepository
 import edu.example.learner_kotlin.member.service.MemberService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 class AlarmService(
     private val alarmRepository: AlarmRepository,
     private val sseService: SseService,
+    private val memberRepository: MemberRepository,
     private val memberService: MemberService
 ) {
 
@@ -27,9 +32,21 @@ class AlarmService(
         )
 
         alarmRepository.save(alarm)
-        sseService.sendToMember(memberId, alarmContent)
-
+        sseService.sendToMember(memberId, alarmTitle,alarmContent)
+        log.info("생성된 알람: ${AlarmMapper.toDTO(alarm)}" )
         return AlarmMapper.toDTO(alarm)
+    }
+    fun createAlarmToUser(alarmContent: String, alarmTitle: String){
+        sseService.sendToAll(alarmTitle,alarmContent)
+        memberRepository.findAll().stream().filter{ it.role==Role.USER }
+            .forEach {
+            val alarm = Alarm(
+                member = Member().apply { this.memberId = it.memberId },
+                alarmContent = alarmContent,
+                alarmTitle = alarmTitle
+            )
+            alarmRepository.save(alarm)
+        }
     }
 
     fun getAlarmsByMember(memberId: Long): List<AlarmDTO> {

@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.alarm.service
 
+import edu.example.learner_kotlin.log
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.concurrent.ConcurrentHashMap
@@ -14,22 +15,32 @@ class SseService {
         emitter.onTimeout { emitters.remove(memberId) }
     }
 
-    fun sendToMember(memberId: Long, message: String) {
-        val jsonMessage = "{\"message\":\"$message\"}" // JSON 형식으로 변환
+    fun sendToMember(memberId: Long, alarmTitle: String, alarmContent: String) {
+        val message = mapOf(
+            "title" to alarmTitle,
+            "content" to alarmContent
+        )
+
         emitters[memberId]?.let { emitter ->
             try {
-                emitter.send(SseEmitter.event().name("message").data(jsonMessage))
+                emitter.send(SseEmitter.event().name("alarm").data(message))
+                log.info("알람 보내기 $message")
             } catch (e: Exception) {
                 emitters.remove(memberId)
             }
         }
+        
     }
 
+    fun sendToAll(alarmTitle: String, alarmContent: String) {
+        val message = mapOf(
+            "title" to alarmTitle,
+            "content" to alarmContent
+        )
 
-    fun sendToAll(message: String) {
         emitters.forEach { (_, emitter) ->
             try {
-                emitter.send(SseEmitter.event().name("message").data(message))
+                emitter.send(SseEmitter.event().name("alarm").data(message))
             } catch (e: Exception) {
                 // 실패한 경우 제거
             }

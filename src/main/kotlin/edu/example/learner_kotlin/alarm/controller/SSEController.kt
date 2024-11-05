@@ -32,9 +32,9 @@ class SseController(private val sseService: SseService) {
         log.info("알림 메시지 수신: memberId={}, message={}", request.memberId, request.message)
         return try {
             request.memberId?.let { memberId ->
-                sseService.sendToMember(memberId, request.message)
+                sseService.sendToMember(memberId, request.title,request.message)
             } ?: run {
-                sseService.sendToAll(request.message)
+                sseService.sendToAll(request.title, request.message)
             }
             ResponseEntity.ok(mapOf("message" to "알림이 전송되었습니다"))
         } catch (e: Exception) {

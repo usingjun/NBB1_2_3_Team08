@@ -69,6 +69,9 @@ class SecurityConfig (
 
         //경로별 인가 작업
         http.authorizeHttpRequests {
+            it.requestMatchers(HttpMethod.POST,"notifications/notify").permitAll()
+            it.requestMatchers(HttpMethod.GET,"notifications/count").permitAll()
+            it.requestMatchers(HttpMethod.GET,"notifications/connect").permitAll()
             it.requestMatchers(HttpMethod.GET,"alarm/connect").permitAll()
                 it.requestMatchers(HttpMethod.POST,"/alarm/count").permitAll()
             it.requestMatchers(HttpMethod.POST,"alarm/notify").permitAll()

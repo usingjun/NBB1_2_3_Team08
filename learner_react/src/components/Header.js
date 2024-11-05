@@ -3,33 +3,32 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
-
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // 하위 메뉴 상태
-    const [searchId, setSearchId] = useState(""); // 검색어 상태 추가
-    const [role, setRole] = useState(""); // 사용자 역할 상태 추가
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchId, setSearchId] = useState("");
+    const [role, setRole] = useState("");
+    const [memberId, setMemberId] = useState(null);
+    const notificationUrl = "http://localhost:8080/notifications"; // 알림 URL
 
     useEffect(() => {
         try {
             const token = document.cookie
                 .split('; ')
-                .find(row => row.startsWith('Authorization='))
-                ?.split('=')[1];
+                .find(row => row.startsWith('Authorization='))?.split('=')[1];
 
             if (token) {
                 setIsLoggedIn(true);
-                // Bearer 접두사 제거
                 const tokenWithoutBearer = token.replace('Bearer ', '');
 
                 try {
                     const decodedToken = jwtDecode(tokenWithoutBearer);
                     setRole(decodedToken.role);
+                    setMemberId(decodedToken.memberId); // 멤버 ID 추출
                 } catch (decodeError) {
                     console.error("토큰 디코딩 실패:", decodeError);
-                    // 잘못된 토큰인 경우 로그아웃 처리
                     setIsLoggedIn(false);
                     document.cookie = 'Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                     localStorage.removeItem('memberId');
@@ -41,11 +40,44 @@ const Header = ({ openModal }) => {
         }
     }, []);
 
+    useEffect(() => {
+        if (isLoggedIn && memberId) {
+            startSseConnection(memberId);
+        }
+    }, [isLoggedIn, memberId]);
+
+    const startSseConnection = async (id) => {
+        try {
+            const response = await fetch(`${notificationUrl}/connect?memberId=${id}`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('SSE connection failed');
+            }
+
+            const eventSource = new EventSource(`${notificationUrl}/connect?memberId=${id}`, {
+                withCredentials: true,
+            });
+
+            eventSource.onmessage = (event) => {
+                console.log("New event:", event.data); // 이벤트 데이터 출력
+                // 여기에 알림 처리 로직 추가
+            };
+
+            eventSource.onerror = (error) => {
+                console.error("EventSource error:", error);
+                eventSource.close(); // 오류 발생 시 연결 닫기
+            };
+        } catch (error) {
+            console.error("SSE 연결 중 오류:", error);
+        }
+    };
 
     const handleLogout = () => {
         document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         localStorage.removeItem("memberId");
-
         setIsLoggedIn(false);
         navigate('/courses');
     };
@@ -70,7 +102,7 @@ const Header = ({ openModal }) => {
                             value={searchId}
                             onChange={(e) => setSearchId(e.target.value)}
                             onKeyPress={(e) => {
-                                if (e.key === 'Enter') handleSearch(); // Enter 키 감지
+                                if (e.key === 'Enter') handleSearch();
                             }}
                         />
                         <button onClick={handleSearch}>🔍</button>
@@ -89,7 +121,7 @@ const Header = ({ openModal }) => {
                         {isMenuOpen && (
                             <SubMenu>
                                 <SubMenuItem onClick={() => navigate('/내정보')}>내정보</SubMenuItem>
-                                {role === 'INSTRUCTOR' && ( // INSTRUCTOR 역할인 경우에만 표시
+                                {role === 'INSTRUCTOR' && (
                                     <SubMenuItem onClick={() => navigate('/courses/list')}>내 강의</SubMenuItem>
                                 )}
                                 <SubMenuItem onClick={() => navigate('/orders')}>장바구니</SubMenuItem>
