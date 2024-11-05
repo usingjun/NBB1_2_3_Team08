@@ -2,7 +2,7 @@ package edu.example.learner_kotlin.member.entity
 
 import jakarta.persistence.*
 
-@jakarta.persistence.Entity
+@Entity
 data class Follow(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,4 @@ data class Follow(
     @JoinColumn(name = "following_id")
     var following: Member? = null
 
-) {
-
-
-}
+)
