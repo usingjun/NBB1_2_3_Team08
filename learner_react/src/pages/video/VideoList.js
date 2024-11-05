@@ -12,6 +12,7 @@ const Course_Url = "http://localhost:8080/course";
 const VideoList = () => {
     const { courseId } = useParams();
     const [videos, setVideos] = useState([]);
+    const [averages, setAverages] = useState([])
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -34,24 +35,6 @@ const VideoList = () => {
     };
 
     useEffect(() => {
-        // JWT 디코딩 함수
-        // const decodeJwt = (token) => {
-        //     try {
-        //         return jwtDecode(token); // named import로 변경
-        //     } catch (error) {
-        //         console.error("JWT 디코딩 오류:", error);
-        //         return null;
-        //     }
-        // };
-
-        // 사용자 역할과 ID 가져오기
-        // const token = Cookies.get("Authorization"); // 쿠키에서 토큰 가져오기
-        // if (token) {
-        //     const decodedToken = decodeJwt(token);
-        //     setRole(decodedToken?.role); // 사용자 역할 설정
-        //     setMemberNickName(decodedToken?.mid); // 사용자 ID 설정
-        // }
-
         const fetchVideos = async () => {
             setLoading(true);
             try {
@@ -69,6 +52,21 @@ const VideoList = () => {
         fetchVideos();
     }, [courseId]);
 
+    useEffect(() => {
+        if (videos.length > 0) {
+            const fetchAverages = async () => {
+                const responses = await Promise.all(
+                    videos.map(async (video) => {
+                        const response = await axiosInstance.get(`/member-video/${video.videoId}/average`);
+                        return response.data
+                    })
+                );
+                setAverages(responses);
+            }
+            fetchAverages();
+        }
+    }, [videos]);
+
     if (loading) return <Message>로딩 중...</Message>;
     if (error) return <Message $error>{error}</Message>;
 
@@ -83,6 +81,7 @@ const VideoList = () => {
                     >
                         <VideoInfo>
                             <Title>{index + 1}. {video.description}</Title>
+                            <Title>평균 학습 시간 : {averages[index]}분</Title>
                         </VideoInfo>
                     </VideoItem>
                 ))
@@ -131,7 +130,10 @@ const VideoItem = styled.div`
 `;
 
 const VideoInfo = styled.div`
-    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 `;
 
 const Title = styled.h3`

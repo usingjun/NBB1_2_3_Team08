@@ -10,4 +10,5 @@ interface MemberVideoService {
     fun readByMemberIdAndVideoId(memberId: Long, videoId: Long): MemberVideoDTO
     fun getAverageByVideoId(videoId: Long): Double
     fun isPresentByMemberIdAndVideoId(memberId: Long, videoId: Long): Boolean
+    fun isWatchedByMemberIdAndVideoId(memberId: Long, videoId: Long): Boolean
 }

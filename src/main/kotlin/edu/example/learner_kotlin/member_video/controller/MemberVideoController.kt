@@ -32,4 +32,9 @@ class MemberVideoController(val memberVideoService: MemberVideoService) {
     fun getAverage(@PathVariable videoId: Long) = run {
         ResponseEntity.ok(memberVideoService.getAverageByVideoId(videoId))
     }
+
+    @GetMapping("/{memberId}/{videoId}/watched")
+    fun getWatched(@PathVariable memberId: Long, @PathVariable videoId: Long) = run {
+        ResponseEntity.ok(memberVideoService.isWatchedByMemberIdAndVideoId(memberId, videoId))
+    }
 }

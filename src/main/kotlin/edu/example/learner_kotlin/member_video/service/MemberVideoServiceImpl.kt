@@ -62,6 +62,13 @@ class MemberVideoServiceImpl(private val memberVideoRepository: MemberVideoRepos
     override fun isPresentByMemberIdAndVideoId(memberId: Long, videoId: Long): Boolean =
         memberVideoRepository.findByMemberIdAndVideoId(memberId, videoId).isNotNull()
 
+    override fun isWatchedByMemberIdAndVideoId(memberId: Long, videoId: Long): Boolean = run {
+        val memberVideo = memberVideoRepository.findByMemberIdAndVideoId(memberId, videoId)
+            ?: throw NoSuchElementException("MemberVideo $videoId not found")
+        memberVideo.watched!!
+    }
+
+
     private fun MemberVideo?.isNull(): Boolean = this == null
     private fun MemberVideo?.isNotNull(): Boolean = this != null
 }
