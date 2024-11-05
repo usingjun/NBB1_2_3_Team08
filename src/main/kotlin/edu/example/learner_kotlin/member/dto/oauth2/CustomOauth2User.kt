@@ -15,7 +15,7 @@ class CustomOauth2User(
     }
 
     override fun getAttributes(): MutableMap<String?, Any?> {
-        return mutableMapOf("mid" to oauth2Response.getNickName(), "role" to role)
+        return mutableMapOf("category" to "refresh", "username" to oauth2Response.getNickName(), "role" to "ROLE_$role", "mid" to memberId)
     }
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {

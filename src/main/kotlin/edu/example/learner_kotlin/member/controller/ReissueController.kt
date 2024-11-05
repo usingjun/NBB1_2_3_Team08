@@ -58,16 +58,32 @@ class ReissueController(private val jwtUtil: JWTUtil) {
         }
 
         //make new JWT
-        val accessToken: String = jwtUtil.createToken(
-            mutableMapOf("category" to "access", "username" to username, "role" to role), 30
+        val newAccessToken: String = jwtUtil.createToken(
+            mutableMapOf("category" to "access", "username" to username, "role" to role, "mid" to claims["mid"].toString()), 30
         ) // 30분
+        val newRefreshToken: String = jwtUtil.createToken(
+            mutableMapOf("category" to "refresh", "username" to username, "role" to role, "mid" to claims["mid"].toString()), 1440
+        ) // 24시간
 
-        // response
+
+        // Refresh 토큰을 쿠키에 저장
+        response.addCookie(createCookie("RefreshToken", newRefreshToken))
+
         // Access 토큰을 JSON 응답 본문에 추가
         response.contentType = "application/json"
         response.characterEncoding = "UTF-8"
-        response.writer.write("""{ "accessToken": "$accessToken" }""")
+        response.writer.write("""{ "accessToken": "$newAccessToken" }""")
 
         return ResponseEntity<Any>(HttpStatus.OK)
+    }
+
+    private fun createCookie(key: String, value: String): Cookie {
+        val cookie = Cookie(key, value)
+        cookie.maxAge = 24 * 60 * 60
+        cookie.secure = false;
+        cookie.path = "/";
+        cookie.isHttpOnly = true
+
+        return cookie
     }
 }

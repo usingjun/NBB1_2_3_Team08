@@ -175,11 +175,9 @@ class MemberRestController(
 
     //회원 탈퇴
     @DeleteMapping("/{memberId}")
-    fun memberDelete(@PathVariable memberId: Long?): ResponseEntity<String> {
+    fun memberDelete(@PathVariable memberId: Long): ResponseEntity<String> {
         log.info("--- memberDelete()")
-
         memberService.deleteMember(memberId)
-
         return ResponseEntity.ok<String>("회원 탈퇴에 성공하였습니다.")
     }
 
