@@ -3,6 +3,7 @@ package edu.example.learner_kotlin.member.controller
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.dto.FollowDTO
 import edu.example.learner_kotlin.member.dto.MemberDTO
+import edu.example.learner_kotlin.member.service.FollowService
 //import edu.example.learner_kotlin.member.service.FollowService
 import edu.example.learner_kotlin.member.service.MemberService
 import io.swagger.v3.oas.annotations.Operation
@@ -23,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile
 @Tag(name = "회원 컨트롤러", description = "회원 조회, 수정, 탈퇴와 관련된 API입니다.")
 class MemberRestController(
     private val memberService: MemberService,
-//    private val followService: FollowService
+    private val followService: FollowService
 ) {
 
     @PutMapping("/{memberId}/image")
@@ -198,45 +199,48 @@ class MemberRestController(
         return ResponseEntity.ok(memberService.allMembers())
     }
 
-//    /**
-//     * 친구 맺기
-//     */
-//    @PostMapping("/follow/{friendName}")
-//    fun follow(
-//        @PathVariable("friendName") friendName: String,
-//        authentication: Authentication
-//    ): ResponseEntity<FollowDTO> {
-//        followService.followUser(authentication.name, friendName)
-//        return ResponseEntity.ok().build<FollowDTO>()
-//    }
-//
-//    /**
-//     * 팔로잉 조회
-//     */
-//    @GetMapping("/{memberId}/following")
-//    fun getFollowingList(
-//        @PathVariable("memberId") memberId: Long,
-//        authentication: Authentication
-//    ): ResponseEntity<List<FollowDTO>> {
-//        return ResponseEntity.ok().body(followService.followingList(authentication.name, memberId))
-//    }
-//
-//    /**
-//     * 팔로워 조회
-//     */
-//    @GetMapping("/{memberId}/follower")
-//    fun getFollowerList(
-//        @PathVariable("memberId") memberId: Long,
-//        authentication: Authentication
-//    ): ResponseEntity<List<FollowDTO>> {
-//        return ResponseEntity.ok().body(followService.followerList(authentication.name, memberId))
-//    }
-//
-//    /**
-//     * 친구 끊기
-//     */
-//    @DeleteMapping("/follow/{friendName}")
-//    fun deleteFollow(@PathVariable("friendName") friendName: String, authentication: Authentication) {
-//        followService.unfollowUser(authentication.name, friendName)
-//    }
+    /**
+     * 친구 맺기
+     */
+    @PostMapping("/follow/{friendName}")
+    fun follow(
+        @PathVariable("friendName") friendName: String,
+        authentication: Authentication
+    ): ResponseEntity<String> {
+        log.info("authenticationname ${authentication.name}")
+        log.info("friend name ${friendName}")
+
+        return ResponseEntity.ok(followService.followUser(authentication.name, friendName))
+    }
+
+    /**
+     * 팔로잉 조회
+     */
+    @GetMapping("/{memberId}/following")
+    fun getFollowingList(
+        @PathVariable("memberId") memberId: Long,
+        authentication: Authentication
+    ): ResponseEntity<List<FollowDTO>> {
+        return ResponseEntity.ok().body(followService.followingList(authentication.name, memberId))
+    }
+
+    /**
+     * 팔로워 조회
+     */
+    @GetMapping("/{memberId}/follower")
+    fun getFollowerList(
+        @PathVariable("memberId") memberId: Long,
+        authentication: Authentication
+    ): ResponseEntity<List<FollowDTO>> {
+        return ResponseEntity.ok().body(followService.followerList(authentication.name, memberId))
+    }
+
+    /**
+     * 친구 끊기
+     */
+    @DeleteMapping("/follow/{friendName}")
+    fun deleteFollow(@PathVariable("friendName") friendName: String, authentication: Authentication) {
+        log.info("unfollow ${friendName}")
+        followService.unfollowUser(authentication.name, friendName)
+    }
 }

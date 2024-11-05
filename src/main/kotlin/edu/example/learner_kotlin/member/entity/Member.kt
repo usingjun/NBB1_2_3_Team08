@@ -71,4 +71,12 @@ data class Member (
 
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     private val reviews: List<Review> = mutableListOf<Review>()
+
+    // Follow 엔티티와의 양방향 관계 설정
+    @OneToMany(mappedBy = "follower", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    val followers: List<Follow> = mutableListOf()
+
+    @OneToMany(mappedBy = "following", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    val followings: List<Follow> = mutableListOf()
+
 }
