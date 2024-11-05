@@ -2,10 +2,10 @@ import React from 'react';
 import Sidebar from './Sidebar';
 import CourseManagement from './CourseManagement';
 import CourseCreate from '../course/CourseCreate';
-import CourseUpdate from "../course/CourseUpdate";
 import CourseInquiryList from "./CourseInquiryManagement";
-import CourseNewsList from "../CourseNewsList"
-import InquiryList from "../Inquiry/InquiryList"
+import CourseNewsList from "./CourseNewsManagement";
+import InquiryList from "../Inquiry/InquiryList";
+import CourseUpdate from './CourseUpdateManagement';
 
 import { Routes, Route } from 'react-router-dom';
 

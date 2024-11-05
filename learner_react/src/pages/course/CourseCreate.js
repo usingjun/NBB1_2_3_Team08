@@ -97,7 +97,7 @@ const CourseCreate = () => {
 
             // 성공 메시지와 페이지 리디렉션
             alert("강의 생성에 성공하였습니다."); // alert 추가
-            navigate("/courses/list"); // 상대 경로로 수정
+            navigate("/courses"); // 상대 경로로 수정
         } catch (err) {
             setError("강좌 생성에 실패했습니다.");
         }
