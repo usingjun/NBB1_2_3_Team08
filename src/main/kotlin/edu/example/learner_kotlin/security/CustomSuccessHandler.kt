@@ -44,8 +44,7 @@ class CustomSuccessHandler(private val jwtUtil: JWTUtil,
         response.addCookie(cookieUtil.createCookie("RefreshToken", refreshToken))
 
         // Redirect URL에 쿼리 파라미터 추가
-        val memberId = accessClaims["mid"]
-        val redirectUrl = "http://localhost:3000/courses?accessToken=$accessToken&memberId=$memberId"
+        val redirectUrl = "http://localhost:3000/courses?accessToken=$accessToken"
 
         // 리다이렉션
         response.sendRedirect(redirectUrl)
