@@ -441,6 +441,7 @@ const CourseInquiryList = () => {
                                                 작성자: {inquiry.memberNickname || '알 수 없음'}
                                             </span>
                                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 작성일: {new Date(inquiry.createdDate).toLocaleDateString()}
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 문의 상태: {inquiry.inquiryStatus}
                                             </p>
                                         </InquiryItem>
                                     );
@@ -505,6 +506,7 @@ const AnswerForm = styled.div`
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    border: 1px solid #ddd;
 `;
 
 const SubmitButton = styled.button`
