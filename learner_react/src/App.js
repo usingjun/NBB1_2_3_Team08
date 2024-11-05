@@ -28,6 +28,7 @@ import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
 import axios from "axios";
 import AttendanceCheck from "./components/attendance/AttendanceCheck";
+import Chat from "./components/Chat";
 
 axios.defaults.withCredentials = true;
 
@@ -75,6 +76,7 @@ function App() {
                 <Route path="/inquiries/:inquiryId" element={<InquiryDetail/>}/>
                 <Route path="/members/:memberId" element={<MemberDetail />} />
                 <Route path="/members/other/:nickname" element={<OtherUserPage/>}/>
+                <Route path="/chat" element={<Chat/>}/>
             </Routes>
         </Router>
     );
