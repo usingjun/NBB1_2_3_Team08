@@ -15,8 +15,8 @@ class TokenController(private val jwtUtil: JWTUtil) {
     fun decodeToken(@RequestHeader("Authorization") authorizationHeader: String): Map<String, Any> {
         val token = authorizationHeader.replace("Bearer ", "")
         try {
-            val claims: Claims? = jwtUtil.decodeToken(token)
-            return mapOf("role" to claims?.get("role")!!)
+            val claims: Map<String, Any> = jwtUtil.validateToken(token)
+            return claims
         } catch (e: Exception) {
             log.error(e.message, e)
             throw e
