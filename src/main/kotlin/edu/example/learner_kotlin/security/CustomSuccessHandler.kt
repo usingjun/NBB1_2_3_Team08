@@ -1,7 +1,6 @@
-package edu.example.learner_kotlin.config
+package edu.example.learner_kotlin.security
 
 import edu.example.learner_kotlin.member.dto.oauth2.CustomOauth2User
-import edu.example.learner_kotlin.security.JWTUtil
 import edu.example.learner_kotlin.token.util.CookieUtil
 import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.ServletException

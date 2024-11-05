@@ -1,4 +1,6 @@
-package edu.leranermig.order.exception
+package edu.example.learner_kotlin.courseabout.order.exception
+
+import edu.example.learner_kotlin.courseabout.order.exception.OrderTaskException
 
 enum class OrderException(message: String, code: Int) {
     ORDER_NOT_FOUND("ORDER CAN'T FOUNDED", 400),
