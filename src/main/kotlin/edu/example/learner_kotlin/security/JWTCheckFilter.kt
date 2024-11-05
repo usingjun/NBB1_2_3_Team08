@@ -57,6 +57,7 @@ class JWTCheckFilter(
                     requestURI.matches("/course/\\d+/course-inquiry/\\d+".toRegex()) ||
                     requestURI.matches("/course/\\d+/course-inquiry".toRegex()) ||
                     requestURI.matches("/course/\\d+/course-answer/\\d+".toRegex()) ||
+                    requestURI.matches("/answers/\\d".toRegex()) ||
                     requestURI.matches("/attendances/\\d+/today".toRegex()) ||
                     requestURI.startsWith("/images") ||
                     requestURI.matches("/swagger-ui(/.*)?".toRegex()) || // swagger-ui로 시작하는 요청 및 favicon 파일 포함

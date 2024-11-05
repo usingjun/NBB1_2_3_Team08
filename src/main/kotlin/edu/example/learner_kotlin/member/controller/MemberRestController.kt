@@ -1,8 +1,10 @@
 package edu.example.learner_kotlin.member.controller
 
-import edu.example.learner_kotlin.member.service.MemberService
 import edu.example.learner_kotlin.log
+import edu.example.learner_kotlin.member.dto.FollowDTO
 import edu.example.learner_kotlin.member.dto.MemberDTO
+//import edu.example.learner_kotlin.member.service.FollowService
+import edu.example.learner_kotlin.member.service.MemberService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -18,7 +21,10 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/members")
 @Tag(name = "회원 컨트롤러", description = "회원 조회, 수정, 탈퇴와 관련된 API입니다.")
-class MemberRestController (private val memberService: MemberService){
+class MemberRestController(
+    private val memberService: MemberService,
+//    private val followService: FollowService
+) {
 
     @PutMapping("/{memberId}/image")
     @Operation(summary = "이미지 업로드", description = "사진 파일을 받아 프로필 사진을 변경합니다.")
@@ -169,11 +175,9 @@ class MemberRestController (private val memberService: MemberService){
 
     //회원 탈퇴
     @DeleteMapping("/{memberId}")
-    fun memberDelete(@PathVariable memberId: Long?): ResponseEntity<String> {
+    fun memberDelete(@PathVariable memberId: Long): ResponseEntity<String> {
         log.info("--- memberDelete()")
-
         memberService.deleteMember(memberId)
-
         return ResponseEntity.ok<String>("회원 탈퇴에 성공하였습니다.")
     }
 
@@ -191,4 +195,46 @@ class MemberRestController (private val memberService: MemberService){
 
         return ResponseEntity.ok(memberService.allMembers())
     }
+
+//    /**
+//     * 친구 맺기
+//     */
+//    @PostMapping("/follow/{friendName}")
+//    fun follow(
+//        @PathVariable("friendName") friendName: String,
+//        authentication: Authentication
+//    ): ResponseEntity<FollowDTO> {
+//        followService.followUser(authentication.name, friendName)
+//        return ResponseEntity.ok().build<FollowDTO>()
+//    }
+//
+//    /**
+//     * 팔로잉 조회
+//     */
+//    @GetMapping("/{memberId}/following")
+//    fun getFollowingList(
+//        @PathVariable("memberId") memberId: Long,
+//        authentication: Authentication
+//    ): ResponseEntity<List<FollowDTO>> {
+//        return ResponseEntity.ok().body(followService.followingList(authentication.name, memberId))
+//    }
+//
+//    /**
+//     * 팔로워 조회
+//     */
+//    @GetMapping("/{memberId}/follower")
+//    fun getFollowerList(
+//        @PathVariable("memberId") memberId: Long,
+//        authentication: Authentication
+//    ): ResponseEntity<List<FollowDTO>> {
+//        return ResponseEntity.ok().body(followService.followerList(authentication.name, memberId))
+//    }
+//
+//    /**
+//     * 친구 끊기
+//     */
+//    @DeleteMapping("/follow/{friendName}")
+//    fun deleteFollow(@PathVariable("friendName") friendName: String, authentication: Authentication) {
+//        followService.unfollowUser(authentication.name, friendName)
+//    }
 }

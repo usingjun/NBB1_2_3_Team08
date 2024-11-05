@@ -28,9 +28,9 @@ class InquiryController(private val inquiryService: InquiryService) {
         ResponseEntity.ok(inquiryService.update(inquiryDTO.apply { this.inquiryId = inquiryId }))
 
     @PutMapping("/{inquiryId}/status")
-    fun updateStatus(@PathVariable("inquiryId") inquiryId: Long, @RequestBody inquiryStatus: String) = run {
-        val inquiryDTO = inquiryService.read(inquiryId).apply { this.inquiryStatus = inquiryStatus }
-        ResponseEntity.ok(inquiryService.update(inquiryDTO))
+    fun updateStatus(@PathVariable("inquiryId") inquiryId: Long, @RequestBody inquiryDTO: InquiryDTO) = run {
+        val foundInquiryDTO = inquiryService.read(inquiryId).apply { this.inquiryStatus = inquiryDTO.inquiryStatus }
+        ResponseEntity.ok(inquiryService.update(foundInquiryDTO))
     }
 
     @DeleteMapping("/{inquiryId}")

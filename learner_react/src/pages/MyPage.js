@@ -3,7 +3,8 @@ import styled from "styled-components";
 import WeeklyStudyTable from "../components/study-table/WeeklyStudyTable";
 import YearlyStudyTable from "../components/study-table/YearlyStudyTable";
 import axiosInstance from './axiosInstance'; // axiosInstance import
-import Cookies from 'js-cookie'; // js-cookie 패키지 import
+import Cookies from 'js-cookie';
+import axios from "axios"; // js-cookie 패키지 import
 
 const MyPage = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -45,7 +46,8 @@ const MyPage = () => {
 
     const fetchAttendanceDays = async (memberId) => {
         try {
-            const response = await axiosInstance.get(`/attendances/${memberId}/continuous`);
+            const token = localStorage.getItem('accessToken');
+            const response = await axios.get(`http://localhost:8080/attendances/${memberId}/continuous`,{headers: {'Authorization' : `Bearer ${token}`}});
             if (response.status === 200) {
                 setAttendanceDays(response.data.continuous);
             } else {
@@ -62,9 +64,25 @@ const MyPage = () => {
     };
 
     const handleLogout = () => {
-        Cookies.remove('Authorization'); // Authorization 쿠키 제거
-        localStorage.removeItem("memberId");
-        window.location.href = "/"; // 메인 페이지로 이동
+        try {
+            // 서버에 로그아웃 요청 보내기 (쿠키 포함)
+            axiosInstance.post("/join/logout", null, { withCredentials: true })
+                .then(() => {
+                    // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("memberId");
+
+                    // 메인 페이지로 이동
+                    window.location.href = "/";
+                })
+                .catch(error => {
+                    console.error("Logout failed:", error);
+                    alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+                });
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+        }
     };
 
     const handleFileChange = async (event) => {
@@ -120,7 +138,8 @@ const MyPage = () => {
         try {
             const response = await axiosInstance.delete(`/members/${memberId}`);
 
-            if (response.ok) {
+            // 응답 상태가 200인 경우에만 처리
+            if (response.status === 200) {
                 alert("회원탈퇴가 완료되었습니다.");
                 handleLogout();
             } else {
@@ -130,6 +149,7 @@ const MyPage = () => {
             handleFetchError("회원탈퇴 중 오류 발생", error);
         }
     };
+
 
     if (!userInfo) {
         return <LoadingMessage>로딩 중...</LoadingMessage>;
