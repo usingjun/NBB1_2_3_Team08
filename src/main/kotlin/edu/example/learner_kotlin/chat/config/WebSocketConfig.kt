@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.chat.config
 
+import edu.example.learner_kotlin.chat.interceptor.JwtHandshakeInterceptor
 import edu.example.learner_kotlin.chat.interceptor.StompHandler
 import edu.example.learner_kotlin.log
 import org.springframework.context.annotation.Configuration
@@ -11,11 +12,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
-class WebSocketConfig (private val stompHandler: StompHandler) : WebSocketMessageBrokerConfigurer {
+class WebSocketConfig (private val stompHandler: StompHandler,
+                       private val jwtHandshakeInterceptor: JwtHandshakeInterceptor
+) : WebSocketMessageBrokerConfigurer {
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/ws")
-            .setAllowedOriginPatterns("http://localhost:3000")  // React 앱의 도메인만 허용
+            .setAllowedOriginPatterns("*")
+            .addInterceptors(jwtHandshakeInterceptor) // 인터셉터 추가
             .withSockJS() // ws으로 접속하면 SockJS를 사용하도록 설정
     }
 

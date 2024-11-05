@@ -76,8 +76,19 @@ const Courses = () => {
         }
     };
 
+    const checkUser = () => {
+        const token = localStorage.getItem('accessToken');
+        return !!token;
+
+    }
+
     const handleChatClick = () => {
-        navigate('/chat');
+        if (checkUser()) {
+            navigate('/chat');
+        } else {
+            alert('로그인 후 이용해주세요.');
+        }
+
     };
 
     return (
@@ -105,9 +116,10 @@ const Courses = () => {
                 </CreateCourseButton>
             )}
 
+            {checkUser() && (
             <ChatButton onClick={handleChatClick}>
                 채팅💬
-            </ChatButton>
+            </ChatButton>)}
 
             <CourseList>
                 {filteredCourses.length > 0 ? (
