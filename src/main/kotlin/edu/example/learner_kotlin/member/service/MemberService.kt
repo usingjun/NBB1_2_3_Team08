@@ -30,17 +30,28 @@ class MemberService(
 ){
     //회원가입
     fun register(memberDTO: MemberDTO): MemberDTO {
+        log.info(memberDTO.toString())
+
         //존재하는 이메일인지 확인
-        memberRepository.getMemberByEmail(memberDTO.email) ?:
+        val existingMember = memberRepository.getMemberByEmail(memberDTO.email)
+        if (existingMember != null) {
             throw MemberException.EMAIL_ALREADY_EXISTS.memberTaskException
+        }
+
 
         //존재하는 닉네임인지 확인
-        memberRepository.getMemberByNickName(memberDTO.nickname) ?:
+        val existingNickName =  memberRepository.getMemberByNickName(memberDTO.nickname)
+        if (existingNickName != null) {
             throw MemberException.NICKNAME_ALREADY_EXISTS.memberTaskException
+        }
 
 
         try {
             val member = modelMapper.map(memberDTO, Member::class.java)
+            // 비밀번호 인코딩
+            val encodedPassword = passwordEncoder.encode(member.password)
+            member.password = encodedPassword  // 인코딩된 비밀번호를 설정
+
             val saveMember = memberRepository.save(member)
             return MemberDTO(saveMember)
         } catch (e: Exception) {
@@ -124,10 +135,9 @@ class MemberService(
     }
 
     //회원 탈퇴
-    fun deleteMember(memberId: Long?) {
+    fun deleteMember(memberId: Long) {
         try {
-            memberRepository.delete(memberRepository.findByIdOrNull(memberId)
-                ?:throw MemberException.MEMBER_NOT_FOUND.memberTaskException)
+            memberRepository.deleteById(memberId)
         } catch (e: Exception) {
             throw MemberException.MEMBER_NOT_DELETE.memberTaskException
         }

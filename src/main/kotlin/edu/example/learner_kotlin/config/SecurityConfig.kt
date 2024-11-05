@@ -1,9 +1,8 @@
 package edu.example.learner_kotlin.config
 
-import edu.example.learner_kotlin.security.CustomOauth2UserService
-import edu.example.learner_kotlin.security.JWTCheckFilter
-import edu.example.learner_kotlin.security.JWTUtil
-import edu.example.learner_kotlin.security.LoginFilter
+import edu.example.learner_kotlin.security.*
+import edu.example.learner_kotlin.token.service.TokenService
+import edu.example.learner_kotlin.token.util.CookieUtil
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,6 +28,8 @@ class SecurityConfig(
     private val customSuccessHandler: CustomSuccessHandler,
     private val customOauth2UserService: CustomOauth2UserService,
     private val authenticationConfiguration : AuthenticationConfiguration,
+    private val tokenService: TokenService,
+    private val cookieUtil: CookieUtil
 ){
     @Bean
     fun passwordEncoder(): PasswordEncoder {
@@ -59,7 +60,7 @@ class SecurityConfig(
 
         //LoginFilter 추가
         http
-            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService, cookieUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http
@@ -144,6 +145,8 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/members/list").hasRole("ADMIN") // 회원 목록 조회 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/members/instructor/**").permitAll() // 강사 관련 프로필 GET 요청 허용
                 it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.POST, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.DELETE, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용
@@ -166,6 +169,11 @@ class SecurityConfig(
                 it.requestMatchers("/login").permitAll()
                 it.requestMatchers("/reissue").permitAll()
                 it.requestMatchers("/members/find/**").permitAll() // 비밀번호 찾기 및 아이디 찾기 모두 허용
+                it.requestMatchers("/join/**").permitAll()
+                it.requestMatchers(HttpMethod.GET,"/token/decodee").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // 채팅 권한 설정
+                it.requestMatchers("/ws/**").permitAll()
 
                 it.anyRequest().authenticated()
         }

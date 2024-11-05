@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from "../pages/axiosInstance";
 
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
@@ -37,18 +38,27 @@ const Header = ({ openModal }) => {
     }, []);
 
     const handleLogout = () => {
-        // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("memberId");
+        try {
+            // 서버에 로그아웃 요청 보내기 (쿠키 포함)
+            axiosInstance.post("/join/logout", null, { withCredentials: true })
+                .then(() => {
+                    // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("memberId");
 
-        // 쿠키에서 Authorization 및 RefreshToken 제거
-        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie = "RefreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax;"; // RefreshToken 제거
-
-        setIsLoggedIn(false);
-        setRole(""); // 역할 초기화
-        navigate('/courses');
+                    // 메인 페이지로 이동
+                    window.location.href = "/";
+                })
+                .catch(error => {
+                    console.error("Logout failed:", error);
+                    alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+                });
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+        }
     };
+
 
 
     const handleSearch = () => {
