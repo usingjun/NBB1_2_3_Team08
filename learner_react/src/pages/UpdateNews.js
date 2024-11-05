@@ -22,7 +22,7 @@ const UpdateNews = () => {
                 return;
             }
 
-            const response = await axiosInstance.get('/auth/user-info', {
+            const response = await axiosInstance.get('/token/decode', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

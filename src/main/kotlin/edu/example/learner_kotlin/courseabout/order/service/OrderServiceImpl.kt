@@ -12,8 +12,8 @@ import edu.leranermig.order.dto.OrderItemDTO
 import edu.example.learner_kotlin.courseabout.order.entity.Order
 import edu.example.learner_kotlin.courseabout.order.entity.OrderItem
 import edu.example.learner_kotlin.courseabout.order.entity.OrderStatus
-import edu.leranermig.order.exception.OrderException
-import edu.leranermig.order.exception.OrderTaskException
+import edu.example.learner_kotlin.courseabout.order.exception.OrderException
+import edu.example.learner_kotlin.courseabout.order.exception.OrderTaskException
 import edu.example.learner_kotlin.courseabout.order.repository.OrderItemRepository
 import edu.example.learner_kotlin.courseabout.order.repository.OrderRepository
 import edu.example.learner_kotlin.member.entity.Member
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service
 import kotlin.Exception
 import kotlin.Long
 import kotlin.RuntimeException
-import kotlin.collections.ArrayList
 
 
 @Service
