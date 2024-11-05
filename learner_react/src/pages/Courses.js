@@ -76,6 +76,21 @@ const Courses = () => {
         }
     };
 
+    const checkUser = () => {
+        const token = localStorage.getItem('accessToken');
+        return !!token;
+
+    }
+
+    const handleChatClick = () => {
+        if (checkUser()) {
+            navigate('/chat');
+        } else {
+            alert('로그인 후 이용해주세요.');
+        }
+
+    };
+
     return (
         <CoursePage>
             <SearchContainer>
@@ -100,6 +115,11 @@ const Courses = () => {
                     강의 생성
                 </CreateCourseButton>
             )}
+
+            {checkUser() && (
+            <ChatButton onClick={handleChatClick}>
+                채팅💬
+            </ChatButton>)}
 
             <CourseList>
                 {filteredCourses.length > 0 ? (
@@ -217,5 +237,28 @@ const CreateCourseButton = styled.button`
     cursor: pointer;
     &:hover {
         background-color: #2a9d63;
+    }
+`;
+
+const ChatButton = styled.button`
+    position: fixed; /* 화면에 고정 */
+    bottom: 30px; /* 화면 하단에서 30px 위 */
+    right: 30px; /* 화면 오른쪽에서 30px 왼쪽 */
+    padding: 15px 20px; /* 버튼 내부 여백 (텍스트와 아이콘 사이의 공간 확보) */
+    background-color: #3cb371; /* 버튼 배경 색상 */
+    color: white;
+    border: none;
+    border-radius: 30px; /* 둥근 사각형 모양 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* 텍스트 크기 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+    cursor: pointer;
+    z-index: 1000; /* 다른 요소들보다 위에 표시되도록 설정 */
+
+    &:hover {
+        background-color: #2a9d63; /* 호버 시 배경 색상 변경 */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* 호버 시 그림자 강화 */
     }
 `;

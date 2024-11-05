@@ -172,6 +172,9 @@ class SecurityConfig(
                 it.requestMatchers("/join/**").permitAll()
                 it.requestMatchers(HttpMethod.GET,"/token/decodee").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
+                // 채팅 권한 설정
+                it.requestMatchers("/ws/**").permitAll()
+
                 it.anyRequest().authenticated()
         }
 
