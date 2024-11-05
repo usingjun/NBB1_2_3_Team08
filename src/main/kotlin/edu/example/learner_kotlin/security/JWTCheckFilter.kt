@@ -3,8 +3,8 @@ package edu.example.learner_kotlin.security
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.entity.Role
-import edu.example.learner_kotlin.security.exception.JWTException
-import edu.example.learner_kotlin.security.exception.JWTTaskException
+import edu.example.learner_kotlin.token.exception.JWTException
+import edu.example.learner_kotlin.token.exception.JWTTaskException
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException

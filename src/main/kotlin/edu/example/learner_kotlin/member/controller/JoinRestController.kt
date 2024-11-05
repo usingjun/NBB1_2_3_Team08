@@ -4,6 +4,7 @@ import edu.example.learner_kotlin.member.service.MemberService
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.dto.LoginDTO
 import edu.example.learner_kotlin.member.dto.MemberDTO
+import edu.example.learner_kotlin.token.service.TokenService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -27,6 +28,7 @@ import java.io.IOException
 @Tag(name = "로그인 및 회원가입 컨트롤러", description = "로그인 및 회원가입을 제공하는 API입니다.")
 class JoinRestController (
     private val memberService: MemberService,
+    private val tokenService: TokenService
 ){
 
     //회원가입
@@ -44,7 +46,13 @@ class JoinRestController (
     @Operation(summary = "로그아웃", description = "로그아웃을 시도합니다.")
     fun logout(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<String> {
         log.info("--- logout()")
+
+        //RefreshToken DB 삭제
+        log.info("DB RefreshToken Remove")
+        tokenService.deleteRefreshToken(request)
+
         // RefreshToken 쿠키 삭제
+        log.info("Cookie RefreshToken Remove")
         val refreshTokenCookie = Cookie("RefreshToken", "").apply {
             maxAge = 0 // 쿠키 만료
             path = "/"
