@@ -9,12 +9,21 @@ const WeeklyStudyTable = () => {
     const [currentDate, setCurrentDate] = useState(new Date()); // 현재 주차의 기준 날짜
     const [memberId, setMemberId] = useState(null); // memberId state 추가
 
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
+        }
+    };
+
     // memberId를 localStorage에서 가져오는 useEffect
     useEffect(() => {
-        const storedMemberId = localStorage.getItem('memberId');
-        if (storedMemberId) {
-            setMemberId(storedMemberId);
-        }
+        getInfoFromToken();
     }, []);
 
     // 데이터 fetch 함수

@@ -12,9 +12,28 @@ const MyPage = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [isHover, setIsHover] = useState(false);
     const [attendanceDays, setAttendanceDays] = useState(0);
+    const [memberId, setMemberId] = useState(null);
+
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
+        }
+    };
 
     useEffect(() => {
-        const memberId = localStorage.getItem("memberId");
+        getInfoFromToken();
+    }, []);
+
+    useEffect(() => {
+        if (memberId === null) {
+            return;
+        }
 
         // 첫 번째 메서드 실행
         fetchUserInfo(memberId);
@@ -26,7 +45,7 @@ const MyPage = () => {
 
         // cleanup function to clear the timer if the component unmounts
         return () => clearTimeout(timer);
-    }, []);
+    }, [memberId]);
 
     const fetchUserInfo = async (memberId) => {
         try {

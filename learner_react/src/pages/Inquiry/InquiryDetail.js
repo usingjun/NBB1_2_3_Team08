@@ -15,7 +15,7 @@ const InquiryDetail = () => {
     const [info, setInfo] = useState(null);
     const [inquiryAuthorId, setInquiryAuthorId] = useState(null); // 작성자 ID 추가
     const navigate = useNavigate();
-    const [memberId, setMemberId] = useState()
+    const [memberId, setMemberId] = useState(null);
     const [inquiryStatus, setInquiryStatus] = useState('ANSWERED');
 
     // role 가져오는 함수
@@ -57,9 +57,12 @@ const InquiryDetail = () => {
 
     useEffect(() => {
         getInfoFromToken();
+    }, []);
+
+    useEffect(() => {
         fetchInquiry();
         fetchAnswer();
-    }, [inquiryId]);
+    }, [memberId]);
 
     // 답변 등록 핸들러
     const handleAnswerSave = async () => {
@@ -195,7 +198,7 @@ const InquiryDetail = () => {
                         <p>{inquiryContent}</p>
                     )}
                 </div>
-                {inquiryAuthorId === memberId && !isInquiryEditing && ( // 작성자 ID와 비교
+                {parseInt(inquiryAuthorId, 10) === parseInt(memberId, 10) && !isInquiryEditing && ( // 작성자 ID와 비교
                     <div className="inquiry-actions">
                         <button onClick={handleInquiryEdit}>수정</button>
                         <button onClick={handleInquiryDelete}>삭제</button>
