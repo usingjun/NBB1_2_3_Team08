@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
+import Modal from "../../components/Modal";
 
 const InstructorReview = () => {
-    const { nickname } = useParams();
+    const {nickname} = useParams();
     const [reviewList, setReviewList] = useState([]);
     const [averageRating, setAverageRating] = useState(0);
     const [userId, setUserId] = useState('');
@@ -11,31 +12,119 @@ const InstructorReview = () => {
     const navigate = useNavigate();
     const [writerId, setWriterId] = useState(null);
 
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followingCount, setFollowingCount] = useState(0);
+
+    const [isFollowerModalOpen, setIsFollowerModalOpen] = useState(false);
+    const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
+    const [followers, setFollowers] = useState([]);
+    const [following, setFollowing] = useState([]);
+
     useEffect(() => {
-        const storedMemberId = localStorage.getItem("memberId");
-        if (storedMemberId) {
-            setWriterId(storedMemberId);
-        }
+        const token = localStorage.getItem("accessToken");
+        fetch(`http://localhost:8080/members/instructor/${nickname}`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            credentials: 'include',
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("사용자 정보:", data);
+            })
+            .catch(err => console.error("사용자 정보 가져오기 실패:", err));
     }, []);
 
     useEffect(() => {
-        const memberId = localStorage.getItem("memberId");
+        const fetchFollowInfo = async () => {
+            const token = localStorage.getItem("accessToken");
+
+            if (token) {
+                try {
+                    const followerResponse = await axios.get(`http://localhost:8080/members/${nickname}/follower-count`, {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    });
+                    setFollowerCount(followerResponse.data);
+
+                    const followingResponse = await axios.get(`http://localhost:8080/members/${nickname}/following-count`, {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    });
+                    setFollowingCount(followingResponse.data);
+
+                    const followStatusResponse = await axios.get(`http://localhost:8080/members/follow/${nickname}/isFollowing`, {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        },
+                        withCredentials: true
+                    });
+                    setIsFollowing(followStatusResponse.data.isFollowing);
+                } catch (err) {
+                    console.error("팔로우 정보 가져오기 실패:", err);
+                }
+            }
+        };
+
+        fetchFollowInfo();
+    }, [nickname]);
+
+    const fetchFollowers = async () => {
         const token = localStorage.getItem("accessToken");
-        if (memberId) {
-            fetch(`http://localhost:8080/members/${memberId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                },
-                credentials: 'include',
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("사용자 정보:", data);
-                    setUserId(data.memberId);
-                })
-                .catch(err => console.error("사용자 정보 가져오기 실패:", err));
+        try {
+            const response = await axios.get(`http://localhost:8080/members/${encodeURIComponent(nickname)}/follower`, {
+                headers: {"Authorization": `Bearer ${token}`}
+            });
+            setFollowers(response.data);
+            setIsFollowerModalOpen(true);
+        } catch (err) {
+            console.error("팔로워 목록 가져오기 실패:", err);
         }
-    }, []);
+    };
+
+    const fetchFollowing = async () => {
+        const token = localStorage.getItem("accessToken");
+        try {
+            const response = await axios.get(`http://localhost:8080/members/${encodeURIComponent(nickname)}/following`, {
+                headers: {"Authorization": `Bearer ${token}`}
+            });
+            setFollowing(response.data);
+            setIsFollowingModalOpen(true);
+        } catch (err) {
+            console.error("팔로잉 목록 가져오기 실패:", err);
+        }
+    };
+
+    const toggleFollow = async () => {
+        const token = localStorage.getItem("accessToken");
+
+        try {
+            if (isFollowing) {
+                await axios.delete(`http://localhost:8080/members/follow/${nickname}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    },
+                    withCredentials: true
+                });
+                setIsFollowing(false);
+                setFollowerCount(prevCount => prevCount - 1);
+            } else {
+                await axios.post(`http://localhost:8080/members/follow/${nickname}`, {}, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    },
+                    withCredentials: true
+                });
+                setIsFollowing(true);
+                setFollowerCount(prevCount => prevCount + 1);
+            }
+        } catch (err) {
+            console.error("팔로우 상태 변경 실패:", err);
+        }
+    };
 
     const fetchReviews = () => {
         fetch(`http://localhost:8080/members/instructor/${nickname}/reviews/list`, {
@@ -86,7 +175,7 @@ const InstructorReview = () => {
                     "Authorization": `Bearer ${token}`,
                 },
                 credentials: 'include',
-                body: JSON.stringify({ writerId })
+                body: JSON.stringify({writerId})
             })
                 .then(() => {
                     setReviewList(reviewList.filter(review => review.reviewId !== reviewId));
@@ -114,11 +203,11 @@ const InstructorReview = () => {
         console.log('memberId:', memberId);
 
         axios
-            .get(`http://localhost:8080/members/${memberId}`, { withCredentials: true })
+            .get(`http://localhost:8080/members/${memberId}`, {withCredentials: true})
             .then((response) => {
                 const memberData = response.data;
                 console.log("Member data:", memberData);
-                navigate(`/members/${memberId}`, { state: { memberData } });
+                navigate(`/members/${memberId}`, {state: {memberData}});
             })
             .catch((error) => {
                 console.error("Error fetching member details:", error);
@@ -126,18 +215,57 @@ const InstructorReview = () => {
     };
 
     const calculateRatingColor = (rating) => {
-        switch(rating) {
-            case 1: return "#ff4d4f"; // 빨간색
-            case 2: return "#ffa500"; // 주황색
-            case 3: return "#ffd700"; // 노란색
-            case 4: return "#28a745"; // 초록색
-            case 5: return "#1890ff"; // 파란색
-            default: return "#333";
+        switch (rating) {
+            case 1:
+                return "#ff4d4f"; // 빨간색
+            case 2:
+                return "#ffa500"; // 주황색
+            case 3:
+                return "#ffd700"; // 노란색
+            case 4:
+                return "#28a745"; // 초록색
+            case 5:
+                return "#1890ff"; // 파란색
+            default:
+                return "#333";
         }
     };
 
     return (
         <div>
+            <div className="follow-container">
+                <button onClick={toggleFollow} className="follow-button">
+                    {isFollowing ? "팔로우 취소" : "팔로우"}
+                </button>
+                <span className="follower-count" onClick={fetchFollowers}>
+                    팔로워: {followerCount}
+                </span>
+                <span className="following-count" onClick={fetchFollowing}>
+                    팔로잉: {followingCount}
+                </span>
+            </div>
+
+            {isFollowerModalOpen && (
+                <Modal title="팔로워 목록" onClose={() => setIsFollowerModalOpen(false)}>
+                    <ul>
+                        {followers.map(follower => (
+                            <li key={follower.memberId}>{follower.nickname}</li>
+                        ))}
+                    </ul>
+                </Modal>
+            )}
+
+            {isFollowingModalOpen && (
+                <Modal title="팔로잉 목록" onClose={() => setIsFollowingModalOpen(false)}>
+                    <ul>
+                        {following.map(followed => (
+                            <li key={followed.memberId}>{followed.nickname}</li>
+                        ))}
+                    </ul>
+                </Modal>
+            )}
+
+
             <div className="course-list">
                 {Array.isArray(courseList) ? (
                     courseList.map(course => (
@@ -167,7 +295,7 @@ const InstructorReview = () => {
                                 <p className="course-name"> 강의 제목 : {review.courseName}</p>
                                 <span
                                     className="review-rating"
-                                    style={{ color: calculateRatingColor(review.rating) }}
+                                    style={{color: calculateRatingColor(review.rating)}}
                                 >
                                     평점: {review.rating} / 5
                                 </span>
@@ -189,8 +317,11 @@ const InstructorReview = () => {
                             <div className="button-group">
                                 {userId === review.writerId && (
                                     <>
-                                        <button onClick={() => handleDelete(review.reviewId)} className="delete-button">삭제</button>
-                                        <Link to={`/members/instructor/${nickname}/reviews/${review.reviewId}`} className="edit-button">수정</Link>
+                                        <button onClick={() => handleDelete(review.reviewId)}
+                                                className="delete-button">삭제
+                                        </button>
+                                        <Link to={`/members/instructor/${nickname}/reviews/${review.reviewId}`}
+                                              className="edit-button">수정</Link>
                                     </>
                                 )}
                             </div>
@@ -232,6 +363,7 @@ const InstructorReview = () => {
                     .course-item a:hover {
                         color: #0056b3;
                     }
+
                     .review-container {
                         max-width: 1000px;
                         margin: 0 auto;
@@ -353,7 +485,7 @@ const InstructorReview = () => {
                         background-color: #007bff;
                         color: white;
                         border: none;
-                        border-radius : 5px;
+                        border-radius: 5px;
                         text-decoration: none;
                     }
 

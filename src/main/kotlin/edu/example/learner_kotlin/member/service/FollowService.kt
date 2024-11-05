@@ -59,14 +59,14 @@ class FollowService(
         }
     }
 
-    fun followerList(requestUsername: String?, memberId: Long): List<FollowDTO> {
+    fun followerList(requestUsername: String?, memberName: String): List<FollowDTO> {
         val requestUser = memberRepository.findByNickname(requestUsername)?.orElseThrow {
             RuntimeException("User not found")
         } ?: throw RuntimeException("User not found")
 
-        val user = memberRepository.findById(memberId).orElseThrow {
+        val user = memberRepository.findByNickname(memberName)?.orElseThrow {
             RuntimeException("User not found")
-        }
+        } ?: throw RuntimeException("User not found")
 
         val findList = followRepository.findByFollowing(user) ?: emptyList()
         val followingList = mutableListOf<FollowDTO>()
@@ -80,14 +80,14 @@ class FollowService(
         return followingList
     }
 
-    fun followingList(requestUsername: String?, memberId: Long): List<FollowDTO> {
+    fun followingList(requestUsername: String?, memberName: String): List<FollowDTO> {
         val requestUser = memberRepository.findByNickname(requestUsername)?.orElseThrow {
             RuntimeException("User not found")
         } ?: throw RuntimeException("User not found")
 
-        val user = memberRepository.findById(memberId).orElseThrow {
+        val user = memberRepository.findByNickname(memberName)?.orElseThrow {
             RuntimeException("User not found")
-        }
+        } ?: throw RuntimeException("User not found")
 
         val findList = followRepository.findByFollower(user) ?: emptyList()
         val followerList = mutableListOf<FollowDTO>()
@@ -108,5 +108,32 @@ class FollowService(
             return null
         }
         return FollowStatus.FOLLOWING
+    }
+
+    fun isFollowing(followerUsername: String, followingUsername: String): Boolean {
+        val follower = memberRepository.findByNickname(followerUsername)?.orElseThrow {
+            RuntimeException("User not found")
+        }?: throw RuntimeException("Follower not found")
+        val following = memberRepository.findByNickname(followingUsername)?.orElseThrow {
+            RuntimeException("User not found")
+        }?: throw RuntimeException("Following not found")
+
+        return followRepository.existsByFollowerAndFollowing(follower, following)
+    }
+
+    // 팔로워 수 조회
+    fun getFollowerCount(nickName: String): Long {
+        val member = memberRepository.findByNickname(nickName)?.orElseThrow {
+            RuntimeException("User not found")
+        }?: throw RuntimeException("Follower not found")
+        return followRepository.countByFollowing(member)
+    }
+
+    // 팔로잉 수 조회
+    fun getFollowingCount(nickName: String): Long {
+        val member = memberRepository.findByNickname(nickName)?.orElseThrow {
+            RuntimeException("User not found")
+        }?: throw RuntimeException("Following not found")
+        return followRepository.countByFollower(member)
     }
 }
