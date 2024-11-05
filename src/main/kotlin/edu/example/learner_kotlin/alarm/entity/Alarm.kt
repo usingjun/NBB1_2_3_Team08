@@ -4,12 +4,14 @@ import edu.example.learner_kotlin.member.entity.Member
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDate
 import java.time.LocalDateTime
-
+import java.util.Date
 
 
 @EntityListeners(AuditingEntityListener::class)
-@Entity(name = "alarm")
+@Table(name = "alarm")
+@Entity
 data class Alarm (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +32,7 @@ data class Alarm (
     var priority: Priority? = null,
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null,
+    val createdAt: LocalDate? = null,
 
     var alarmStatus: Boolean = false
 ){

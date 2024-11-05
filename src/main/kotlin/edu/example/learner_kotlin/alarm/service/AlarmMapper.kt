@@ -11,6 +11,7 @@ object AlarmMapper {
         return AlarmDTO(
             alarmId = alarm.alarmId,
             alarmContent = alarm.alarmContent,
+            alarmTitle = alarm.alarmTitle,
             alarmType = alarm.alarmType?.name,
             createdAt = alarm.createdAt.toString(),
             priority = alarm.priority?.name,
@@ -23,6 +24,7 @@ object AlarmMapper {
         return Alarm(
             alarmId = alarmDTO.alarmId,
             alarmContent = alarmDTO.alarmContent,
+            alarmTitle = alarmDTO.alarmTitle,
             alarmType = AlarmType.valueOf(alarmDTO.alarmType ?: "INFO"),
             priority = Priority.valueOf(alarmDTO.priority ?: "MEDIUM"),
             member = member

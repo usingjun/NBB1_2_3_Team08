@@ -79,6 +79,7 @@ class AlarmService(
 
         alarm.apply {
             alarmContent = alarmDTO.alarmContent
+            alarmTitle = alarmDTO.alarmTitle
             alarmType = AlarmType.valueOf(alarmDTO.alarmType ?: "INFO")
             priority = Priority.valueOf(alarmDTO.priority ?: "MEDIUM")
         }

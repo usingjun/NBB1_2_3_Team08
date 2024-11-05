@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../axiosInstance";
 import styled from "styled-components";
+import axiosInstance from "../axiosInstance";
 
 const OrderDetail = () => {
     const { orderId } = useParams();
@@ -10,7 +11,31 @@ const OrderDetail = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate(); // useNavigate 훅 사용
 
+    const [memberId, setMemberId] = useState(null);
+
+
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 역할 및 이름 설정
+                setMemberId(response.data.mid);    // memberId 설정
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+        }
+    };
     useEffect(() => {
+        checkUserRole();
         const fetchOrderDetail = async () => {
             setLoading(true);
             try {
@@ -32,7 +57,7 @@ const OrderDetail = () => {
     if (!order) return <p>주문이 없습니다.</p>;
 
     const handleBackClick = () => {
-        navigate(-1); // 이전 페이지로 이동
+        navigate("/orders"); // /orders/list로 이동
     };
 
     return (
@@ -49,6 +74,7 @@ const OrderDetail = () => {
                     </li>
                 ))}
             </ul>
+
             <BackButton onClick={handleBackClick}>뒤로가기</BackButton>
         </OrderDetailContainer>
     );

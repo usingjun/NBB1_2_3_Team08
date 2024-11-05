@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axiosInstance from "../axiosInstance";
 import styled from "styled-components";
 
 const AlarmList = () => {
     const [alarms, setAlarms] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
     const [memberId, setMemberId] = useState(null);
 
     // 사용자 역할 및 memberId 확인 (서버로 요청)
@@ -24,7 +23,7 @@ const AlarmList = () => {
                 });
 
                 // 서버 응답에서 memberId 설정
-                setMemberId(response.data.mid);
+                setMemberId(response.data.mid); // memberId 설정
             }
         } catch (error) {
             console.error("토큰 확인 중 오류 발생:", error);
@@ -67,32 +66,20 @@ const AlarmList = () => {
         }
     }, [memberId]); // memberId가 변경될 때마다 호출
 
-    const handleDeleteClick = (alarmId) => {
-        if (window.confirm("정말로 이 알람을 삭제하시겠습니까?")) {
-            // 삭제 요청을 보낼 수 있는 로직을 추가하세요.
-            console.log(`알람 삭제: ${alarmId}`);
-        }
-    };
-
     if (loading) return <LoadingMessage>로딩 중...</LoadingMessage>;
     if (error) return <ErrorMessage>{error}</ErrorMessage>;
 
     return (
         <AlarmListContainer>
             <Header>알람 목록</Header>
-            <Link to="/alarms/create">
-                <StyledButton primary>알람 생성</StyledButton>
-            </Link>
             {alarms.length > 0 ? (
                 alarms.map(alarm => (
                     <AlarmItem key={alarm.alarmId}>
-                        <h3>{alarm.alarmTitle}</h3>
-                        <p>{alarm.alarmContent}</p>
-                        <p>생성일: {new Date(alarm.createdAt).toLocaleDateString()}</p>
-                        <p>상태: {alarm.alarmStatus ? '활성' : '비활성'}</p>
-                        <ButtonContainer>
-                            <StyledButton onClick={() => handleDeleteClick(alarm.alarmId)}>삭제</StyledButton>
-                        </ButtonContainer>
+                        <p>알람 ID: <strong>{alarm.alarmId}</strong></p>
+                        <p>제목: <strong>{alarm.alarmTitle}</strong></p>
+                        <p>내용: <strong>{alarm.alarmContent}</strong></p>
+                        <p>생성일: <strong>{new Date(alarm.createdAt).toLocaleString()}</strong></p>
+                        <p>상태: <strong>{alarm.alarmStatus ? "읽음" : "안 읽음"}</strong></p>
                     </AlarmItem>
                 ))
             ) : (
@@ -136,26 +123,6 @@ const AlarmItem = styled.div`
     margin-bottom: 1rem;
     background-color: #fff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-`;
-
-const ButtonContainer = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 1rem;
-`;
-
-const StyledButton = styled.button`
-    padding: 0.5rem 1rem;
-    background-color: ${props => props.primary ? "#007bff" : "#6c757d"};
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-
-    &:hover {
-        background-color: ${props => props.primary ? "#0056b3" : "#5a6268"};
-    }
 `;
 
 export default AlarmList;

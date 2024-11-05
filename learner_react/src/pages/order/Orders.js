@@ -82,7 +82,6 @@ const Orders = () => {
     };
 
     const handlePurchase = async (orderId) => {
-        const memberId = localStorage.getItem("memberId");
         try {
             const response = await axiosInstance.post(`order/purchase/${orderId}`, { orderId, memberId }, { withCredentials: true });
             alert("결제가 완료되었습니다. 주문 ID: " + response.data.orderId);

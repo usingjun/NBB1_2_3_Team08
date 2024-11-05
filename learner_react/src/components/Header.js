@@ -20,6 +20,7 @@ const Header = ({ openModal }) => {
             try {
                 const decodedToken = jwtDecode(token);
                 setRole(decodedToken.role);
+                console.log("what is role:",decodedToken.role)
             } catch (decodeError) {
                 console.error("토큰 디코딩 실패:", decodeError);
                 handleLogout(); // 로그아웃 처리
@@ -99,7 +100,7 @@ const Header = ({ openModal }) => {
                         {isMenuOpen && (
                             <SubMenu>
                                 <SubMenuItem onClick={() => navigate('/내정보')}>내정보</SubMenuItem>
-                                {role === 'INSTRUCTOR' && (
+                                {role === 'ROLE_INSTRUCTOR' && (
                                     <SubMenuItem onClick={() => navigate('/courses/list')}>내 강의</SubMenuItem>
                                 )}
                                 <SubMenuItem onClick={() => navigate('/orders')}>장바구니</SubMenuItem>
