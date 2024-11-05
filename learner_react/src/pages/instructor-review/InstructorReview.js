@@ -3,28 +3,27 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const InstructorReview = () => {
-    const { nickname } = useParams(); // URL에서 nickname 가져오기
+    const { nickname } = useParams();
     const [reviewList, setReviewList] = useState([]);
-    const [averageRating, setAverageRating] = useState(0); // 평균 평점 상태 추가
-    const [userId, setUserId] = useState(''); // 사용자의 memberId를 저장할 상태 추가
-    const [courseList, setCourseList] = useState([]); // 강의 목록 상태 추가
-    const navigate = useNavigate(); // navigate 추가
-    const [writerId, setWriterId] = useState(null); // 토큰에서 가져온 memberId 저장
+    const [averageRating, setAverageRating] = useState(0);
+    const [userId, setUserId] = useState('');
+    const [courseList, setCourseList] = useState([]);
+    const navigate = useNavigate();
+    const [writerId, setWriterId] = useState(null);
 
-    // useEffect를 통해 로그인한 사용자의 정보를 로컬 스토리지에서 가져옴
     useEffect(() => {
-        const storedMemberId = localStorage.getItem("memberId"); // localStorage에서 memberId 가져옴
+        const storedMemberId = localStorage.getItem("memberId");
         if (storedMemberId) {
-            setWriterId(storedMemberId); // memberId 상태 설정
+            setWriterId(storedMemberId);
         }
     }, []);
 
     useEffect(() => {
         const memberId = localStorage.getItem("memberId");
-        const token = localStorage.getItem("Authorization");
+        const token = localStorage.getItem("accessToken");
         if (memberId) {
             fetch(`http://localhost:8080/members/${memberId}`, {
-                headers:{
+                headers: {
                     "Authorization": `Bearer ${token}`
                 },
                 credentials: 'include',
@@ -32,7 +31,7 @@ const InstructorReview = () => {
                 .then(res => res.json())
                 .then(data => {
                     console.log("사용자 정보:", data);
-                    setUserId(data.memberId); // 사용자 memberId 설정
+                    setUserId(data.memberId);
                 })
                 .catch(err => console.error("사용자 정보 가져오기 실패:", err));
         }
@@ -46,55 +45,51 @@ const InstructorReview = () => {
             .then(data => {
                 console.log("Fetched instructor reviews:", data);
                 setReviewList(data);
-                calculateAverageRating(data); // 평균 평점 계산
+                calculateAverageRating(data);
             })
             .catch(err => console.error("리뷰 가져오기 실패:", err));
     };
 
     const fetchCourses = () => {
-        const memberId = localStorage.getItem("memberId");
-        if (memberId) {
-            fetch(`http://localhost:8080/courses/list/${memberId}`, {
-                credentials: 'include',
+        fetch(`http://localhost:8080/course/instructor/list/${nickname}`, {
+            credentials: 'include',
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Fetched courses:", data);
+                setCourseList(data);
             })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Fetched courses:", data);
-                    setCourseList(data); // courseList에 데이터를 설정
-                })
-                .catch(err => console.error("강의 목록 가져오기 실패:", err));
-        }
+            .catch(err => console.error("강의 목록 가져오기 실패:", err));
     };
 
     const calculateAverageRating = (reviews) => {
         if (reviews.length === 0) {
-            setAverageRating(0); // 리뷰가 없을 경우 평균 평점 0으로 설정
+            setAverageRating(0);
             return;
         }
         const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-        setAverageRating((totalRating / reviews.length).toFixed(1)); // 소수점 첫째 자리까지 표시
+        setAverageRating((totalRating / reviews.length).toFixed(1));
     };
 
     useEffect(() => {
         fetchReviews();
         fetchCourses();
-    }, [nickname]); // nickname에 따라 API 호출
+    }, [nickname]);
 
     const handleDelete = (reviewId) => {
-        const token = localStorage.getItem("Authorization");
+        const token = localStorage.getItem("accessToken");
         if (window.confirm("정말 삭제하시겠습니까?")) {
             fetch(`http://localhost:8080/members/instructor/${nickname}/reviews/${reviewId}`, {
                 method: "DELETE",
                 headers: {
                     'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+                    "Authorization": `Bearer ${token}`,
                 },
                 credentials: 'include',
                 body: JSON.stringify({ writerId })
             })
                 .then(() => {
                     setReviewList(reviewList.filter(review => review.reviewId !== reviewId));
-
                     alert("리뷰가 삭제되었습니다.");
                 })
                 .catch(err => console.error("리뷰 삭제 실패:", err));
@@ -109,13 +104,12 @@ const InstructorReview = () => {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false // 24시간 형식
+            hour12: false
         };
         const date = new Date(dateString);
-        return date.toLocaleString('ko-KR', options).replace(',', ''); // 한국 형식으로 반환
+        return date.toLocaleString('ko-KR', options).replace(',', '');
     };
 
-    //작성자 프로필 이동
     const handleMemberClick = (memberId) => {
         console.log('memberId:', memberId);
 
@@ -124,32 +118,43 @@ const InstructorReview = () => {
             .then((response) => {
                 const memberData = response.data;
                 console.log("Member data:", memberData);
-                navigate(`/members/${memberId}`, { state: { memberData } });  // 사용자 정보 페이지로 이동
+                navigate(`/members/${memberId}`, { state: { memberData } });
             })
             .catch((error) => {
                 console.error("Error fetching member details:", error);
             });
     };
 
+    const calculateRatingColor = (rating) => {
+        switch(rating) {
+            case 1: return "#ff4d4f"; // 빨간색
+            case 2: return "#ffa500"; // 주황색
+            case 3: return "#ffd700"; // 노란색
+            case 4: return "#28a745"; // 초록색
+            case 5: return "#1890ff"; // 파란색
+            default: return "#333";
+        }
+    };
+
     return (
         <div>
             <div className="course-list">
-                {Array.isArray(courseList) ? ( // courseList가 배열인지 확인
+                {Array.isArray(courseList) ? (
                     courseList.map(course => (
                         <li key={course.courseId} className="course-item">
                             <Link to={`/courses/${course.courseId}`}>{course.courseName}</Link>
                         </li>
                     ))
                 ) : (
-                    <p>강의 목록을 불러오는 데 실패했습니다.</p> // 에러 메시지
+                    <p>강의 목록을 불러오는 데 실패했습니다.</p>
                 )}
             </div>
             <div className="review-container">
                 <h2 className="review-header">강사 리뷰</h2>
-                <h3 className="average-rating">평균 평점: {averageRating} / 5</h3> {/* 평균 평점 표시 */}
+                <h3 className="average-rating">평균 평점: {averageRating} / 5</h3>
                 <button
                     className="add-review-button"
-                    onClick={() => navigate(`/members/instructor/${nickname}/reviews/create`)} // 리뷰 작성 페이지로 이동
+                    onClick={() => navigate(`/members/instructor/${nickname}/reviews/create`)}
                 >
                     리뷰 작성
                 </button>
@@ -160,30 +165,32 @@ const InstructorReview = () => {
                                 <h3 className="review-title">{review.reviewName}</h3>
                                 <p className="review-detail">{review.reviewDetail}</p>
                                 <p className="course-name"> 강의 제목 : {review.courseName}</p>
-                                <span className="review-rating">평점: {review.rating} / 5</span>
+                                <span
+                                    className="review-rating"
+                                    style={{ color: calculateRatingColor(review.rating) }}
+                                >
+                                    평점: {review.rating} / 5
+                                </span>
                                 <div>
                                     <span
                                         style={{
                                             cursor: "pointer",
                                             textDecoration: "underline",
                                             color: "blue",
-                                            marginRight: "10px" // 간격 조정
+                                            marginRight: "10px"
                                         }}
                                         onClick={() => handleMemberClick(review.writerId)}
                                     >
-                                                작성자: {review.writerName || '알 수 없음'}
-                                            </span>
+                                        작성자: {review.writerName || '알 수 없음'}
+                                    </span>
                                 </div>
                                 <p className="review-updatedDate"> 수정일 : {formatDate(review.reviewUpdatedDate)}</p>
                             </div>
                             <div className="button-group">
-                                {userId === review.writerId && ( // userId와 review의 writerId가 일치할 때만 버튼 표시
+                                {userId === review.writerId && (
                                     <>
-                                        <button onClick={() => handleDelete(review.reviewId)}
-                                                className="delete-button">삭제
-                                        </button>
-                                        <Link to={`/members/instructor/${nickname}/reviews/${review.reviewId}`}
-                                              className="edit-button">수정</Link> {/* 수정 페이지로 이동 */}
+                                        <button onClick={() => handleDelete(review.reviewId)} className="delete-button">삭제</button>
+                                        <Link to={`/members/instructor/${nickname}/reviews/${review.reviewId}`} className="edit-button">수정</Link>
                                     </>
                                 )}
                             </div>
@@ -191,6 +198,40 @@ const InstructorReview = () => {
                     ))}
                 </ul>
                 <style jsx>{`
+                    .course-list {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                        margin: 0 auto 30px;
+                        padding: 0;
+                        list-style-type: none;
+                    }
+
+                    .course-item {
+                        padding: 10px 15px;
+                        background-color: #ffffff;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        transition: transform 0.2s;
+                    }
+
+                    .course-item:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                    }
+
+                    .course-item a {
+                        text-decoration: none;
+                        color: #007bff;
+                        font-size: 16px;
+                        font-weight: bold;
+                        display: block;
+                    }
+
+                    .course-item a:hover {
+                        color: #0056b3;
+                    }
                     .review-container {
                         max-width: 1000px;
                         margin: 0 auto;
@@ -198,7 +239,6 @@ const InstructorReview = () => {
                         background-color: #f8f9fa;
                         border-radius: 12px;
                         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                        position: relative; /* 버튼 위치 조정을 위해 relative 추가 */
                     }
 
                     .review-header {
@@ -212,24 +252,24 @@ const InstructorReview = () => {
                     .average-rating {
                         font-size: 20px;
                         color: #28a745;
-                        margin-bottom: 30px; /* 간격 조정 */
+                        margin-bottom: 30px;
                     }
 
                     .add-review-button {
-                        position: absolute; /* 버튼을 절대 위치로 설정 */
-                        top: 30px; /* 상단 여백 */
-                        right: 30px; /* 오른쪽 여백 */
+                        position: absolute;
+                        top: 30px;
+                        right: 30px;
                         padding: 10px 15px;
-                        background-color: #28a745; /* 초록색 */
+                        background-color: #28a745;
                         color: white;
                         border: none;
-                        border-radius: 6px; /* 모서리 둥글게 */
+                        border-radius: 6px;
                         cursor: pointer;
                         font-size: 16px;
                     }
 
                     .add-review-button:hover {
-                        background-color: #218838; /* 버튼 호버 시 색상 변경 */
+                        background-color: #218838;
                     }
 
                     .review-list {
@@ -269,22 +309,16 @@ const InstructorReview = () => {
                     }
 
                     .course-name {
-                        font-size: 1rem; /* 글꼴 크기 조정 (필요시 변경) */
-                        color: #333; /* 글자 색상 */
-                        white-space: nowrap; /* 줄바꿈 방지 */
-                        overflow: hidden; /* 넘치는 내용 숨기기 */
-                        text-overflow: ellipsis; /* 넘치는 내용에 ... 표시 */
+                        font-size: 1rem;
+                        color: #333;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
 
                     .review-rating {
-                        color: #ffcc00; /* 평점 색상 */
+                        font-size: 16px;
                         font-weight: bold;
-                        margin-right: 10px;
-                    }
-
-                    .review-author {
-                        font-size: 14px;
-                        color: #777;
                     }
 
                     .review-updatedDate {
@@ -294,41 +328,36 @@ const InstructorReview = () => {
 
                     .button-group {
                         display: flex;
-                        align-items: center; /* 버튼 수직 정렬 */
+                        align-items: center;
+                        justify-content: flex-end; /* 오른쪽 정렬 유지 */
                     }
 
                     .delete-button {
                         padding: 8px 12px;
-                        background-color: #dc3545; /* 빨간색 */
+                        background-color: #dc3545;
                         color: white;
                         border: none;
                         border-radius: 5px;
                         cursor: pointer;
-                        margin-right: 10px; /* 삭제 버튼과 수정 버튼 간의 간격 */
+                        margin-right: 10px;
                     }
 
                     .delete-button:hover {
-                        background-color: #c82333; /* 삭제 버튼 호버 시 색상 변경 */
+                        background-color: #c82333;
                     }
 
                     .edit-button {
+                        margin-top: 10px;
                         padding: 8px 12px;
-                        background-color: #007bff; /* 파란색 */
+                        background-color: #007bff;
                         color: white;
                         border: none;
-                        border-radius: 5px;
-                        margin-top: 10px;
-                        text-decoration: none; /* 링크 스타일 제거 */
+                        border-radius : 5px;
+                        text-decoration: none;
                     }
 
                     .edit-button:hover {
-                        background-color: #0069d9; /* 수정 버튼 호버 시 색상 변경 */
-                    }
-
-                    .button-group {
-                        display: flex;
-                        justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
-                        gap: 10px; /* 버튼 간의 간격 */
+                        background-color: #0069d9;
                     }
                 `}</style>
             </div>

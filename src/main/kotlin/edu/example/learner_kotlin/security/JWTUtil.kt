@@ -5,9 +5,7 @@ import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-import org.springframework.web.server.ResponseStatusException
 import java.security.SignatureException
 import java.time.Duration
 import java.util.*
@@ -18,6 +16,11 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
     private val key: SecretKey = run{
         val keyBytes: ByteArray = Decoders.BASE64.decode(secretKey)
         Keys.hmacShaKeyFor(keyBytes)
+    }
+
+    fun isExpired(token: String?): Boolean {
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload.expiration
+            .before(Date())
     }
 
     // JWT 문자열 생성 (저장 문자열, 만료 시간 - 분 단위)
@@ -75,4 +78,6 @@ class JWTUtil(@Value("\${jwt.secret}") secretKey: String?) {
         }
 
     }
+
+    fun decodeToken(token: String): Claims? = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload
 }

@@ -30,8 +30,7 @@ data class Inquiry(
 
     @ManyToOne @JoinColumn(name = "member_id")
     var member: Member? = null,
-
-    @OneToOne(mappedBy = "inquiry", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var answer: Answer? = null,
 ) {
+    @OneToOne(mappedBy = "inquiry", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var answer: Answer? = null
 }

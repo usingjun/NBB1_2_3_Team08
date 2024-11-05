@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import axiosInstance from '../axiosInstance'; // axiosInstance import
 
@@ -32,14 +32,12 @@ const CourseReview = ({ courseId }) => {
             }
         };
         fetchMemberData();
-    }, [userNickname, userId]); // userNickname과 userId가 변경될 때만 호출
+    }, [userNickname, userId]);
 
-    // 0.3초 지연 함수
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // 리뷰를 가져오는 함수
     const fetchReviews = async () => {
-        await delay(300); // 요청 전 0.3초 지연
+        await delay(300);
         axiosInstance
             .get(`/course/${courseId}/reviews/list`)
             .then(response => {
@@ -51,19 +49,18 @@ const CourseReview = ({ courseId }) => {
             });
     };
 
-
     useEffect(() => {
         fetchReviews();
     }, [courseId]);
 
     const handleDelete = (reviewId) => {
-        const token = localStorage.getItem("Authorization");
+        const token = localStorage.getItem("accessToken");
         if (window.confirm("정말 삭제하시겠습니까?")) {
             fetch(`http://localhost:8080/course/${courseId}/reviews/${reviewId}`, {
                 method: "DELETE",
                 headers: {
                     'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${token}`, // Authorization 헤더에 토큰 추가
+                    "Authorization": `Bearer ${token}`,
                 },
                 credentials: 'include',
                 body: JSON.stringify({ writerId })
@@ -96,7 +93,6 @@ const CourseReview = ({ courseId }) => {
         return date.toLocaleString('ko-KR', options).replace(',', '');
     };
 
-    //작성자 프로필 이동
     const handleMemberClick = (memberId) => {
         console.log('memberId:', memberId);
 
@@ -105,11 +101,22 @@ const CourseReview = ({ courseId }) => {
             .then((response) => {
                 const memberData = response.data;
                 console.log("Member data:", memberData);
-                navigate(`/members/${memberId}`, { state: { memberData } });  // 사용자 정보 페이지로 이동
+                navigate(`/members/${memberId}`, { state: { memberData } });
             })
             .catch((error) => {
                 console.error("Error fetching member details:", error);
             });
+    };
+
+    const calculateRatingColor = (rating) => {
+        switch(rating) {
+            case 1: return "#ff4d4f"; // 빨간색
+            case 2: return "#ffa500"; // 주황색
+            case 3: return "#ffd700"; // 노란색
+            case 4: return "#28a745"; // 초록색
+            case 5: return "#1890ff"; // 파란색
+            default: return "#333";
+        }
     };
 
     return (
@@ -125,18 +132,23 @@ const CourseReview = ({ courseId }) => {
                         <div className="review-content">
                             <h3 className="review-title">{review.reviewName}</h3>
                             <p className="review-detail">{review.reviewDetail}</p>
-                            <span className="review-rating">평점: {review.rating} / 5</span>
+                            <span
+                                className="review-rating"
+                                style={{ color: calculateRatingColor(review.rating) }}
+                            >
+                                평점: {review.rating} / 5
+                            </span>
                             <div>
                                 <span
                                     style={{
                                         cursor: "pointer",
                                         textDecoration: "underline",
                                         color: "blue",
-                                        marginRight: "10px" // 간격 조정
+                                        marginRight: "10px"
                                     }}
                                     onClick={() => handleMemberClick(review.writerId)}
                                 >
-                                                작성자: {review.writerName || '알 수 없음'}
+                                    작성자: {review.writerName || '알 수 없음'}
                                 </span>
                             </div>
                             <p className="review-updatedDate"> 수정일 : {formatDate(review.reviewUpdatedDate)}</p>
@@ -234,46 +246,40 @@ const CourseReview = ({ courseId }) => {
 
                 .review-rating {
                     font-size: 16px;
-                    color: #28a745;
                 }
 
                 .button-group {
                     display: flex;
-                    align-items: center; /* 버튼 수직 정렬 */
+                    align-items: center;
+                    justify-content: flex-end; /* 오른쪽 정렬 유지 */
                 }
 
                 .delete-button {
                     padding: 8px 12px;
-                    background-color: #dc3545; /* 빨간색 */
+                    background-color: #dc3545;
                     color: white;
                     border: none;
                     border-radius: 5px;
                     cursor: pointer;
-                    margin-right: 10px; /* 삭제 버튼과 수정 버튼 간의 간격 */
+                    margin-right: 10px;
                 }
 
                 .delete-button:hover {
-                    background-color: #c82333; /* 삭제 버튼 호버 시 색상 변경 */
+                    background-color: #c82333;
                 }
 
                 .edit-button {
+                    margin-top: 10px;
                     padding: 8px 12px;
-                    background-color: #28a745; /* 파란색 */
+                    background-color: #28a745;
                     color: white;
                     border: none;
                     border-radius: 5px;
-                    margin-top: 10px;
-                    text-decoration: none; /* 링크 스타일 제거 */
+                    text-decoration: none;
                 }
 
                 .edit-button:hover {
-                    background-color: #218838; /* 수정 버튼 호버 시 색상 변경 */
-                }
-
-                .button-group {
-                    display: flex;
-                    justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
-                    gap: 10px; /* 버튼 간의 간격 */
+                    background-color: #218838;
                 }
             `}</style>
         </div>

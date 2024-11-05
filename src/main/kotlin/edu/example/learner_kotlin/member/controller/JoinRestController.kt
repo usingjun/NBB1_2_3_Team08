@@ -49,43 +49,6 @@ class JoinRestController (
 
         return ResponseEntity.status(HttpStatus.CREATED).body<String>("회원가입에 성공하셨습니다.")
     }
-
-    //로그인
-    @PostMapping("/login")
-    @Operation(summary = "로그인", description = "이메일, 비밀번호을 변수로 받아 로그인을 시도합니다.")
-    @ApiResponses(
-        value = [ApiResponse(
-            responseCode = "200",
-            description = "로그인에 성공하였습니다."
-        ), ApiResponse(
-            responseCode = "404",
-            description = "로그인에 실패하였습니다.",
-            content = [Content(
-                mediaType = "application/json",
-                schema = Schema(example = "{\"error\": \"로그인에 실패하였습니다.\"}")
-            )]
-        )]
-    )
-    @Throws(
-        IOException::class
-    )
-    fun login(
-        @RequestBody @Validated loginDTO: LoginDTO,
-        response: HttpServletResponse
-    ): ResponseEntity<MutableMap<String, Long?>> {
-        log.info("--- login()")
-        log.info("loginDTO: {}", loginDTO)
-
-        val readInfo: LoginDTO = memberService.login(loginDTO.email, loginDTO.password)
-
-        response.addCookie(readInfo.cookie)
-
-        val responseBody = mutableMapOf<String, Long?>().apply {
-            this["memberId"] = readInfo.memberId
-        }
-
-        return ResponseEntity.ok(responseBody)
-    }
 }
 
 
