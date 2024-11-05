@@ -143,6 +143,7 @@ const CoursePage = styled.div`
     flex-direction: column;
     align-items: center;
     margin-top: 50px;
+    margin-right: 120px;
 `;
 
 const CourseList = styled.div`

@@ -6,6 +6,7 @@ import CourseInquiryList from "./CourseInquiryManagement";
 import CourseNewsList from "./CourseNewsManagement";
 import InquiryList from "../Inquiry/InquiryList";
 import CourseUpdate from './CourseUpdateManagement';
+import MemberList from './MemberListManagement';
 
 import { Routes, Route } from 'react-router-dom';
 
@@ -23,6 +24,7 @@ function AdminDashboard() {
                     <Route path="courses/inquiries/:courseId" element={<CourseInquiryList/>} />
                     <Route path="courses/news/:courseId" element={<CourseNewsList/>} />
                     <Route path="inquiries" element={<InquiryList/>} />
+                    <Route path="members" element={<MemberList/>} />
                 </Routes>
             </main>
         </div>
@@ -39,7 +41,7 @@ const adminDashboardStyle = {
 
 const sidebarStyle = {
     width: '250px',
-    height: '100vh',
+    height: '200vh',
 };
 
 const mainContentStyle = {
@@ -47,5 +49,4 @@ const mainContentStyle = {
     padding: '20px',
     marginRight: '200px',
     width: '100%',
-    overflow: 'auto',
 };

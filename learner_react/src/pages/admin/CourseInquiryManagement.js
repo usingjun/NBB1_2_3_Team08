@@ -17,7 +17,6 @@ const CourseInquiryList = () => {
     const [editAnswerId, setEditAnswerId] = useState(null);
     const [updatedAnswer, setUpdatedAnswer] = useState("");
     const [inquiryStatus, setInquiryStatus] = useState("PENDING");
-
     const [userRole, setUserRole] = useState(null); // 사용자 역할 저장
     const [userId, setUserId] = useState(null); // 사용자 ID 저장
 
@@ -281,7 +280,7 @@ const CourseInquiryList = () => {
         : "http://localhost:8080/images/default_profile.jpg";
 
     return (
-        <>
+        <PageContainer>
             {loading ? (
                 <p>로딩 중...</p>
             ) : (
@@ -403,7 +402,7 @@ const CourseInquiryList = () => {
                                 <AnswerForm>
                                 <textarea
                                     style={{
-                                        width: "100%",
+                                        width: "98%",
                                         height: "150px",
                                         fontSize: "1rem",
                                     }}
@@ -453,17 +452,21 @@ const CourseInquiryList = () => {
                     )}
                 </>
             )}
-        </>
+        </PageContainer>
     );
 }
 
 
 export default CourseInquiryList;
 
-// 스타일 컴포넌트들...
+const PageContainer = styled.div`
+    margin-left: 10rem;
+`;
+
 
 const InquiryList = styled.div`
     margin-top: 1rem;
+    overflow: auto;
 `;
 
 const InquiryItem = styled.div`

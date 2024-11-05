@@ -13,7 +13,7 @@ function Sidebar() {
         { path: "/admin/courses/create", label: "강좌 등록" },
         { path: "/admin/courses-management", label: "강좌 관리" },
         { path: "/admin/inquiries", label: "문의 관리" },
-        { path: "/admin/member", label: "회원 관리" },
+        { path: "/admin/members", label: "회원 관리" },
     ];
 
     return (

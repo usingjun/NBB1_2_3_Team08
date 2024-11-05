@@ -265,8 +265,8 @@ const styles = {
     },
     buttonContainer: {
         display: 'flex',
-        justifyContent: 'flex-end',
-        marginBottom: '30px'
+        marginLeft: '1100px',
+        marginBottom: '70px',
     },
 };
 
@@ -279,7 +279,6 @@ const WriteButton = styled.button`
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
-    margin-bottom: 20px; // 추가된 여백
     &:hover {
         background-color: #2a9d63;
     }
