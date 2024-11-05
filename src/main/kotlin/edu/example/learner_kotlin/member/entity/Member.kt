@@ -1,6 +1,7 @@
 package edu.example.learner_kotlin.member.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import edu.example.learner_kotlin.attendance.entity.Attendance
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseAnswer
@@ -8,6 +9,7 @@ import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.Cou
 import edu.example.learner_kotlin.courseabout.coursereview.entity.Review
 import edu.example.learner_kotlin.courseabout.news.entity.HeartNews
 import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
+import edu.example.learner_kotlin.studytable.entity.StudyTable
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -43,7 +45,7 @@ data class Member (
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    var role: Role? = null,
+    var role: Role? = Role.USER,
 
     @Column(nullable = true)
     var introduction: String? = null,
@@ -72,11 +74,10 @@ data class Member (
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     private val reviews: List<Review> = mutableListOf<Review>()
 
-    // Follow 엔티티와의 양방향 관계 설정
-    @OneToMany(mappedBy = "follower", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    val followers: List<Follow> = mutableListOf()
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val studyTable: List<StudyTable> = mutableListOf<StudyTable>()
 
-    @OneToMany(mappedBy = "following", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    val followings: List<Follow> = mutableListOf()
 
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    private val attendance: List<Attendance> = mutableListOf<Attendance>()
 }
