@@ -61,7 +61,7 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
         // Access 토큰을 JSON 응답 본문에 추가
         response.contentType = "application/json"
         response.characterEncoding = "UTF-8"
-        response.writer.write("""{ "accessToken": "$accessToken", "memberId": $memberId }""")
+        response.writer.write("""{ "accessToken": "$accessToken" }""")
     }
 
     //실패 응답
