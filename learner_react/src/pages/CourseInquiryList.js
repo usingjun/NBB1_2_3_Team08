@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
+import axiosInstance from "./axiosInstance";
 
 const CourseInquiryList = ({ courseId }) => {
     const navigate = useNavigate();
@@ -28,36 +28,60 @@ const CourseInquiryList = ({ courseId }) => {
                 setInquiries(response.data);
                 setLoading(false);
                 console.log(response.data)
+                // 문의 목록을 불러온 후 사용자 정보 요청
+                return fetchUserRoleAndId();
+            }).then((userData) => {
+                setUserRole(userData.role);   // 사용자 역할 설정
+                setUserId(userData.mid);      // 사용자 ID 설정
+                //console.log(userData.role);
+                //console.log(userData.mid);
             })
             .catch((error) => {
                 console.error("Error fetching the course inquiries:", error);
                 setLoading(false);
             });
-
-        fetchUserRoleAndId();
     }, [courseId]);
 
     // JWT 토큰에서 사용자 역할과 ID를 추출
-    const fetchUserRoleAndId = () => {
-        const token = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('Authorization='))
-            ?.split('=')[1];
+    const fetchUserRoleAndId = async () => {
+        //console.log("fetchUserRoleAndId 함수 호출됨");
+        const token = localStorage.getItem('accessToken');
 
-        if (token) {
-            const decodedToken = jwtDecode(token); // 토큰 디코딩
-            const normalizedRole = decodedToken.role.toLowerCase();
-            setUserRole(normalizedRole);
-            setUserId(decodedToken.mid);
-            console.log("Role : ", normalizedRole)
+        if (!token) {
+            throw new Error("Token not found");
+        }
+
+        try {
+            const response = await axiosInstance.get('/token/decode', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = response.data;
+            return {
+                mid: data.mid,
+                role: data.role,
+                username: data.username
+            };
+
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            throw error;
         }
     };
+
 
     // 문의 클릭 시 상세 정보 불러오기
     const handleInquiryClick = (inquiryId) => {
         setLoadingDetail(true);
         axios
-            .get(`http://localhost:8080/course/${courseId}/course-inquiry`, { withCredentials: true })
+            .get(`http://localhost:8080/course/${courseId}/course-inquiry`,
+                {
+                    withCredentials: true,
+                })
             .then((response) => {
                 const inquiry = response.data.find((item) => item.inquiryId === inquiryId);
                 if (inquiry) {
@@ -73,6 +97,9 @@ const CourseInquiryList = ({ courseId }) => {
                 setAnswers(fetchedAnswers);
                 // 답변이 없을 경우 상태 업데이트
                 setLoadingDetail(false);
+
+                console.log(userRole);
+                console.log(userId);
             })
             .catch((error) => {
                 console.error("Error fetching inquiry details or answers:", error);
@@ -81,38 +108,46 @@ const CourseInquiryList = ({ courseId }) => {
     };
 
     // 답변 제출
-    const handleAnswerSubmit = () => {
+    const handleAnswerSubmit = async () => {
         if (!newAnswer.trim()) {
             console.error("No selected inquiry or empty answer");
             return;
         }
 
-        const memberId = localStorage.getItem("memberId");
-        if (!memberId) {
-            console.error("로그인된 사용자의 memberId를 찾을 수 없습니다.");
-            alert("로그인이 필요합니다. 로그인 후 다시 시도해 주세요.");
+        const token = localStorage.getItem('accessToken'); // 토큰 가져오기
+
+        if (!userId) {
+            alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
             return;
         }
 
-        axios
-            .post(`http://localhost:8080/course/${courseId}/course-answer`, {
-                inquiryId: selectedInquiry.inquiryId,
-                answerContent: newAnswer,
-                memberId: memberId,
-            }, { withCredentials: true })
-            .then(() => {
-                return axios.get(
-                    `http://localhost:8080/course/${courseId}/course-answer/${selectedInquiry.inquiryId}`,
-                    { withCredentials: true }
-                );
-            })
-            .then((response) => {
-                setAnswers(response.data);
-                setNewAnswer("");
-            })
-            .catch((error) => {
-                console.error("Error posting the answer:", error);
-            });
+        try {
+            await axios.post(
+                `http://localhost:8080/course/${courseId}/course-answer`,
+                {
+                    inquiryId: selectedInquiry.inquiryId,
+                    answerContent: newAnswer,
+                    memberId: userId,
+                },
+                {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                }
+            );
+
+            // 답변 제출 후 답변 목록 새로고침
+            const response = await axios.get(
+                `http://localhost:8080/course/${courseId}/course-answer/${selectedInquiry.inquiryId}`,
+                { withCredentials: true }
+            );
+
+            setAnswers(response.data);
+            setNewAnswer("");
+        } catch (error) {
+            console.error("Error posting the answer:", error);
+        }
     };
 
     // 문의 상태 변경
@@ -120,7 +155,12 @@ const CourseInquiryList = ({ courseId }) => {
         axios
             .put(`http://localhost:8080/course/${courseId}/course-inquiry/${selectedInquiry.inquiryId}/status`, {
                 inquiryStatus: status,
-            }, { withCredentials: true })
+            }, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            })
             .then(() => {
                 alert("문의 상태가 변경되었습니다.");
                 setInquiryStatus(status);
@@ -134,7 +174,13 @@ const CourseInquiryList = ({ courseId }) => {
     const handleDeleteInquiry = (inquiryId) => {
         if (window.confirm("정말로 이 문의를 삭제하시겠습니까?")) {
             axios
-                .delete(`http://localhost:8080/course/${courseId}/course-inquiry/${inquiryId}`, { withCredentials: true })
+                .delete(`http://localhost:8080/course/${courseId}/course-inquiry/${inquiryId}`,
+                    {
+                        withCredentials: true,
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    })
                 .then(() => {
                     alert("문의가 성공적으로 삭제되었습니다.");
                     setInquiries(inquiries.filter((inquiry) => inquiry.inquiryId !== inquiryId));
@@ -156,7 +202,12 @@ const CourseInquiryList = ({ courseId }) => {
         axios
             .put(`http://localhost:8080/course/${courseId}/course-answer/${answerId}`, {
                 answerContent: updatedAnswer,
-            }, { withCredentials: true })
+            }, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            })
             .then(() => {
                 alert("답변이 성공적으로 수정되었습니다.");
                 setEditAnswerId(null);
@@ -177,14 +228,19 @@ const CourseInquiryList = ({ courseId }) => {
     // 답변 삭제
     const handleDeleteAnswer = (answerId, answerMemberId) => {
         // answerMemberId와 userId가 일치하는지 확인
-        if (answerMemberId !== userId && userRole !== "admin" && userRole !== "instructor") {
+        if (answerMemberId !== userId && userRole !== "ROLE_ADMIN" && userRole !== "INSTRCUTOR") {
             alert("작성자만 답변을 삭제할 수 있습니다.");
             return;
         }
 
         if (window.confirm("정말로 이 답변을 삭제하시겠습니까?")) {
             axios
-                .delete(`http://localhost:8080/course/${courseId}/course-answer/${answerId}`, { withCredentials: true })
+                .delete(`http://localhost:8080/course/${courseId}/course-answer/${answerId}`, {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                })
                 .then(() => {
                     alert("답변이 성공적으로 삭제되었습니다.");
                     setAnswers(answers.filter((answer) => answer.answerId !== answerId));
@@ -203,12 +259,17 @@ const CourseInquiryList = ({ courseId }) => {
     };
 
     // 작성자 프로필 이동
-    const handleMemberClick = (memberId) => {
+    const handleMemberClick = (userId) => {
         axios
-            .get(`http://localhost:8080/members/${memberId}`, { withCredentials: true })
+            .get(`http://localhost:8080/members/${userId}`, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            })
             .then((response) => {
                 const memberData = response.data;
-                navigate(`/members/${memberId}`, { state: { memberData } });  // 사용자 정보 페이지로 이동
+                navigate(`/members/${userId}`, { state: { memberData } });  // 사용자 정보 페이지로 이동
             })
             .catch((error) => {
                 console.error("Error fetching member details:", error);
@@ -230,14 +291,14 @@ const CourseInquiryList = ({ courseId }) => {
                         {selectedInquiry ? (
                             <>
                                 <BeforeButton onClick={() => setSelectedInquiry(null)}>이전 목록으로</BeforeButton>
-                                {(userRole === "admin" || userRole === "instructor") && (
+                                {(userRole === "ROLE_ADMIN" || userRole === "ROLE_INSTRUCTOR") && (
                                     <DeleteInquiryButton onClick={() => handleDeleteInquiry(selectedInquiry.inquiryId)}>
                                         문의 삭제
                                     </DeleteInquiryButton>
-                                )}
-                            </>
-                        ) : (
-                            <WriteButton onClick={() => navigate(`/courses/${courseId}/post`)}>글 작성하기</WriteButton>
+                                    )}
+                                </>
+                            ) : (
+                                <WriteButton onClick={() => navigate(`/courses/${courseId}/post`, { state: { mid: userId, role: userRole } })}>글 작성하기</WriteButton>
                         )}
                     </ButtonContainer>
 
@@ -267,7 +328,7 @@ const CourseInquiryList = ({ courseId }) => {
                                     </p>
                                 </InquiryDetail>
 
-                                {(userRole === "admin" || userRole === "instructor") && (
+                                {(userRole === "ROLE_ADMIN" || userRole === "ROLE_INSTRUCTOR") && (
                                     <StatusSelect value={inquiryStatus} onChange={(e) => handleStatusChange(e.target.value)}>
                                         <option value="PENDING">PENDING</option>
                                         <option value="ANSWERED">ANSWERED</option>
@@ -317,7 +378,7 @@ const CourseInquiryList = ({ courseId }) => {
                                                             </span>
                                                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 작성일: {new Date(answer.answerCreateDate).toLocaleDateString()}
                                                             </p>
-                                                            {(userRole === "admin" || userRole === "instructor") && (
+                                                            {(userRole === "ROLE_ADMIN" || userRole === "ROLE_INSTRUCTOR") && (
                                                                 <>
                                                                     <AnswerButton onClick={() => handleEditAnswerClick(answer)}>
                                                                         수정
