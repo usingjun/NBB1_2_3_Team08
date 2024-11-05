@@ -1,4 +1,4 @@
-package edu.example.learner_kotlin.config
+package edu.example.learner_kotlin.security
 
 import edu.example.learner_kotlin.member.dto.oauth2.SocialClientRegistration
 import org.springframework.context.annotation.Configuration

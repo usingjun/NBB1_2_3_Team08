@@ -1,9 +1,9 @@
 package edu.example.learner_kotlin.config
 
-import edu.example.learner_kotlin.security.CustomOauth2UserService
-import edu.example.learner_kotlin.security.JWTCheckFilter
-import edu.example.learner_kotlin.security.JWTUtil
-import edu.example.learner_kotlin.security.LoginFilter
+import edu.example.learner_kotlin.security.*
+import edu.example.learner_kotlin.token.repository.TokenRepository
+import edu.example.learner_kotlin.token.util.CookieUtil
+import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,6 +29,8 @@ class SecurityConfig(
     private val customSuccessHandler: CustomSuccessHandler,
     private val customOauth2UserService: CustomOauth2UserService,
     private val authenticationConfiguration : AuthenticationConfiguration,
+    private val tokenUtil: TokenUtil,
+    private val cookieUtil: CookieUtil
 ){
     @Bean
     fun passwordEncoder(): PasswordEncoder {
@@ -59,7 +61,7 @@ class SecurityConfig(
 
         //LoginFilter 추가
         http
-            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenUtil, cookieUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http

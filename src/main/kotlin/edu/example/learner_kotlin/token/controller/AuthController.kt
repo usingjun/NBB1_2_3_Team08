@@ -1,4 +1,4 @@
-package edu.example.learner_kotlin.courseabout.news.controller
+package edu.example.learner_kotlin.token.controller
 
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.security.JWTUtil

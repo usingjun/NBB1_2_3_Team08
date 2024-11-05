@@ -1,7 +1,11 @@
-package edu.example.learner_kotlin.member.controller
+package edu.example.learner_kotlin.token.controller
 
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.security.JWTUtil
+import edu.example.learner_kotlin.token.entity.RefreshEntity
+import edu.example.learner_kotlin.token.repository.TokenRepository
+import edu.example.learner_kotlin.token.util.CookieUtil
+import edu.example.learner_kotlin.token.util.TokenUtil
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -14,9 +18,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @ResponseBody
-class ReissueController(private val jwtUtil: JWTUtil) {
+class ReissueController(private val jwtUtil: JWTUtil,
+                        private val tokenRepository: TokenRepository,
+                        private val cookieUtil: CookieUtil,
+                        private val tokenUtil: TokenUtil,) {
     @PostMapping("/reissue")
     fun reissue(request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<*> {
+
         //get refresh token
         var refreshToken: String? = null
         val cookies: Array<Cookie> = request.cookies
@@ -31,7 +39,7 @@ class ReissueController(private val jwtUtil: JWTUtil) {
             log.info("--- No cookies found")
         }
 
-        log.info("--- refreshToken : $refreshToken")
+        log.info("--- New RefreshToken : $refreshToken")
 
 
         if (refreshToken == null) {
@@ -52,8 +60,17 @@ class ReissueController(private val jwtUtil: JWTUtil) {
         val role = claims["role"].toString() // 단일 역할 처리
         val category = claims["category"].toString()
 
+        // Refresh 토큰인지 확인
         if (category != "refresh") {
             //response status code
+            return ResponseEntity("invalid refresh token", HttpStatus.BAD_REQUEST)
+        }
+
+
+        //DB에 저장되어 있는지 확인
+        val isExist: Boolean = tokenRepository.existsRefreshEntityBy(refreshToken)
+        if (!isExist) {
+            //response body
             return ResponseEntity("invalid refresh token", HttpStatus.BAD_REQUEST)
         }
 
@@ -65,9 +82,12 @@ class ReissueController(private val jwtUtil: JWTUtil) {
             mutableMapOf("category" to "refresh", "username" to username, "role" to role, "mid" to claims["mid"].toString()), 1440
         ) // 24시간
 
+        //Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
+        tokenRepository.deleteRefreshEntityBy(refreshToken);
+        tokenUtil.addRefreshEntity(username, newRefreshToken);
 
         // Refresh 토큰을 쿠키에 저장
-        response.addCookie(createCookie("RefreshToken", newRefreshToken))
+        response.addCookie(cookieUtil.createCookie("RefreshToken", newRefreshToken))
 
         // Access 토큰을 JSON 응답 본문에 추가
         response.contentType = "application/json"
@@ -75,15 +95,5 @@ class ReissueController(private val jwtUtil: JWTUtil) {
         response.writer.write("""{ "accessToken": "$newAccessToken" }""")
 
         return ResponseEntity<Any>(HttpStatus.OK)
-    }
-
-    private fun createCookie(key: String, value: String): Cookie {
-        val cookie = Cookie(key, value)
-        cookie.maxAge = 24 * 60 * 60
-        cookie.secure = false;
-        cookie.path = "/";
-        cookie.isHttpOnly = true
-
-        return cookie
     }
 }
