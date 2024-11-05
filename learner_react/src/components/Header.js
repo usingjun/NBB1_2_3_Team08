@@ -40,41 +40,6 @@ const Header = ({ openModal }) => {
         }
     }, []);
 
-    useEffect(() => {
-        if (isLoggedIn && memberId) {
-            startSseConnection(memberId);
-        }
-    }, [isLoggedIn, memberId]);
-
-    const startSseConnection = async (id) => {
-        try {
-            const response = await fetch(`${notificationUrl}/connect?memberId=${id}`, {
-                method: 'GET',
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error('SSE connection failed');
-            }
-
-            const eventSource = new EventSource(`${notificationUrl}/connect?memberId=${id}`, {
-                withCredentials: true,
-            });
-
-            eventSource.onmessage = (event) => {
-                console.log("New event:", event.data); // 이벤트 데이터 출력
-                // 여기에 알림 처리 로직 추가
-            };
-
-            eventSource.onerror = (error) => {
-                console.error("EventSource error:", error);
-                eventSource.close(); // 오류 발생 시 연결 닫기
-            };
-        } catch (error) {
-            console.error("SSE 연결 중 오류:", error);
-        }
-    };
-
     const handleLogout = () => {
         document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         localStorage.removeItem("memberId");

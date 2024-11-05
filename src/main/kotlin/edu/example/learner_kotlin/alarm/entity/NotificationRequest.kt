@@ -4,5 +4,4 @@ data class NotificationRequest(
     val memberId : Long? = null,
     val title : String,
     val message: String,
-    
 )

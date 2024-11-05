@@ -14,7 +14,8 @@ object AlarmMapper {
             alarmType = alarm.alarmType?.name,
             createdAt = alarm.createdAt.toString(),
             priority = alarm.priority?.name,
-            alarmStatus = alarm.alarmStatus
+            alarmStatus = alarm.alarmStatus,
+            memberId = alarm.member!!.memberId
         )
     }
 

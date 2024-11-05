@@ -31,7 +31,8 @@ class CourseServiceImpl(
         courseRepo.save(course)
 
         log.info("successfully added course")
-        alarmService.createAlarmToUser("{${member.nickname} 님의 강의가 생성되었습니다}","강의 생성" )
+        alarmService.createAlarmSendToUser("{${member.nickname} 님의 강의가 생성되었습니다}","강의 생성" )
+
         return dto
     }
 

@@ -8,6 +8,7 @@ data class AlarmDTO(
     var createdAt : String? = null,
     var priority: String?= null,
     var alarmStatus: Boolean =false,
+    var memberId : Long? = null,
 ) {
 
 }

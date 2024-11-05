@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Courses from "./pages/Courses";
 import SignUp from "./pages/SignUp";
 import LoginModal from "./components/LoginModal";
-import PostCourseInquiry from "./pages/PostCourseInquiry"
+import PostCourseInquiry from "./pages/PostCourseInquiry";
 import CourseNews from "./pages/CourseNews";
 import MyPage from "./pages/MyPage";
 import CreateNews from "./pages/CreateNews";
@@ -19,18 +19,17 @@ import CourseRoutes from './CourseRoutes';
 import OrderRoutes from "./OrderRoutes";
 import VideoRoutes from "./VideoRoutes";
 import YoutubePlayer from "./YoutubePlayer";
-import ResetPassword from "./components/ResetPassword"; // ResetPassword 컴포넌트 가져오기
+import ResetPassword from "./components/ResetPassword";
 import MyCourses from './pages/MyCourses';
 import InquiryList from "./pages/Inquiry/InquiryList";
 import InquiryDetail from "./pages/Inquiry/InquiryDetail";
 import InquiryRegistration from "./pages/Inquiry/InquiryRegistration";
 import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
-import SseComponent from "./components/SseComponent";
-import axios from "axios";
+import {NotificationContext} from "./components/NotificationContext";
 import {NotificationProvider} from "./components/NotificationContext";
-axios.defaults.withCredentials = true;
-
+import SendNotificationComponent from "./components/SendNotification"; // 컴포넌트 가져오기
+import NotificationDisplay from "./components/NotificationDisplay";
 
 function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,43 +44,41 @@ function App() {
 
     return (
         <NotificationProvider>
-        <Router>
-            <Header openModal={openModal} />
-            {isModalOpen && <LoginModal closeModal={closeModal} />}
-            <Routes>
-                <Route path="/" element={<Navigate to="/courses" />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/courses" element={<Courses />} /> {/* 수정된 경로 */}
-                <Route path="/courses/:courseId/post" element={<PostCourseInquiry />} />
-                <Route path="/courses/:courseId/news/:newsId" element={<CourseNews />} />
-                <Route path="/내정보" element={<MyPage />} />
-                <Route path="/courses/:courseId/news/create" element={<CreateNews />} />
-                <Route path="/courses/:courseId/news/:newsId/edit" element={<UpdateNews />} />
-                <Route path="/edit-profile" element={<EditProfile />} />
-                <Route path="/courses/:courseId/reviews/create" element={<CourseReviewCreate />} />
-                <Route path="/courses/:courseId/reviews/:reviewId" element={<CourseReviewEdit />} />
-                <Route path="/members/instructor/:nickname" element={<Instructor />} />
-                <Route path="/members/instructor/:nickname/reviews/create" element={<InstructorReviewCreate />} />
-                <Route path="/members/instructor/:nickname/reviews/:reviewId" element={<InstructorReviewEdit />} />
-                <Route path="/video/:videoId/play" element={<YoutubePlayer />} /> {/* 추가된 부분 */}
-                <Route path="/*" element={<CourseRoutes />} /> {/* 모든 하위 경로를 CourseRoutes로 전달 */}
-                <Route path="/orders/*" element={<OrderRoutes />} />
-                <Route path="/video/*" element={<VideoRoutes />} /> {/* 비디오 관련 라우팅 추가 */}
-                <Route path="/members/instructor/:nickname/reviews/create" element={<InstructorReviewCreate />} /> {/* 강사 리뷰 생성 페이지 */}
-                <Route path="/members/instructor/:nickname/reviews/:reviewId" element={<InstructorReviewEdit />} /> {/* 강사 리뷰 수정 페이지 */}
-                <Route path="/reset-password/:uuid" element={<ResetPassword />} /> {/* 비밀번호 변경 */}
-                <Route path="/my-courses" element={<MyCourses />} />
-                <Route path="/inquiries" element={<InquiryList/>}/>
-                <Route path="/inquiries/new" element={<InquiryRegistration/>}/>
-                <Route path="/inquiries/:inquiryId" element={<InquiryDetail/>}/>
-                <Route path="/members/:memberId" element={<MemberDetail />} />
-                <Route path="/members/other/:nickname" element={<OtherUserPage/>}/>
-                <Route path="/alarm/count" element={<SseComponent />} />
-            </Routes>
-        </Router>
-            </NotificationProvider>
+            <Router>
+                <Header openModal={openModal} />
+                {isModalOpen && <LoginModal closeModal={closeModal} />}
+                <Routes>
+                    <Route path="/" element={<Navigate to="/courses" />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/courses" element={<Courses />} />
+                    <Route path="/courses/:courseId/post" element={<PostCourseInquiry />} />
+                    <Route path="/courses/:courseId/news/:newsId" element={<CourseNews />} />
+                    <Route path="/내정보" element={<MyPage />} />
+                    <Route path="/courses/:courseId/news/create" element={<CreateNews />} />
+                    <Route path="/courses/:courseId/news/:newsId/edit" element={<UpdateNews />} />
+                    <Route path="/edit-profile" element={<EditProfile />} />
+                    <Route path="/courses/:courseId/reviews/create" element={<CourseReviewCreate />} />
+                    <Route path="/courses/:courseId/reviews/:reviewId" element={<CourseReviewEdit />} />
+                    <Route path="/members/instructor/:nickname" element={<Instructor />} />
+                    <Route path="/members/instructor/:nickname/reviews/create" element={<InstructorReviewCreate />} />
+                    <Route path="/members/instructor/:nickname/reviews/:reviewId" element={<InstructorReviewEdit />} />
+                    <Route path="/video/:videoId/play" element={<YoutubePlayer />} />
+                    <Route path="/*" element={<CourseRoutes />} />
+                    <Route path="/orders/*" element={<OrderRoutes />} />
+                    <Route path="/video/*" element={<VideoRoutes />} />
+                    <Route path="/reset-password/:uuid" element={<ResetPassword />} />
+                    <Route path="/my-courses" element={<MyCourses />} />
+                    <Route path="/inquiries" element={<InquiryList />} />
+                    <Route path="/inquiries/new" element={<InquiryRegistration />} />
+                    <Route path="/inquiries/:inquiryId" element={<InquiryDetail />} />
+                    <Route path="/members/:memberId" element={<MemberDetail />} />
+                    <Route path="/members/other/:nickname" element={<OtherUserPage />} />
+                    <Route path="/alarm/send" element={<SendNotificationComponent />} />
+                    <Route path="/alarm/display" element={<NotificationDisplay/>}/>
+                </Routes>
+            </Router>
+        </NotificationProvider>
     );
 }
 
 export default App;
-

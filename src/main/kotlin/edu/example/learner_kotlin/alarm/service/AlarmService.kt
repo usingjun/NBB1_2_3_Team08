@@ -5,7 +5,6 @@ import edu.example.learner_kotlin.alarm.repository.AlarmRepository
 import edu.example.learner_kotlin.alarm.dto.AlarmDTO
 import edu.example.learner_kotlin.alarm.entity.AlarmType
 import edu.example.learner_kotlin.alarm.entity.Priority
-import edu.example.learner_kotlin.alarm.entity.QAlarm.alarm
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.entity.Role
@@ -24,54 +23,73 @@ class AlarmService(
 
     @Transactional
     fun createAlarm(memberId: Long, alarmContent: String, alarmTitle: String): AlarmDTO {
+        val member = memberRepository.findById(memberId).orElseThrow {
+            IllegalArgumentException("Member not found with ID: $memberId")
+        }
 
         val alarm = Alarm(
-            member = Member().apply { this.memberId = memberId },
+            member = member,
             alarmContent = alarmContent,
             alarmTitle = alarmTitle
         )
 
         alarmRepository.save(alarm)
-        sseService.sendToMember(memberId, alarmTitle,alarmContent)
-        log.info("생성된 알람: ${AlarmMapper.toDTO(alarm)}" )
+        sseService.sendToMember(memberId, alarmTitle, alarmContent)
+        log.info("Created alarm: ${AlarmMapper.toDTO(alarm)}")
         return AlarmMapper.toDTO(alarm)
     }
-    fun createAlarmToUser(alarmContent: String, alarmTitle: String){
-        sseService.sendToAll(alarmTitle,alarmContent)
-        memberRepository.findAll().stream().filter{ it.role==Role.USER }
-            .forEach {
+
+    @Transactional
+    fun createAlarmSendToUser(alarmContent: String, alarmTitle: String) {
+        val users = memberRepository.findAll().filter { it.role == Role.USER }
+
+        users.forEach { user ->
             val alarm = Alarm(
-                member = Member().apply { this.memberId = it.memberId },
+                member = user,
                 alarmContent = alarmContent,
                 alarmTitle = alarmTitle
             )
             alarmRepository.save(alarm)
+            sseService.sendToMember(user.memberId!!, alarmTitle, alarmContent)
         }
+
+        log.info("Alarm sent to all users with Role.USER: $alarmTitle - $alarmContent")
     }
 
     fun getAlarmsByMember(memberId: Long): List<AlarmDTO> {
-        val alarms = alarmRepository.findByMember(Member(memberId))
+        val member = memberRepository.findById(memberId).orElseThrow {
+            IllegalArgumentException("Member not found with ID: $memberId")
+        }
+        val alarms = alarmRepository.findByMember(member)
         return alarms.map { AlarmMapper.toDTO(it) }
     }
 
     fun getAlarmById(alarmId: Long): AlarmDTO {
-        val alarm = alarmRepository.findById(alarmId).orElseThrow { RuntimeException("Alarm not found") }
+        val alarm = alarmRepository.findById(alarmId).orElseThrow {
+            IllegalArgumentException("Alarm not found with ID: $alarmId")
+        }
         return AlarmMapper.toDTO(alarm)
     }
 
     @Transactional
     fun updateAlarm(alarmId: Long, alarmDTO: AlarmDTO): AlarmDTO {
-        val alarm = alarmRepository.findById(alarmId).orElseThrow { RuntimeException("Alarm not found") }
+        val alarm = alarmRepository.findById(alarmId).orElseThrow {
+            IllegalArgumentException("Alarm not found with ID: $alarmId")
+        }
 
-        alarm.alarmContent = alarmDTO.alarmContent
-        alarm.alarmType = AlarmType.valueOf(alarmDTO.alarmType ?: "INFO")
-        alarm.priority = Priority.valueOf(alarmDTO.priority ?: "MEDIUM")
+        alarm.apply {
+            alarmContent = alarmDTO.alarmContent
+            alarmType = AlarmType.valueOf(alarmDTO.alarmType ?: "INFO")
+            priority = Priority.valueOf(alarmDTO.priority ?: "MEDIUM")
+        }
 
         return AlarmMapper.toDTO(alarmRepository.save(alarm))
     }
 
     fun deleteAlarm(alarmId: Long) {
-        val alarm = alarmRepository.findById(alarmId).orElseThrow { RuntimeException("Alarm not found") }
+        val alarm = alarmRepository.findById(alarmId).orElseThrow {
+            IllegalArgumentException("Alarm not found with ID: $alarmId")
+        }
         alarmRepository.delete(alarm)
     }
 }
