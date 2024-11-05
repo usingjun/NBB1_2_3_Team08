@@ -1,7 +1,6 @@
 package edu.example.learner_kotlin.config
 
 import edu.example.learner_kotlin.security.*
-import edu.example.learner_kotlin.token.repository.TokenRepository
 import edu.example.learner_kotlin.token.util.CookieUtil
 import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.http.HttpServletResponse
@@ -128,10 +127,18 @@ class SecurityConfig(
                 // 스터디 테이블 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/weekly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/yearly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.POST, "/study-tables").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.PUT, "/study-tables/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 출석 체크 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/attendances/**").permitAll()
                 it.requestMatchers(HttpMethod.POST, "/attendances").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // member_video 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/member-video/**").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.PUT, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.DELETE, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 토큰 디코딩 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/token/decode").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")

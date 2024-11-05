@@ -21,7 +21,7 @@ class AnswerServiceTests {
         val inquiryId = 1L
 
         answerService.readByInquiryId(inquiryId).run {
-            assertEquals(inquiryId, this.inquiryId)
+            assertEquals(inquiryId, this?.inquiryId)
         }
     }
 

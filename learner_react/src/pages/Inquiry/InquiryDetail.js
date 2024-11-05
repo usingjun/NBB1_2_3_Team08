@@ -15,7 +15,7 @@ const InquiryDetail = () => {
     const [info, setInfo] = useState(null);
     const [inquiryAuthorId, setInquiryAuthorId] = useState(null); // 작성자 ID 추가
     const navigate = useNavigate();
-    const memberId = parseInt(localStorage.getItem("memberId"), 10);
+    const [memberId, setMemberId] = useState()
     const [inquiryStatus, setInquiryStatus] = useState('ANSWERED');
 
     // role 가져오는 함수
@@ -25,6 +25,7 @@ const InquiryDetail = () => {
             try {
                 const response = await axiosInstance.get('/token/decode');
                 setInfo(response.data);
+                setMemberId(response.data.mid)
             } catch (error) {
                 console.error('Failed to get role:', error);
             }

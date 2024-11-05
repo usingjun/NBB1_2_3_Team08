@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
+import axiosInstance from "./pages/axiosInstance";
 
 const YoutubePlayer = () => {
     const { videoId } = useParams();
@@ -13,7 +14,8 @@ const YoutubePlayer = () => {
     const [courseVideos, setCourseVideos] = useState([]);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(-1);
     const [isLoading, setIsLoading] = useState(true);
-    const [memberId] = useState(localStorage.getItem('memberId'));
+    const [memberId, setMemberId] = useState(null);
+    const [isMemberIdReady, setIsMemberIdReady] = useState(false);
     const hasPosted = useRef(false);
 
     const videoEntityId = location.state?.videoEntityId;
@@ -23,42 +25,62 @@ const YoutubePlayer = () => {
     const embedUrl = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1`;
 
     useEffect(() => {
-        const createStudyTable = async () => {
-            if (hasPosted.current) return;
-            hasPosted.current = true;
-            try {
-                await axios.post('http://localhost:8080/study-tables', {
-                    memberId: memberId,
-                    studyTime: 0,
-                    completed: 0,
-                }, { withCredentials: true });
-            } catch (error) {
-                console.error('데이터 생성 중 에러:', error);
+        const getInfoFromToken = async () => {
+            const accessToken = localStorage.getItem("accessToken");
+            if (accessToken) {
+                try {
+                    const response = await axiosInstance.get('/token/decode');
+                    setMemberId(response.data.mid)
+                } catch (error) {
+                    console.error('Failed to get role:', error);
+                }
             }
         };
+        getInfoFromToken();
+    }, []);
 
-        createStudyTable();
+    useEffect(() => {
+        if (memberId !== null) {
+            setIsMemberIdReady(true); // memberId가 준비됨을 나타내기 위해 상태 업데이트
+            const timer = setInterval(() => {
+                updateStudyTable(1, 0); // 1분마다 1분 추가
+            }, 60000);
+            return () => clearInterval(timer);
+        }
     }, [memberId]);
+
+    useEffect(() => {
+        if (isMemberIdReady) {
+            const createStudyTable = async () => {
+                if (hasPosted.current) return;
+                hasPosted.current = true;
+                try {
+                    await axiosInstance.post('/study-tables', {
+                        memberId: memberId,
+                        studyTime: 0,
+                        completed: 0,
+                    });
+                } catch (error) {
+                    console.error('데이터 생성 중 에러:', error);
+                }
+            };
+            createStudyTable();
+        }
+    }, [isMemberIdReady]);
 
     const updateStudyTable = async (studyTime, completed) => {
         try {
-            await axios.put('http://localhost:8080/study-tables/today', {
+            await axiosInstance.put('/study-tables/today',  {
                 memberId: memberId,
                 studyTime: studyTime,
                 completed: completed,
-            }, { withCredentials: true });
+            });
         } catch (error) {
             console.error('데이터 업데이트 중 에러:', error);
         }
     };
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            updateStudyTable(1, 0); // 1분마다 1분 추가
-        }, 60000);
 
-        return () => clearInterval(timer);
-    }, [memberId]);
 
     useEffect(() => {
         const fetchCourseVideos = async () => {
@@ -69,7 +91,7 @@ const YoutubePlayer = () => {
 
             setIsLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8080/course/video/${courseId}`, { withCredentials: true });
+                const response = await axiosInstance.get(`http://localhost:8080/course/video/${courseId}`);
                 const videos = response.data;
                 setCourseVideos(videos);
                 const index = videos.findIndex(v => v.videoId === parseInt(videoId));
