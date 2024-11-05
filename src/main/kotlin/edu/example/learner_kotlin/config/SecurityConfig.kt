@@ -1,7 +1,6 @@
 package edu.example.learner_kotlin.config
 
 import edu.example.learner_kotlin.security.*
-import edu.example.learner_kotlin.token.repository.TokenRepository
 import edu.example.learner_kotlin.token.util.CookieUtil
 import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.http.HttpServletResponse

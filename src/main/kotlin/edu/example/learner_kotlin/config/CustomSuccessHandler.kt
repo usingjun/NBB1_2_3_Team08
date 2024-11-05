@@ -1,11 +1,10 @@
-package edu.example.learner_kotlin.security
+package edu.example.learner_kotlin.config
 
-import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.dto.oauth2.CustomOauth2User
+import edu.example.learner_kotlin.security.JWTUtil
 import edu.example.learner_kotlin.token.util.CookieUtil
 import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.ServletException
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
