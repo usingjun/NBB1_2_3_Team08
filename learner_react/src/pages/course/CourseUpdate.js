@@ -44,11 +44,17 @@ const CourseUpdate = () => {
                 courseDescription,
                 courseAttribute,
                 memberNickname // 수정이 필요 없는 데이터도 함께 전송
-            }, { withCredentials: true });
+            }, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+
+            });
 
             setSuccessMessage("수정에 성공하였습니다."); // 성공 메시지 설정
             setTimeout(() => {
-                navigate("/courses/list"); // 리디렉션
+                navigate("/courses"); // 리디렉션
             }, 2000); // 2초 후에 리디렉션
         } catch (err) {
             setError("강좌 수정에 실패했습니다.");

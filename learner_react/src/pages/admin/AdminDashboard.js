@@ -3,6 +3,9 @@ import Sidebar from './Sidebar';
 import CourseManagement from './CourseManagement';
 import CourseCreate from '../course/CourseCreate';
 import CourseUpdate from "../course/CourseUpdate";
+import CourseInquiryList from "./CourseInquiryManagement";
+import CourseNewsList from "../CourseNewsList"
+
 import { Routes, Route } from 'react-router-dom';
 
 function AdminDashboard() {
@@ -16,6 +19,8 @@ function AdminDashboard() {
                     <Route path="courses-management" element={<CourseManagement />} />
                     <Route path="courses/create" element={<CourseCreate />} />
                     <Route path="courses/edit/:courseId" element={<CourseUpdate />} />
+                    <Route path="courses/inquiries/:courseId" element={<CourseInquiryList/>} />
+                    <Route path="courses/news/:courseId" element={<CourseNewsList/>} />
                 </Routes>
             </main>
         </div>

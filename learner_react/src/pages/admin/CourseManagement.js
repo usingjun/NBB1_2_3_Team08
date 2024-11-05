@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axiosInstance";
 
 const CourseManagement = () => {
     const [courses, setCourses] = useState([]);
+    const [userRole, setUserRole] = useState(null); // 사용자 역할 저장
+    const [userId, setUserId] = useState(null); // 사용자 ID 저장
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,16 +19,59 @@ const CourseManagement = () => {
                     courseCreatedDate: course.course_created_date // 키 변경
                 }));
                 setCourses(camelCasedData);
+                return fetchUserRoleAndId()
+            }).then((userData) => {
+                setUserRole(userData.role);   // 사용자 역할 설정
+                setUserId(userData.mid);      // 사용자 ID 설정
+                //console.log(userData.role);
+                //console.log(userData.mid);
             })
             .catch((error) => {
                 console.error("Error fetching the courses:", error);
             });
     }, []);
 
+    // JWT 토큰에서 사용자 역할과 ID를 추출
+    const fetchUserRoleAndId = async () => {
+        //console.log("fetchUserRoleAndId 함수 호출됨");
+        const token = localStorage.getItem('accessToken');
+
+        if (!token) {
+            throw new Error("Token not found");
+        }
+
+        try {
+            const response = await axiosInstance.get('/token/decode', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = response.data;
+            return {
+                mid: data.mid,
+                role: data.role,
+                username: data.username
+            };
+
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            throw error;
+        }
+    };
+
     const handleDelete = async (courseId) => {
         if (window.confirm("정말 이 강의를 삭제하시겠습니까?")) {
             try {
-                const response = await axios.delete(`http://localhost:8080/course/${courseId}`, { withCredentials: true });
+                const response = await axios.delete(`http://localhost:8080/course/${courseId}`
+                    , {
+                        withCredentials: true,
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                        }
+                    });
                 if (response.status === 200) {
                     setCourses((prevCourses) => prevCourses.filter(course => course.courseId !== courseId));
                     alert(response.data.success); // "강좌가 삭제되었습니다." 메시지 표시
@@ -45,20 +91,38 @@ const CourseManagement = () => {
         navigate(`/admin/courses/edit/${courseId}`);
     };
 
+    const handleInquiryManagement = (courseId) => {
+        navigate(`/admin/courses/inquiries/${courseId}`);
+    };
+
+    const handleNewsManagement = (courseId) => {
+        if (!courseId) {
+            console.error("courseId가 undefined입니다.");
+            return;
+        }
+        console.log("courseId is ", courseId);
+        navigate(`/admin/courses/news/${courseId}`)
+    }
     return (
         <CoursePage>
-            <h2>강의 관리</h2>
             <CourseList>
                 {courses.length > 0 ? (
                     courses.map((course) => (
                         <CourseItem key={course.courseId}>
                             <CourseInfo>
-                                <h3>{course.courseName}</h3>
+                                <h3
+                                    onClick={() => navigate(`/courses/${course.courseId}`)}
+                                    style={{ cursor: 'pointer', color: 'blue' }}
+                                >   {course.courseName}
+                                </h3>
                                 <p>강사명: {course.memberNickname}</p>
                                 <p>강의 아이디: {course.courseId}</p>
                             </CourseInfo>
                             <ButtonContainer>
-                                <EditButton onClick={() => handleEdit(course.courseId)}>수정</EditButton>
+                                <EditButton onClick={() => handleEdit(course.courseId)}>강좌 수정</EditButton>
+                                <CourseButton onClick={() => navigate(`/courses/${course.courseId}`)}>강의 관리</CourseButton>
+                                <InquiryButton onClick={() => {handleInquiryManagement(course.courseId)}}>문의 관리</InquiryButton>
+                                <NewsButton onClick={() => handleNewsManagement(course.courseId)}>새소식 관리</NewsButton>
                                 <DeleteButton onClick={() => handleDelete(course.courseId)}>삭제</DeleteButton>
                             </ButtonContainer>
                         </CourseItem>
@@ -94,6 +158,8 @@ const CourseItem = styled.div`
     border: 1px solid #ddd;
     margin-bottom: 1rem;
     border-radius: 5px;
+    width: 100%;
+    min-width: 700px;
 `;
 
 const CourseInfo = styled.div`
@@ -126,6 +192,45 @@ const EditButton = styled.button`
 
     &:hover {
         background-color: #45a049;
+    }
+`;
+
+const CourseButton = styled.button`
+    background-color: #2196F3;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #1976D2;
+    }
+`;
+
+const InquiryButton = styled.button`
+    background-color: #FFC107;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #FFA000;
+    }
+`;
+
+const NewsButton = styled.button`
+    background-color: #ac07ff;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #8400ff;
     }
 `;
 

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from "../axiosInstance";
 
 const Course_Url = "http://localhost:8080/course";
 
@@ -12,25 +13,71 @@ const CourseCreate = () => {
     const [coursePrice, setCoursePrice] = useState(0);
     const [courseLevel, setCourseLevel] = useState(1); // 기본값 1
     const [courseAttribute, setCourtAttribute] = useState("");
+    const [memberNickname, setMemberNickname] = useState(""); // 직접 입력하는 memberNickname
     const [error, setError] = useState(null);
+    const [userRole, setUserRole] = useState(null); // 사용자 역할 저장
+    const [userId, setUserId] = useState(null); // 사용자 ID 저장
     const navigate = useNavigate();
+
+    // 컴포넌트가 처음 렌더링될 때 fetchUserRoleAndId 호출
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const userData = await fetchUserRoleAndId();
+                setUserRole(userData.role);   // 사용자 역할 설정
+                setUserId(userData.mid);      // 사용자 ID 설정
+                //console.log(userData.role);
+                //console.log(userData.mid);
+            } catch (error) {
+                console.error("Error fetching user role and ID:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+
+    const fetchUserRoleAndId = async () => {
+        //console.log("fetchUserRoleAndId 함수 호출됨!");
+        const token = localStorage.getItem('accessToken');
+
+        if (!token) {
+            throw new Error("Token not found");
+        }
+
+        try {
+            const response = await axiosInstance.get('/token/decode', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = response.data;
+            return {
+                mid: data.mid,
+                role: data.role,
+                username: data.username
+            };
+
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            throw error;
+        }
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 쿠키에서 Authorization 토큰을 가져오는 로직
-            const token = document.cookie
-                .split("; ")
-                .find(row => row.startsWith("Authorization="))
-                ?.split("=")[1];
-
+            // 로컬 스토리지에서 accessToken 가져오기
+            const token = localStorage.getItem('accessToken');
             if (!token) {
-                throw new Error("Authorization 토큰이 없습니다.");
+                console.error("로그인된 사용자의 토큰을 찾을 수 없습니다.");
+                alert("로그인이 필요합니다. 로그인 후 다시 시도해 주세요.");
+                return;
             }
-
-            // JWT 디코딩하여 mid 추출
-            const decodedToken = jwtDecode(token);
-            const memberNickname = decodedToken.mid;
 
             const payload = {
                 courseName,
@@ -41,7 +88,12 @@ const CourseCreate = () => {
                 memberNickname,
             };
 
-            await axios.post(Course_Url, payload, { withCredentials: true });
+            await axios.post(Course_Url, payload, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            });
 
             // 성공 메시지와 페이지 리디렉션
             alert("강의 생성에 성공하였습니다."); // alert 추가
@@ -65,7 +117,15 @@ const CourseCreate = () => {
                         required
                     />
                 </Label>
-
+                <Label>
+                    강사 이름:
+                    <Input
+                        type="text"
+                        value={memberNickname}
+                        onChange={(e) => setMemberNickname(e.target.value)}
+                        required
+                    />
+                </Label>
                 <Label>
                     강좌 설명:
                     <Input
