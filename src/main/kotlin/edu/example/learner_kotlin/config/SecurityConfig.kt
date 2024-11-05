@@ -1,9 +1,8 @@
 package edu.example.learner_kotlin.config
 
 import edu.example.learner_kotlin.security.*
-import edu.example.learner_kotlin.token.repository.TokenRepository
+import edu.example.learner_kotlin.token.service.TokenService
 import edu.example.learner_kotlin.token.util.CookieUtil
-import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,7 +28,7 @@ class SecurityConfig(
     private val customSuccessHandler: CustomSuccessHandler,
     private val customOauth2UserService: CustomOauth2UserService,
     private val authenticationConfiguration : AuthenticationConfiguration,
-    private val tokenUtil: TokenUtil,
+    private val tokenService: TokenService,
     private val cookieUtil: CookieUtil
 ){
     @Bean
@@ -61,7 +60,7 @@ class SecurityConfig(
 
         //LoginFilter 추가
         http
-            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenUtil, cookieUtil), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAt(LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService, cookieUtil), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http
@@ -146,6 +145,8 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/members/list").hasRole("ADMIN") // 회원 목록 조회 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/members/instructor/**").permitAll() // 강사 관련 프로필 GET 요청 허용
                 it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.POST, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.DELETE, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용

@@ -1,12 +1,9 @@
 package edu.example.learner_kotlin.security
 
 import edu.example.learner_kotlin.courseabout.exception.MemberException
-import edu.example.learner_kotlin.token.entity.RefreshEntity
-import edu.example.learner_kotlin.token.repository.TokenRepository
+import edu.example.learner_kotlin.token.service.TokenService
 import edu.example.learner_kotlin.token.util.CookieUtil
-import edu.example.learner_kotlin.token.util.TokenUtil
 import jakarta.servlet.FilterChain
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
@@ -19,7 +16,7 @@ import java.util.*
 
 class LoginFilter(private val authenticationManager: AuthenticationManager,
                   private val jwtUtil: JWTUtil,
-                  private val tokenUtil: TokenUtil,
+                  private val tokenService: TokenService,
                   private val cookieUtil: CookieUtil)  : UsernamePasswordAuthenticationFilter() {
 
     @Throws(AuthenticationException::class)
@@ -56,7 +53,7 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
         ) // 24시간
 
         // Refresh 토큰 Redis에 저장
-        tokenUtil.addRefreshEntity(username, refreshToken)
+        tokenService.addRefreshEntity(username, refreshToken)
 
         // Refresh 토큰을 쿠키에 저장
         response.addCookie(cookieUtil.createCookie("RefreshToken", refreshToken))
@@ -64,7 +61,7 @@ class LoginFilter(private val authenticationManager: AuthenticationManager,
         // Access 토큰을 JSON 응답 본문에 추가
         response.contentType = "application/json"
         response.characterEncoding = "UTF-8"
-        response.writer.write("""{ "accessToken": "$accessToken", "memberId": $memberId }""")
+        response.writer.write("""{ "accessToken": "$accessToken" }""")
     }
 
     //실패 응답

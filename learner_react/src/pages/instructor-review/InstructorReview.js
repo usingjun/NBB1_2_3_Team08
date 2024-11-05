@@ -239,6 +239,7 @@ const InstructorReview = () => {
                         background-color: #f8f9fa;
                         border-radius: 12px;
                         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                        position: relative;
                     }
 
                     .review-header {
@@ -259,12 +260,12 @@ const InstructorReview = () => {
                         position: absolute;
                         top: 30px;
                         right: 30px;
-                        padding: 10px 15px;
+                        padding: 12px 20px;
                         background-color: #28a745;
                         color: white;
                         border: none;
                         border-radius: 6px;
-                        cursor: pointer;
+                        text-decoration: none;
                         font-size: 16px;
                     }
 
