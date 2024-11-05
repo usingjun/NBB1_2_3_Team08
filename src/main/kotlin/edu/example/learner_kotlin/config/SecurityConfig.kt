@@ -162,6 +162,9 @@ class SecurityConfig(
                 it.requestMatchers("/reissue").permitAll()
                 it.requestMatchers("/members/find/**").permitAll() // 비밀번호 찾기 및 아이디 찾기 모두 허용
 
+                // 채팅 권한 설정
+                it.requestMatchers("/ws/**").permitAll()
+
                 it.anyRequest().authenticated()
         }
 
