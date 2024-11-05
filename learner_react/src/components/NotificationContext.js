@@ -1,11 +1,34 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import axiosInstance from "../pages/axiosInstance";
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
-    const memberId = localStorage.getItem("memberId"); // 로컬 스토리지에서 memberId 가져오기
+    const [memberId, setMemberId] = useState(null);
 
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 역할 및 이름 설정
+                setMemberId(response.data.mid);    // memberId 설정
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+        }
+    };
+    useEffect(() => {
+        checkUserRole(); // 사용자 역할 및 memberId 확인
+    }, []); // 컴포넌트가 마운트될 때 한 번만 호출
     useEffect(() => {
         const requestNotificationPermission = async () => {
             if ("Notification" in window) {

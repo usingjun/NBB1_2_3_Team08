@@ -33,6 +33,7 @@ import NotificationDisplay from "./components/NotificationDisplay";
 import axios from "axios";
 import AttendanceCheck from "./components/attendance/AttendanceCheck";
 import Chat from "./components/Chat";
+import AlarmRoutes from "./AlarmRoutes";
 
 axios.defaults.withCredentials = true;
 
@@ -84,6 +85,7 @@ function App() {
                 <Route path="/alarm/send" element={<SendNotificationComponent />} />
                 <Route path="/alarm/display" element={<NotificationDisplay/>}/>
                 <Route path="/chat" element={<Chat/>}/>
+                <Route path="/alarm/*" element={<AlarmRoutes />}/>
             </Routes>
         </Router>
         </NotificationProvider>
