@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import axiosInstance from "../pages/axiosInstance";
 
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
@@ -10,42 +11,54 @@ const Header = ({ openModal }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchId, setSearchId] = useState("");
     const [role, setRole] = useState("");
-    const [memberId, setMemberId] = useState(null);
-    const notificationUrl = "http://localhost:8080/notifications"; // 알림 URL
+
+    const checkLoginStatus = () => {
+        const token = localStorage.getItem("accessToken"); // 로컬 저장소에서 액세스 토큰 가져오기
+
+        if (token) {
+            setIsLoggedIn(true);
+            try {
+                const decodedToken = jwtDecode(token);
+                setRole(decodedToken.role);
+            } catch (decodeError) {
+                console.error("토큰 디코딩 실패:", decodeError);
+                handleLogout(); // 로그아웃 처리
+            }
+        } else {
+            setIsLoggedIn(false);
+            setRole(""); // 역할 초기화
+        }
+    };
 
     useEffect(() => {
-        try {
-            const token = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('Authorization='))?.split('=')[1];
+        checkLoginStatus(); // 처음 렌더링 시 상태 체크
+        const intervalId = setInterval(checkLoginStatus, 5000); // 5초마다 로그인 상태 체크
 
-            if (token) {
-                setIsLoggedIn(true);
-                const tokenWithoutBearer = token.replace('Bearer ', '');
-
-                try {
-                    const decodedToken = jwtDecode(tokenWithoutBearer);
-                    setRole(decodedToken.role);
-                    setMemberId(decodedToken.memberId); // 멤버 ID 추출
-                } catch (decodeError) {
-                    console.error("토큰 디코딩 실패:", decodeError);
-                    setIsLoggedIn(false);
-                    document.cookie = 'Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                    localStorage.removeItem('memberId');
-                }
-            }
-        } catch (error) {
-            console.error("토큰 확인 중 오류 발생:", error);
-            setIsLoggedIn(false);
-        }
+        return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 interval 정리
     }, []);
 
     const handleLogout = () => {
-        document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        localStorage.removeItem("memberId");
-        setIsLoggedIn(false);
-        navigate('/courses');
+        try {
+            // 서버에 로그아웃 요청 보내기 (쿠키 포함)
+            axiosInstance.post("/join/logout", null, { withCredentials: true })
+                .then(() => {
+                    // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("memberId");
+
+                    // 메인 페이지로 이동
+                    window.location.href = "/";
+                })
+                .catch(error => {
+                    console.error("Logout failed:", error);
+                    alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+                });
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+        }
     };
+
 
     const handleSearch = () => {
         if (searchId.trim()) {

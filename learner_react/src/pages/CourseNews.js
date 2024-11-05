@@ -40,7 +40,7 @@ export default function CourseNews() {
 
             if (token) {
                 // Authorization 헤더에 JWT 토큰 추가
-                const response = await axiosInstance.get('/auth/user-info', {
+                const response = await axiosInstance.get('/token/decode', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -48,7 +48,7 @@ export default function CourseNews() {
 
                 // 서버 응답에서 사용자 역할 및 이름 설정
                 setUserRole(response.data.role);  // role 설정
-                setUserName(response.data.mid);   // 사용자 ID 설정
+                setUserName(response.data.username);   // 사용자 ID 설정
                 // console.log("User Role:", response.data.role);
                 // console.log("User Name:", response.data.mid);
             }
