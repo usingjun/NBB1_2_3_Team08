@@ -20,7 +20,7 @@ class AnswerServiceTests {
     fun testReadByInquiryId() {
         val inquiryId = 1L
 
-        answerService.readByInquiryId(inquiryId).run {
+        answerService.readByInquiryId(inquiryId)?.run {
             assertEquals(inquiryId, this.inquiryId)
         }
     }

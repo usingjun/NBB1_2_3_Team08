@@ -6,7 +6,7 @@ import edu.example.learner_kotlin.courseabout.exception.NotFoundException
 import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.exception.LoginTaskException
 import edu.example.learner_kotlin.member.exception.MemberTaskException
-import edu.example.learner_kotlin.security.exception.JWTTaskException
+import edu.example.learner_kotlin.token.exception.JWTTaskException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
