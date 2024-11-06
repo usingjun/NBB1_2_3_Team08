@@ -5,11 +5,13 @@ import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.security.JWTUtil
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.stomp.StompCommand
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptor
 import org.springframework.messaging.support.MessageHeaderAccessor
 import org.springframework.stereotype.Component
+import org.springframework.web.socket.WebSocketSession
 import java.security.Principal
 
 @Component
@@ -20,21 +22,30 @@ class StompHandler(
 
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
         val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
-            ?: return message
 
-        if (StompCommand.CONNECT == accessor.command) {
-            val sessionAttributes = accessor.sessionAttributes ?: return message
-            val username = sessionAttributes["username"] as? String
-                ?: throw Exception("인증 정보가 없습니다")
+        when (accessor?.command) {
+            StompCommand.CONNECT -> {
+                // 원본 헤더에서 속성 가져오기
+                val simpSession = message.headers[SimpMessageHeaderAccessor.SESSION_ATTRIBUTES] as? Map<*, *>
+                val username = simpSession?.get("username") as? String
 
-            // Principal 설정
-            accessor.user = CustomPrincipal(username)
+                log.info("STOMP CONNECT - Trying to get username from session: $username")
+
+                // STOMP 세션에 username 저장
+                if (username != null) {
+                    accessor.sessionAttributes = accessor.sessionAttributes ?: mutableMapOf()
+                    accessor.sessionAttributes!!["username"] = username
+                    log.info("STOMP CONNECT - Username set in session: $username")
+                }
+            }
+            StompCommand.SUBSCRIBE -> {
+                val username = accessor.sessionAttributes?.get("username") as? String
+                log.info("STOMP SUBSCRIBE - Current username in session: $username")
+            }
+            else -> {}
         }
+
         return message
     }
 }
 
-// 사용자 정보를 담을 Principal 구현
-class CustomPrincipal(private val name: String) : Principal {
-    override fun getName(): String = name
-}

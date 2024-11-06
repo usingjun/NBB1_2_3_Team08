@@ -21,33 +21,20 @@ class WebSocketEventListener(
 
     @EventListener
     fun handleWebSocketConnectListener(event: SessionConnectedEvent) {
-        val headerAccessor = StompHeaderAccessor.wrap(event.message)
-        log.info("Connected - All Headers: ${headerAccessor.messageHeaders}")
+        val accessor = StompHeaderAccessor.wrap(event.message)
+        log.info("Connected Event - All Headers: ${accessor.messageHeaders}")
+        log.info("Connected Event - Session Attributes: ${accessor.sessionAttributes}")
 
-        // 세션 속성에서 토큰 가져오기
-        val token = headerAccessor.sessionAttributes?.get("token") as? String
+        val username = accessor.sessionAttributes?.get("username") as? String
+        log.info("Connected Event - Username from session: $username")
 
-        if (!token.isNullOrEmpty()) {
-            try {
-                val claims = jwtTokenProvider.validateToken(token)
-                val username = claims["username"] as String?
-
-                if (username != null) {
-                    log.info("User Connected: $username")
-                    // 사용자 정보를 세션에 저장
-                    headerAccessor.sessionAttributes?.put("username", username)
-
-                    // 입장 메시지 전송
-                    messageOperations.convertAndSend(
-                        "/sub/chat",  // topic 대신 sub 사용
-                        createJoinMessage(username)
-                    )
-                }
-            } catch (e: Exception) {
-                log.error("Token validation failed: ${e.message}")
-            }
+        if (username != null) {
+            messageOperations.convertAndSend(
+                "/sub/chat",
+                createJoinMessage(username)
+            )
         } else {
-            log.warn("No token found in session attributes")
+            log.warn("Connected Event - No username found in session")
         }
     }
 
@@ -58,9 +45,10 @@ class WebSocketEventListener(
 
         if (username != null) {
             log.info("Subscribe event - Username: $username")
-            log.info("Subscribe destination: ${headerAccessor.destination}")
-        } else {
-            log.warn("Subscribe event - No username found in session")
+            messageOperations.convertAndSend(
+                "/sub/chat",
+                createJoinMessage(username)
+            )
         }
     }
 
