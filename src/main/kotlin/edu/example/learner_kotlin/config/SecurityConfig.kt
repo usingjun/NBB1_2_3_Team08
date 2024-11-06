@@ -80,6 +80,12 @@ class SecurityConfig(
 
         //경로별 인가 작업
         http.authorizeHttpRequests {
+            it.requestMatchers(HttpMethod.POST,"notifications/**").permitAll()
+            it.requestMatchers(HttpMethod.GET,"notifications/**").permitAll()
+            it.requestMatchers(HttpMethod.GET,"notifications/connect").permitAll()
+            it.requestMatchers(HttpMethod.GET,"alarm/connect").permitAll()
+                it.requestMatchers(HttpMethod.POST,"/alarm/count").permitAll()
+            it.requestMatchers(HttpMethod.POST,"alarm/notify").permitAll()
                 // 리뷰 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/list").permitAll() // GET 요청 reviews 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/{reviewId}").permitAll() // GET 요청 course 모두 허용

@@ -18,7 +18,7 @@ import InstructorReviewEdit from "./pages/instructor-review/InstructorReviewEdit
 import CourseRoutes from './CourseRoutes';
 import OrderRoutes from "./OrderRoutes";
 import VideoRoutes from "./VideoRoutes";
-import YoutubePlayer from "./YoutubePlayer";
+import YoutubePlayer from "./components/YoutubePlayer";
 import ResetPassword from "./components/ResetPassword"; // ResetPassword 컴포넌트 가져오기
 import MyCourses from './pages/MyCourses';
 import InquiryList from "./pages/Inquiry/InquiryList";
@@ -26,9 +26,14 @@ import InquiryDetail from "./pages/Inquiry/InquiryDetail";
 import InquiryRegistration from "./pages/Inquiry/InquiryRegistration";
 import MemberDetail from './pages/MemberDetail';
 import OtherUserPage from "./pages/OtherUserPage";
+import {NotificationContext} from "./components/NotificationContext";
+import {NotificationProvider} from "./components/NotificationContext";
+import SendNotificationComponent from "./components/SendNotification"; // 컴포넌트 가져오기
+import NotificationDisplay from "./components/NotificationDisplay";
 import axios from "axios";
 import AttendanceCheck from "./components/attendance/AttendanceCheck";
 import Chat from "./components/Chat";
+import AlarmRoutes from "./AlarmRoutes";
 
 axios.defaults.withCredentials = true;
 
@@ -44,6 +49,7 @@ function App() {
     };
 
     return (
+        <NotificationProvider>
         <Router>
             <AttendanceCheck/>
             <Header openModal={openModal}/>
@@ -76,9 +82,13 @@ function App() {
                 <Route path="/inquiries/:inquiryId" element={<InquiryDetail/>}/>
                 <Route path="/members/:memberId" element={<MemberDetail />} />
                 <Route path="/members/other/:nickname" element={<OtherUserPage/>}/>
+                <Route path="/alarm/send" element={<SendNotificationComponent />} />
+                <Route path="/alarm/display" element={<NotificationDisplay/>}/>
                 <Route path="/chat" element={<Chat/>}/>
+                <Route path="/alarm/*" element={<AlarmRoutes />}/>
             </Routes>
         </Router>
+        </NotificationProvider>
     );
 }
 

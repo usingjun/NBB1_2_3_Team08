@@ -96,12 +96,13 @@ const Header = ({ openModal }) => {
             <RightSection>
                 {isLoggedIn ? (
                     <>
+                        <NavItem onClick={() => navigate('/alarm/list')}>알림</NavItem>
                         <NavItem onClick={() => navigate('/inquiries')}>문의</NavItem>
                         <NavItem onClick={() => setIsMenuOpen(!isMenuOpen)}>마이페이지</NavItem>
                         {isMenuOpen && (
                             <SubMenu>
                                 <SubMenuItem onClick={() => navigate('/내정보')}>내정보</SubMenuItem>
-                                {role === 'INSTRUCTOR' && (
+                                {role === 'ROLE_INSTRUCTOR' && (
                                     <SubMenuItem onClick={() => navigate('/courses/list')}>내 강의</SubMenuItem>
                                 )}
                                 <SubMenuItem onClick={() => navigate('/orders')}>장바구니</SubMenuItem>

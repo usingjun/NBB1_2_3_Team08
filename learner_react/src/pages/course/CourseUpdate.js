@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 
@@ -20,7 +20,7 @@ const CourseUpdate = () => {
     useEffect(() => {
         const fetchCourse = async () => {
             try {
-                const response = await axios.get(`${Course_Url}/${courseId}`, { withCredentials: true });
+                const response = await axiosInstance.get(`course/${courseId}`, { withCredentials: true });
                 const { courseName, courseLevel, coursePrice, courseDescription, memberNickname } = response.data;
                 setCourseName(courseName);
                 setCourseLevel(courseLevel);
@@ -37,7 +37,7 @@ const CourseUpdate = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`${Course_Url}/${courseId}`, {
+            await axiosInstance.put(`course/${courseId}`, {
                 courseName,
                 courseLevel,
                 coursePrice,
