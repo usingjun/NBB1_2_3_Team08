@@ -126,7 +126,10 @@ class MemberService(
         try {
             member.apply{
                 introduction = memberDTO.introduction
-                password = passwordEncoder.encode(memberDTO.password)
+
+                if (memberDTO.password?.contains("naver") != true && memberDTO.password?.contains("google") != true) {
+                    password = passwordEncoder.encode(memberDTO.password)
+                }
             }
             return  MemberDTO(memberRepository.save(member))
         } catch (e: Exception) {

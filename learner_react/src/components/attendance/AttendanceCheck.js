@@ -4,9 +4,21 @@ import axios from 'axios';
 import axiosInstance from '../../pages/axiosInstance';
 
 const AttendanceCheck = () => {
-    const memberId = localStorage.getItem('memberId');
+    const [memberId, setMemberId] = useState(null);
     const [attendanceChecked, setAttendanceChecked] = useState(false); // 출석 체크 여부
     const navigate = useNavigate();
+
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
+        }
+    };
 
     const checkAndMarkAttendance = async () => {
         try {
@@ -22,6 +34,10 @@ const AttendanceCheck = () => {
             console.error("출석 체크 중 오류가 발생했습니다.", error);
         }
     };
+
+    useEffect(() => {
+        getInfoFromToken();
+    }, []);
 
     useEffect(() => {
         if (!memberId) {
