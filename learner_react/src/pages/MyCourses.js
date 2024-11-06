@@ -1,22 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from "./axiosInstance";
 
 const MyCourses = () => {
     const [courses, setCourses] = useState([]);
     const navigate = useNavigate();
+    const [memberId, setMemberId] = useState(null);
+
+
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 역할 및 이름 설정
+                setMemberId(response.data.mid);    // memberId 설정
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+        }
+    };
 
     useEffect(() => {
-        const memberId = localStorage.getItem('memberId');
-
-        if (memberId) {
-            fetch(`http://localhost:8080/course/${memberId}/list`, { credentials: 'include' })
-                .then(response => response.json())
-                .then(data => setCourses(data))
-                .catch(error => console.error('Error fetching courses:', error));
-            console.log(courses);
-        } else {
-            console.error('memberId not found in localStorage');
-        }
+       checkUserRole();
+            // axios를 사용하여 강좌 목록 가져오기
+            const fetchCourses = async () => {
+                try {
+                    const response = await axiosInstance.get(`/course/${memberId}/list`, { withCredentials: true });
+                    setCourses(response.data);
+                    console.log(response.data); // 받아온 강좌 데이터 확인
+                } catch (error) {
+                    console.error('Error fetching courses:', error);
+                }
+            };
+            fetchCourses();
     }, []);
 
     const handleCourseClick = (courseId) => {

@@ -18,7 +18,7 @@ import InstructorReviewEdit from "./pages/instructor-review/InstructorReviewEdit
 import CourseRoutes from './CourseRoutes';
 import OrderRoutes from "./OrderRoutes";
 import VideoRoutes from "./VideoRoutes";
-import YoutubePlayer from "./YoutubePlayer";
+import YoutubePlayer from "./components/YoutubePlayer";
 import ResetPassword from "./components/ResetPassword"; // ResetPassword 컴포넌트 가져오기
 import MyCourses from './pages/MyCourses';
 import InquiryList from "./pages/Inquiry/InquiryList";
