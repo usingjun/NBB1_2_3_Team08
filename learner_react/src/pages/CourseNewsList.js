@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from './axiosInstance'; // axiosInstance import
 
-const CourseNewsList = (props) => {
-    const { courseId: propsCourseId } = props; // props에서 courseId 가져오기
-    const { courseId: paramCourseId } = useParams(); // URL 파라미터에서 courseId 가져오기
-
-    const courseId = propsCourseId || paramCourseId; // props가 있으면 props 값을, 없으면 URL 파라미터 값을 사용
-
+const CourseNewsList = ({ courseId }) => {
     const [newsList, setNewsList] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -69,7 +64,6 @@ const CourseNewsList = (props) => {
 
     // 페이지 로드 시 사용자 역할 확인 및 강사 이름 가져오기
     useEffect(() => {
-        console.log("courseId", courseId)
         checkUserRole();
         fetchInstructorName();
     }, [courseId]);

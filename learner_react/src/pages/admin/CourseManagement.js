@@ -120,7 +120,7 @@ const CourseManagement = () => {
                             </CourseInfo>
                             <ButtonContainer>
                                 <EditButton onClick={() => handleEdit(course.courseId)}>강좌 수정</EditButton>
-                                <CourseButton onClick={() => navigate(`/courses/${course.courseId}`)}>강의 관리</CourseButton>
+                                <CourseButton onClick={() => navigate(`/video/${course.courseId}`)}>비디오 보기</CourseButton>
                                 <InquiryButton onClick={() => {handleInquiryManagement(course.courseId)}}>문의 관리</InquiryButton>
                                 <NewsButton onClick={() => handleNewsManagement(course.courseId)}>새소식 관리</NewsButton>
                                 <DeleteButton onClick={() => handleDelete(course.courseId)}>삭제</DeleteButton>
