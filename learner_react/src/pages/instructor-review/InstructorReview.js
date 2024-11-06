@@ -88,8 +88,8 @@ const InstructorReview = () => {
         const token = localStorage.getItem("accessToken");
         try {
             const response = await axios.get(`http://localhost:8080/members/${nickname}/follower`, {
-                headers: {"Authorization": `Bearer ${token}`},
-                params: { writerId: writerId },  // writerId를 쿼리 파라미터로 전달
+                headers: { "Authorization": `Bearer ${token}` },
+                params: { writerId: writerId },
                 withCredentials: true
             });
             setFollowers(response.data);
@@ -266,9 +266,16 @@ const InstructorReview = () => {
 
             {isFollowerModalOpen && (
                 <Modal title="팔로워 목록" onClose={() => setIsFollowerModalOpen(false)}>
-                    <ul>
+                    <ul className="modal-content">
                         {followers.map(follower => (
-                            <li key={follower.memberId}>{follower.nickname}</li>
+                            <li key={follower.memberId} className="modal-item">
+                                <div className="modal-item-info">
+                                    <span className="nickname">{follower.nickname}</span>
+                                    <span className={`follow-status ${follower.isFollowing ? "following" : "not-following"}`}>
+                            {follower.isFollowing ? "팔로잉" : "팔로우"}
+                        </span>
+                                </div>
+                            </li>
                         ))}
                     </ul>
                 </Modal>
@@ -511,34 +518,106 @@ const InstructorReview = () => {
                     .edit-button:hover {
                         background-color: #0069d9;
                     }
-                    
-                    .follow-button {
-                        padding: 10px 20px;
-                        border: none;
-                        border-radius: 5px;
-                        font-size: 16px;
-                        cursor: pointer;
-                        color: white;
-                        transition: background-color 0.2s;
+
+                    .follow-container {
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                        margin-bottom: 20px;
                     }
 
-                    /* 팔로우 버튼 기본 스타일 */
                     .follow-button {
-                        background-color: #28a745; /* 초록색 */
+                        padding: 10px 20px;
+                        border: 1px solid transparent;
+                        border-radius: 20px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        color: white;
+                        outline: none;
+                    }
+
+                    .follow-button {
+                        background-color: #28a745;
+                        border: 1px solid #28a745;
                     }
 
                     .follow-button:hover {
                         background-color: #218838;
+                        border-color: #218838;
                     }
 
-                    /* 팔로잉일 때 스타일 */
                     .follow-button.following {
-                        background-color: #6c757d; /* 회색 */
+                        background-color: #6c757d;
                         color: white;
+                        border: 1px solid #6c757d;
                     }
 
                     .follow-button.following:hover {
                         background-color: #5a6268;
+                        border-color: #5a6268;
+                    }
+
+                    .modal-content {
+                        padding: 20px;
+                        background: #fff;
+                        border-radius: 10px;
+                        max-height: 400px; /* 모달 높이를 조정하여 크기 깨짐 방지 */
+                        max-width: 500px; /* 모달 너비를 고정하여 깨짐 방지 */
+                        margin: 0 auto;
+                        overflow-y: auto;
+                        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .modal-item {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between; /* 양 끝 정렬 */
+                        padding: 10px 0;
+                        border-bottom: 1px solid #e0e0e0;
+                    }
+
+                    .modal-item:last-child {
+                        border-bottom: none;
+                    }
+
+                    .modal-item-info {
+                        display: flex;
+                        width: 100%;
+                        justify-content: space-between; /* 닉네임과 상태를 양쪽 끝에 배치 */
+                        align-items: center;
+                    }
+
+                    .nickname {
+                        font-size: 16px;
+                        font-weight: 500;
+                        color: #333;
+                    }
+
+                    .follow-status {
+                        font-size: 14px;
+                        font-weight: bold;
+                    }
+
+                    .follow-status.following {
+                        color: #28a745;
+                    }
+
+                    .follow-status.not-following {
+                        color: #007bff;
+                        cursor: pointer;
+                    }
+
+                    .follower-count,
+                    .following-count {
+                        cursor: pointer;
+                        color: #007bff;
+                        font-size: 16px;
+                    }
+
+                    .follower-count:hover,
+                    .following-count:hover {
+                        text-decoration: underline;
                     }
                 `}</style>
             </div>
