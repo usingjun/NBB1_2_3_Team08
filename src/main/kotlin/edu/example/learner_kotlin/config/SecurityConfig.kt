@@ -155,6 +155,8 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.POST, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.DELETE, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.GET, "/members/{friendName}/**").permitAll()
+
 
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용

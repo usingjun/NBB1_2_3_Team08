@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import axiosInstance from "../axiosInstance";
 
 const InstructorReviewEdit = () => {
     const { reviewId, nickname } = useParams(); // instructorId, reviewId, nickname 가져오기
@@ -16,10 +17,15 @@ const InstructorReviewEdit = () => {
 
 
     useEffect(() => {
-        const storedWriterId = localStorage.getItem("memberId"); // localStorage에서 memberId 가져오기
-        if (storedWriterId) {
-            setWriterId(storedWriterId); // writerId 상태 설정
-        }
+        // /token/decode API 호출로 mid 가져오기
+        axiosInstance.get('/token/decode')
+            .then(response => {
+                const { mid } = response.data;
+                setWriterId(mid);
+            })
+            .catch(error => {
+                console.error("Error decoding token:", error);
+            });
 
         // 리뷰 데이터 가져오기 (reviewId, nickname으로 리뷰 조회)
         fetch(`http://localhost:8080/members/instructor/${nickname}/reviews/${reviewId}`, {

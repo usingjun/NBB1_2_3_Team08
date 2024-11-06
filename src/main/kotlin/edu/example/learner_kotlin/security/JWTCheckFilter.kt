@@ -52,6 +52,8 @@ class JWTCheckFilter(
                     requestURI.matches("/course/\\d+/news".toRegex()) ||
                     requestURI.matches("/members/find/.*".toRegex()) ||
                     decodedURI.matches("/members/instructor/[\\w가-힣]+/reviews/list".toRegex()) ||
+                    decodedURI.matches("/members/[\\w가-힣]+/following".toRegex()) ||
+                    decodedURI.matches("/members/[\\w가-힣]+/follower".toRegex()) ||
                     requestURI.matches("/inquiries".toRegex()) ||
                     requestURI.matches("/course/\\d+/reviews/list".toRegex()) ||
                     requestURI.matches("/course/\\d+/course-inquiry/\\d+".toRegex()) ||
