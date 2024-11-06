@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import axiosInstance from "../axiosInstance"; // axios 직접 import
 
 const CourseReviewCreate = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
-
+    const [writerId, setWriterId] = useState(null);
+    const [memberId] = useState(1); // 예시로 하드코딩된 memberId
     const [reviewName, setReviewName] = useState("");
     const [reviewDetail, setReviewDetail] = useState("");
     const [rating, setRating] = useState(1);
-    const [writerId, setWriterId] = useState(null); // 토큰에서 가져온 memberId 저장
 
     // useEffect를 통해 로그인한 사용자의 정보를 로컬 스토리지에서 가져옴
     useEffect(() => {
-        const storedMemberId = localStorage.getItem("memberId"); // localStorage에서 memberId 가져옴
-        if (storedMemberId) {
-            setWriterId(storedMemberId); // memberId 상태 설정
-        }
+        // /token/decode API 호출로 mid 가져오기
+        axiosInstance.get('/token/decode')
+            .then(response => {
+                const { mid } = response.data;
+                setWriterId(mid);
+            })
+            .catch(error => {
+                console.error("Error decoding token:", error);
+            });
     }, []);
 
     const handleSubmit = (e) => {

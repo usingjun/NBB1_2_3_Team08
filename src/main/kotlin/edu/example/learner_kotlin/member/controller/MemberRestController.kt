@@ -15,9 +15,11 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.nio.file.attribute.UserPrincipal
 
 @RestController
 @RequestMapping("/members")
@@ -214,23 +216,24 @@ class MemberRestController(
     /**
      * 팔로잉 조회
      */
-    @GetMapping("/{memberId}/following")
+    @GetMapping("/{friendName}/following")
     fun getFollowingList(
-        @PathVariable("memberId") memberId: Long,
-        authentication: Authentication
+        @PathVariable("friendName") friendName: String,
+        @RequestParam writerId: Long,
     ): ResponseEntity<List<FollowDTO>> {
-        return ResponseEntity.ok().body(followService.followingList(authentication.name, memberId))
+        log.info("${friendName}")
+        return ResponseEntity.ok().body(followService.followingList(writerId, friendName))
     }
 
     /**
      * 팔로워 조회
      */
-    @GetMapping("/{memberId}/follower")
+    @GetMapping("/{friendName}/follower")
     fun getFollowerList(
-        @PathVariable("memberId") memberId: Long,
-        authentication: Authentication
+        @PathVariable friendName: String,
+        @RequestParam writerId: Long,
     ): ResponseEntity<List<FollowDTO>> {
-        return ResponseEntity.ok().body(followService.followerList(authentication.name, memberId))
+        return ResponseEntity.ok().body(followService.followerList(writerId, friendName))
     }
 
     /**
@@ -241,4 +244,39 @@ class MemberRestController(
         log.info("unfollow ${friendName}")
         followService.unfollowUser(authentication.name, friendName)
     }
+
+    /**
+     * 팔로우 여부 확인
+     */
+    @GetMapping("/follow/{friendName}/isFollowing")
+    fun isFollowing(
+        @PathVariable("friendName") friendName: String,
+        authentication: Authentication
+    ): ResponseEntity<Map<String, Boolean>> {
+        val isFollowing = followService.isFollowing(authentication.name, friendName)
+        return ResponseEntity.ok(mapOf("isFollowing" to isFollowing))
+    }
+
+    /**
+     * 팔로워 수 조회
+     */
+    @GetMapping("/{friendName}/follower-count")
+    fun getFollowerCount(
+        @PathVariable("friendName") friendName: String
+    ): ResponseEntity<Long> {
+        val followerCount = followService.getFollowerCount(friendName)
+        return ResponseEntity.ok(followerCount)
+    }
+
+    /**
+     * 팔로잉 수 조회
+     */
+    @GetMapping("/{friendName}/following-count")
+    fun getFollowingCount(
+        @PathVariable("friendName") friendName: String
+    ): ResponseEntity<Long> {
+        val followingCount = followService.getFollowingCount(friendName)
+        return ResponseEntity.ok(followingCount)
+    }
+
 }
