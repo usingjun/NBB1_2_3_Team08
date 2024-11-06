@@ -5,9 +5,11 @@ import edu.example.learner_kotlin.member.dto.FollowDTO
 import edu.example.learner_kotlin.member.entity.Follow
 import edu.example.learner_kotlin.member.entity.FollowStatus
 import edu.example.learner_kotlin.member.entity.Member
+import edu.example.learner_kotlin.member.exception.MemberException
 import edu.example.learner_kotlin.member.repository.FollowRepository
 import edu.example.learner_kotlin.member.repository.MemberRepository
 import jakarta.transaction.Transactional
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -59,10 +61,9 @@ class FollowService(
         }
     }
 
-    fun followerList(requestUsername: String?, memberName: String): List<FollowDTO> {
-        val requestUser = memberRepository.findByNickname(requestUsername)?.orElseThrow {
-            RuntimeException("User not found")
-        } ?: throw RuntimeException("User not found")
+    fun followerList(requestId: Long, memberName: String): List<FollowDTO> {
+        val requestUser=memberRepository.findByIdOrNull(requestId)?:
+        throw MemberException.MEMBER_NOT_FOUND.memberTaskException
 
         val user = memberRepository.findByNickname(memberName)?.orElseThrow {
             RuntimeException("User not found")
@@ -80,10 +81,9 @@ class FollowService(
         return followingList
     }
 
-    fun followingList(requestUsername: String?, memberName: String): List<FollowDTO> {
-        val requestUser = memberRepository.findByNickname(requestUsername)?.orElseThrow {
-            RuntimeException("User not found")
-        } ?: throw RuntimeException("User not found")
+    fun followingList(requestId: Long, memberName: String): List<FollowDTO> {
+        val requestUser=memberRepository.findByIdOrNull(requestId)?:
+        throw MemberException.MEMBER_NOT_FOUND.memberTaskException
 
         val user = memberRepository.findByNickname(memberName)?.orElseThrow {
             RuntimeException("User not found")

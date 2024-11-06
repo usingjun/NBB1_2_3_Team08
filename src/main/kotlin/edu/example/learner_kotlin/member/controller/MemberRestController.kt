@@ -219,10 +219,10 @@ class MemberRestController(
     @GetMapping("/{friendName}/following")
     fun getFollowingList(
         @PathVariable("friendName") friendName: String,
-        @AuthenticationPrincipal userPrincipal: UserPrincipal // 사용자 Principal 클래스
+        @RequestParam writerId: Long,
     ): ResponseEntity<List<FollowDTO>> {
         log.info("${friendName}")
-        return ResponseEntity.ok().body(followService.followingList(userPrincipal.name, friendName))
+        return ResponseEntity.ok().body(followService.followingList(writerId, friendName))
     }
 
     /**
@@ -231,9 +231,9 @@ class MemberRestController(
     @GetMapping("/{friendName}/follower")
     fun getFollowerList(
         @PathVariable friendName: String,
-        @AuthenticationPrincipal userPrincipal: UserPrincipal // 사용자 Principal 클래스
+        @RequestParam writerId: Long,
     ): ResponseEntity<List<FollowDTO>> {
-        return ResponseEntity.ok().body(followService.followerList(userPrincipal.name, friendName))
+        return ResponseEntity.ok().body(followService.followerList(writerId, friendName))
     }
 
     /**

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
 import Modal from "../../components/Modal";
+import axiosInstance from "../axiosInstance";
 
 const InstructorReview = () => {
     const {nickname} = useParams();
@@ -15,11 +16,22 @@ const InstructorReview = () => {
     const [isFollowing, setIsFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
-
     const [isFollowerModalOpen, setIsFollowerModalOpen] = useState(false);
     const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
+
+    useEffect(() => {
+        // /token/decode API 호출로 mid 가져오기
+        axiosInstance.get('/token/decode')
+            .then(response => {
+                const {mid} = response.data;
+                setWriterId(mid);
+            })
+            .catch(error => {
+                console.error("Error decoding token:", error);
+            });
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
@@ -75,8 +87,10 @@ const InstructorReview = () => {
     const fetchFollowers = async () => {
         const token = localStorage.getItem("accessToken");
         try {
-            const response = await axios.get(`http://localhost:8080/members/${encodeURIComponent(nickname)}/follower`, {
-                headers: {"Authorization": `Bearer ${token}`}
+            const response = await axios.get(`http://localhost:8080/members/${nickname}/follower`, {
+                headers: {"Authorization": `Bearer ${token}`},
+                params: { writerId: writerId },  // writerId를 쿼리 파라미터로 전달
+                withCredentials: true
             });
             setFollowers(response.data);
             setIsFollowerModalOpen(true);
@@ -88,8 +102,10 @@ const InstructorReview = () => {
     const fetchFollowing = async () => {
         const token = localStorage.getItem("accessToken");
         try {
-            const response = await axios.get(`http://localhost:8080/members/${encodeURIComponent(nickname)}/following`, {
-                headers: {"Authorization": `Bearer ${token}`}
+            const response = await axios.get(`http://localhost:8080/members/${nickname}/following`, {
+                headers: {"Authorization": `Bearer ${token}`},
+                params: { writerId: writerId },  // writerId를 쿼리 파라미터로 전달
+                withCredentials: true
             });
             setFollowing(response.data);
             setIsFollowingModalOpen(true);
@@ -234,8 +250,11 @@ const InstructorReview = () => {
     return (
         <div>
             <div className="follow-container">
-                <button onClick={toggleFollow} className="follow-button">
-                    {isFollowing ? "팔로우 취소" : "팔로우"}
+                <button
+                    onClick={toggleFollow}
+                    className={`follow-button ${isFollowing ? 'following' : ''}`}
+                >
+                    {isFollowing ? "팔로잉" : "팔로우"}
                 </button>
                 <span className="follower-count" onClick={fetchFollowers}>
                     팔로워: {followerCount}
@@ -315,7 +334,7 @@ const InstructorReview = () => {
                                 <p className="review-updatedDate"> 수정일 : {formatDate(review.reviewUpdatedDate)}</p>
                             </div>
                             <div className="button-group">
-                                {userId === review.writerId && (
+                                {String(writerId) === String(review.writerId) && (
                                     <>
                                         <button onClick={() => handleDelete(review.reviewId)}
                                                 className="delete-button">삭제
@@ -491,6 +510,35 @@ const InstructorReview = () => {
 
                     .edit-button:hover {
                         background-color: #0069d9;
+                    }
+                    
+                    .follow-button {
+                        padding: 10px 20px;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        color: white;
+                        transition: background-color 0.2s;
+                    }
+
+                    /* 팔로우 버튼 기본 스타일 */
+                    .follow-button {
+                        background-color: #28a745; /* 초록색 */
+                    }
+
+                    .follow-button:hover {
+                        background-color: #218838;
+                    }
+
+                    /* 팔로잉일 때 스타일 */
+                    .follow-button.following {
+                        background-color: #6c757d; /* 회색 */
+                        color: white;
+                    }
+
+                    .follow-button.following:hover {
+                        background-color: #5a6268;
                     }
                 `}</style>
             </div>
