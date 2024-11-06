@@ -81,21 +81,21 @@ const MemberListManagement = () => {
             <table>
                 <thead>
                 <tr>
-                    <th>회원 ID</th>
-                    <th>이름</th>
-                    <th>이메일</th>
-                    <th>전화번호</th>
-                    <th>가입일</th>
+                    <th style={{ textAlign: 'center' }}>회원 ID</th>
+                    <th style={{ textAlign: 'center' }}>이름</th>
+                    <th style={{ textAlign: 'center' }}>이메일</th>
+                    <th style={{ textAlign: 'center' }}>전화번호</th>
+                    <th style={{ textAlign: 'center' }}>가입일</th>
                 </tr>
                 </thead>
                 <tbody>
                 {members.map((member) => (
                     <tr key={member.memberId}>
-                        <td>{member.memberId}</td>
-                        <td>{member.nickname}</td>
-                        <td>{member.email}</td>
-                        <td>{member.phoneNumber}</td>
-                        <td>{member.createDate}</td>
+                        <td style={{ textAlign: 'center' }}> {member.memberId}</td>
+                        <td style={{ textAlign: 'center' }}>{member.nickname}</td>
+                        <td style={{ textAlign: 'center' }}>{member.email}</td>
+                        <td style={{ textAlign: 'center' }}>{member.phoneNumber}</td>
+                        <td style={{ textAlign: 'center' }}>{member.createDate}</td>
                         {/*<td>*/}
                         {/*    <button onClick={() => handleMemberClick(member.memberId)}>*/}
                         {/*        상세보기*/}
