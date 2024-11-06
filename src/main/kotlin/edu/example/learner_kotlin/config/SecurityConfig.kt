@@ -80,6 +80,12 @@ class SecurityConfig(
 
         //경로별 인가 작업
         http.authorizeHttpRequests {
+            it.requestMatchers(HttpMethod.POST,"notifications/**").permitAll()
+            it.requestMatchers(HttpMethod.GET,"notifications/**").permitAll()
+            it.requestMatchers(HttpMethod.GET,"notifications/connect").permitAll()
+            it.requestMatchers(HttpMethod.GET,"alarm/connect").permitAll()
+                it.requestMatchers(HttpMethod.POST,"/alarm/count").permitAll()
+            it.requestMatchers(HttpMethod.POST,"alarm/notify").permitAll()
                 // 리뷰 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/list").permitAll() // GET 요청 reviews 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/{courseId}/reviews/{reviewId}").permitAll() // GET 요청 course 모두 허용
@@ -127,10 +133,18 @@ class SecurityConfig(
                 // 스터디 테이블 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/weekly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/yearly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.POST, "/study-tables").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.PUT, "/study-tables/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 출석 체크 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/attendances/**").permitAll()
                 it.requestMatchers(HttpMethod.POST, "/attendances").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // member_video 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/member-video/**").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.PUT, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.DELETE, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 토큰 디코딩 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/token/decode").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
@@ -147,6 +161,8 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.POST, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.DELETE, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.GET, "/members/{friendName}/**").permitAll()
+
 
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용

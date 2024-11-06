@@ -39,6 +39,7 @@ data class Member (
     var phoneNumber: String? = null,
 
     @Lob // BLOB 타입으로 처리됨
+    @Transient
     var profileImage: ByteArray? = null,
 
     var imageType: String? = null,

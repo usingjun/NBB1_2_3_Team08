@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../axiosInstance";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
-import axiosInstance from "../axiosInstance";
+import axiosInstance from "../axiosInstance"; // axiosInstance import 추가
 
 const Course_Url = "http://localhost:8080/course";
 
@@ -12,71 +11,44 @@ const CourseCreate = () => {
     const [courseDescription, setCourseDescription] = useState("");
     const [coursePrice, setCoursePrice] = useState(0);
     const [courseLevel, setCourseLevel] = useState(1); // 기본값 1
-    const [courseAttribute, setCourtAttribute] = useState("");
-    const [memberNickname, setMemberNickname] = useState(""); // 직접 입력하는 memberNickname
+    const [courseAttribute, setCourseAttribute] = useState("");
+    const [memberNickname, setMemberNickname] = useState(null); // memberNickname 상태 추가
     const [error, setError] = useState(null);
-    const [userRole, setUserRole] = useState(null); // 사용자 역할 저장
-    const [userId, setUserId] = useState(null); // 사용자 ID 저장
     const navigate = useNavigate();
 
-    // 컴포넌트가 처음 렌더링될 때 fetchUserRoleAndId 호출
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const userData = await fetchUserRoleAndId();
-                setUserRole(userData.role);   // 사용자 역할 설정
-                setUserId(userData.mid);      // 사용자 ID 설정
-                //console.log(userData.role);
-                //console.log(userData.mid);
-            } catch (error) {
-                console.error("Error fetching user role and ID:", error);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-
-    const fetchUserRoleAndId = async () => {
-        //console.log("fetchUserRoleAndId 함수 호출됨!");
-        const token = localStorage.getItem('accessToken');
-
-        if (!token) {
-            throw new Error("Token not found");
-        }
-
+    // 사용자 역할 및 memberNickname 확인 (서버로 요청)
+    const checkUserRole = async () => {
         try {
-            const response = await axiosInstance.get('/token/decode', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            const token = localStorage.getItem('accessToken');
 
-            const data = response.data;
-            return {
-                mid: data.mid,
-                role: data.role,
-                username: data.username
-            };
-
+            if (token) {
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                console.log("서버 응답:", response.data); // 응답 로그 추가
+                setMemberNickname(response.data.username); // memberNickname 설정
+            } else {
+                console.error("토큰이 존재하지 않습니다.");
+                setError("로그인이 필요합니다.");
+            }
         } catch (error) {
-            console.error("Error fetching user data:", error);
-            throw error;
+            console.error("토큰 확인 중 오류 발생:", error);
+            setError("사용자 정보를 가져오는 데 실패했습니다.");
         }
     };
 
+    // 컴포넌트가 마운트될 때 사용자 역할 확인
+    useEffect(() => {
+        checkUserRole();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 로컬 스토리지에서 accessToken 가져오기
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                console.error("로그인된 사용자의 토큰을 찾을 수 없습니다.");
-                alert("로그인이 필요합니다. 로그인 후 다시 시도해 주세요.");
-                return;
+            if (!memberNickname) {
+                throw new Error("회원 닉네임이 설정되어 있지 않습니다.");
             }
 
             const payload = {
@@ -85,19 +57,14 @@ const CourseCreate = () => {
                 coursePrice,
                 courseLevel,
                 courseAttribute,
-                memberNickname,
+                memberNickname, // memberNickname 사용
             };
 
-            await axios.post(Course_Url, payload, {
-                withCredentials: true,
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
+            await axios.post(Course_Url, payload, { withCredentials: true });
 
             // 성공 메시지와 페이지 리디렉션
-            alert("강의 생성에 성공하였습니다."); // alert 추가
-            navigate("/courses"); // 상대 경로로 수정
+            alert("강의 생성에 성공하였습니다.");
+            navigate("/courses/list");
         } catch (err) {
             setError("강좌 생성에 실패했습니다.");
         }
@@ -162,7 +129,7 @@ const CourseCreate = () => {
                     <Input
                         type="text"
                         value={courseAttribute}
-                        onChange={(e) => setCourtAttribute((e.target.value))}
+                        onChange={(e) => setCourseAttribute(e.target.value)}
                         required
                     />
                 </Label>

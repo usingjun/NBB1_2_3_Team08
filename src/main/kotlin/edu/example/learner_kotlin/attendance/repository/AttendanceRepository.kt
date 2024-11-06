@@ -4,8 +4,10 @@ import edu.example.learner_kotlin.attendance.entity.Attendance
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
+@Repository
 interface AttendanceRepository : JpaRepository<Attendance, Long> {
     @Query("select a from Attendance a where a.member.memberId = :memberId and a.attendanceDate = :date")
     fun findByMemberIdAndDate(@Param("memberId") memberId: Long, @Param("date") date: LocalDate): Attendance?

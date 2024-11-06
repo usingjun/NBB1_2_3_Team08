@@ -11,6 +11,21 @@ const InquiryListPage = () => {
     const [isMyInquiries, setIsMyInquiries] = useState(false); // 내 문의 모아보기 상태
     const navigate = useNavigate();
 
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
+        }
+    };
+    useEffect(() => {
+        getInfoFromToken();
+    }, []);
+
     useEffect(() => {
         const fetchInquiries = async () => {
             try {
@@ -21,17 +36,14 @@ const InquiryListPage = () => {
             }
         };
 
-        const storedMemberId = localStorage.getItem('memberId');
-        if (storedMemberId) {
-            setMemberId(storedMemberId);
+        if (memberId !== null) {
+            fetchInquiries();
         }
-
-        fetchInquiries();
-    }, []);
+    }, [memberId]);
 
     // 내 문의를 가져오는 함수
     const fetchMyInquiries = async () => {
-        if (!memberId) return; // memberId가 없으면 리턴
+        if (memberId === null) return; // memberId가 없으면 리턴
 
         try {
             const response = await axiosInstance.get(`/inquiries/member/${memberId}`); // memberId로 문의 조회

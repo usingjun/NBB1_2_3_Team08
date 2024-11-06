@@ -1,23 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from "./axiosInstance";
 
 const MyCourses = () => {
     const [courses, setCourses] = useState([]);
     const navigate = useNavigate();
+    const [memberId, setMemberId] = useState(null);
+
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 ID 설정
+                setMemberId(response.data.mid); // memberId 설정
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+        }
+    };
 
     useEffect(() => {
-        const memberId = localStorage.getItem('memberId');
-
-        if (memberId) {
-            fetch(`http://localhost:8080/course/${memberId}/list`, { credentials: 'include' })
-                .then(response => response.json())
-                .then(data => setCourses(data))
-                .catch(error => console.error('Error fetching courses:', error));
-            console.log(courses);
-        } else {
-            console.error('memberId not found in localStorage');
-        }
+        // memberId가 설정된 이후에 강좌 목록을 가져오기 위해 checkUserRole을 호출하고 이후 fetchCourses 실행
+        checkUserRole();
     }, []);
+
+    useEffect(() => {
+        // memberId가 설정된 후에만 강좌 목록을 가져옴
+        if (memberId) {
+            const fetchCourses = async () => {
+                try {
+                    const response = await axiosInstance.get(`/course/${memberId}/list`, { withCredentials: true });
+                    setCourses(response.data);
+                    console.log(response.data); // 받아온 강좌 데이터 확인
+                } catch (error) {
+                    console.error('Error fetching courses:', error);
+                }
+            };
+            fetchCourses();
+        }
+    }, [memberId]); // memberId가 변경될 때만 실행되도록 의존성 추가
 
     const handleCourseClick = (courseId) => {
         navigate(`/courses/${courseId}`);
@@ -92,13 +122,13 @@ const styles = {
         color: '#555',
     },
     instructorName: {
-        color: '#007bff', // 강사 이름 색상
+        color: '#007bff',
     },
     purchaseDate: {
         margin: '5px 0',
         fontSize: '14px',
         color: '#777',
-        paddingLeft: '5px', // 여백 추가
+        paddingLeft: '5px',
     },
     purchaseDateText: {
         fontWeight: 'normal',
@@ -113,7 +143,7 @@ const styles = {
         transition: 'transform 0.3s ease',
     },
     courseItemHover: {
-        backgroundColor: '#e0e0e0', // hover 시 배경색
+        backgroundColor: '#e0e0e0',
     },
 };
 

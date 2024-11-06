@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import axiosInstance from "../pages/axiosInstance";
+    import axiosInstance from "../pages/axiosInstance";
 
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
@@ -12,16 +12,17 @@ const Header = ({ openModal }) => {
     const [searchId, setSearchId] = useState("");
     const [role, setRole] = useState("");
 
-    const checkLoginStatus = () => {
+    const checkLoginStatus = async () => {
         const token = localStorage.getItem("accessToken"); // 로컬 저장소에서 액세스 토큰 가져오기
 
         if (token) {
             setIsLoggedIn(true);
             try {
-                const decodedToken = jwtDecode(token);
-                setRole(decodedToken.role);
-            } catch (decodeError) {
-                console.error("토큰 디코딩 실패:", decodeError);
+                const response = await axiosInstance.get('/token/decode');
+                const { role } = response.data; // 응답에서 역할 가져오기
+                setRole(role);
+            } catch (error) {
+                console.error("토큰 디코딩 요청 실패:", error);
                 handleLogout(); // 로그아웃 처리
             }
         } else {
@@ -95,12 +96,13 @@ const Header = ({ openModal }) => {
             <RightSection>
                 {isLoggedIn ? (
                     <>
+                        <NavItem onClick={() => navigate('/alarm/list')}>알림</NavItem>
                         <NavItem onClick={() => navigate('/inquiries')}>문의</NavItem>
                         <NavItem onClick={() => setIsMenuOpen(!isMenuOpen)}>마이페이지</NavItem>
                         {isMenuOpen && (
                             <SubMenu>
                                 <SubMenuItem onClick={() => navigate('/내정보')}>내정보</SubMenuItem>
-                                {role === 'INSTRUCTOR' && (
+                                {role === 'ROLE_INSTRUCTOR' && (
                                     <SubMenuItem onClick={() => navigate('/courses/list')}>내 강의</SubMenuItem>
                                 )}
                                 <SubMenuItem onClick={() => navigate('/orders')}>장바구니</SubMenuItem>

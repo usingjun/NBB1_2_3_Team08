@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 data class Video (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val video_Id: Long? = null,
+    var videoId: Long? = null,
 
     var title: String? = null,
 

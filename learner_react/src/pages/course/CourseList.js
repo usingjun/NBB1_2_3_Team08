@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
+import axiosInstance from "../axiosInstance";
 
 const Course_Url = "http://localhost:8080/course";
 
@@ -12,35 +11,54 @@ const CourseList = () => {
     const [error, setError] = useState(null);
     const [role, setRole] = useState(null);
     const navigate = useNavigate();
+    const [memberId, setMemberId] = useState(null);
+    const [memberNickname, setMemberNickname] = useState(null);
+
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                console.log("서버 응답:", response.data); // 응답 로그 추가
+                setRole(response.data.role);
+                setMemberId(response.data.mid);
+                setMemberNickname(response.data.username);
+            } else {
+                console.error("토큰이 존재하지 않습니다.");
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+            setError("사용자 정보를 가져오는 데 실패했습니다.");
+        }
+    };
+
 
     useEffect(() => {
         const fetchCourses = async () => {
-            setLoading(true);
-            try {
-                const token = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('Authorization='))
-                    ?.split('=')[1];
-
-                if (token) {
-                    const decodedToken = jwtDecode(token);
-                    const nickname = decodedToken.mid;
-                    const userRole = decodedToken.role;
-                    setRole(userRole);
-                    const response = await axios.get(`${Course_Url}/instruct/list/${nickname}`, { withCredentials: true });
+                setLoading(true);
+                try {
+                    console.log("닉네임 확인 :", memberNickname);
+                    const response = await axiosInstance.get(`/course/instructor/list/${memberNickname}`, { withCredentials: true });
                     setCourses(response.data);
-                } else {
-                    setError("로그인이 필요합니다.");
+                } catch (error) {
+                    console.error("강좌 목록 가져오는 중 오류 발생:", error);
+                    setError("강좌 목록을 가져오는 데 실패했습니다.");
+                } finally {
+                    setLoading(false);
                 }
-            } catch (error) {
-                console.error("강좌 목록 가져오는 중 오류 발생:", error);
-                setError("강좌 목록을 가져오는 데 실패했습니다.");
-            } finally {
-                setLoading(false);
-            }
         };
 
-        fetchCourses();
+        fetchCourses(); // 강좌 목록 가져오기
+    }, [memberNickname]); // memberNickname이 변경될 때마다 fetchCourses 실행
+
+    useEffect(() => {
+        checkUserRole(); // 컴포넌트가 마운트될 때 사용자 역할 확인
     }, []);
 
     const handleUpdateClick = (courseId) => {
@@ -50,7 +68,7 @@ const CourseList = () => {
     const handleDeleteClick = async (courseId) => {
         if (window.confirm("정말로 이 강좌를 삭제하시겠습니까?")) {
             try {
-                await axios.delete(`${Course_Url}/${courseId}`, { withCredentials: true });
+                await axiosInstance.delete(`/course/${courseId}`, { withCredentials: true });
                 console.log("삭제")
                 setCourses(courses.filter(course => course.courseId !== courseId));
             } catch (error) {
@@ -75,7 +93,7 @@ const CourseList = () => {
     return (
         <CourseListContainer>
             <Header>강좌 목록</Header>
-            {role === "INSTRUCTOR" ? (
+            {role === "ROLE_INSTRUCTOR" ? (
                 <Link to="/courses/create">
                     <StyledButton primary>강좌 생성</StyledButton>
                 </Link>

@@ -15,7 +15,7 @@ class VideoDTO(
     var createdAt: LocalDateTime? = null
 ) {
     constructor(video: Video) : this(
-        videoId = video.video_Id,
+        videoId = video.videoId,
         courseId = video.course?.courseId,
         title = video.title,
         url = video.url,

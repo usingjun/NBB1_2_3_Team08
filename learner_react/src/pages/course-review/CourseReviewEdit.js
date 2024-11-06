@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import axiosInstance from "../axiosInstance";
 
 const CourseReviewEdit = () => {
     const { courseId, reviewId } = useParams();
@@ -11,11 +12,17 @@ const CourseReviewEdit = () => {
     const [rating, setRating] = useState(1);
     const [writerId, setWriterId] = useState(null); // writerId 상태 추가
 
+
     useEffect(() => {
-        const storedWriterId = localStorage.getItem("memberId"); // localStorage에서 memberId 가져오기
-        if (storedWriterId) {
-            setWriterId(storedWriterId); // writerId 상태 설정
-        }
+        // /token/decode API 호출로 mid 가져오기
+        axiosInstance.get('/token/decode')
+            .then(response => {
+                const { mid } = response.data;
+                setWriterId(mid);
+            })
+            .catch(error => {
+                console.error("Error decoding token:", error);
+            });
 
         // 리뷰 데이터 가져오기
         fetch(`http://localhost:8080/course/${courseId}/reviews/${reviewId}`, {

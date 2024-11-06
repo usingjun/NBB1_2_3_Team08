@@ -1,5 +1,7 @@
 package edu.example.learner_kotlin.courseabout.order.service
 
+import edu.example.learner_kotlin.alarm.service.AlarmService
+import edu.example.learner_kotlin.alarm.service.SseService
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.MemberCourse
 import edu.example.learner_kotlin.log
@@ -34,6 +36,8 @@ class OrderServiceImpl(
     val orderItemRepository: OrderItemRepository,
     val memberRepository: MemberRepository,
     val memberCourseRepository: MemberCourseRepository,
+    val alarmService: AlarmService,
+    val sseService: SseService
 ) : OrderService {
     
     // 주문 총 가격계산과 구매 정보저장 OCP 위반
@@ -100,10 +104,10 @@ class OrderServiceImpl(
 
         // 4. 총금액을 계산합니다.
         orderEntity.totalPrice=OrderMapper.totalPriceCir(orderItems)
-
+        val alarmContent = "주문이 생성되었습니다. {${orderEntity.orderId}}"
+        alarmService.createAlarm(memberId,alarmContent, "주문 알림")
         return createDTO
     }
-
 
     override fun read(orderId: Long): OrderDTO {
         log.info("read Order By orderId {}", orderId)

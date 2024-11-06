@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../axiosInstance";
 import styled from "styled-components";
 import { jwtDecode } from "jwt-decode"; // named import
 import Cookies from "js-cookie"; // 쿠키 관리 라이브러리 추가
 import { handlePlayClick } from "./HandlePlayClick"; // HandlePlayClick 함수 가져오기
-
+import YoutubePlayerComponent from '../../components/YoutubePlayer';
 const Course_Url = "http://localhost:8080/course";
 
 const VideoList = () => {

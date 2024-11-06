@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../pages/axiosInstance';
 import styled from 'styled-components';
 
 const YoutubePlayer = () => {

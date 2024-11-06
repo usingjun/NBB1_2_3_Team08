@@ -6,6 +6,7 @@ import edu.example.learner_kotlin.studytable.entity.StudyTable
 import edu.example.learner_kotlin.studytable.repository.StudyTableRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -21,6 +22,7 @@ class StudyTableServiceImpl(private val studyTableRepository: StudyTableReposito
     override fun readDTOByDate(memberId: Long): StudyTableDTO  =
         StudyTableDTO(studyTableRepository.findByDate(LocalDate.now(), memberId) ?: throw NoSuchElementException("StudyTable does not exist."))
 
+    @Transactional
     override fun register(studyTableDTO: StudyTableDTO): StudyTableDTO =
         StudyTableDTO(studyTableRepository.save(StudyTable().apply {
             studyTime = studyTableDTO.studyTime
@@ -28,16 +30,18 @@ class StudyTableServiceImpl(private val studyTableRepository: StudyTableReposito
             member = Member().apply { memberId = studyTableDTO.memberId }
         }))
 
+    @Transactional
     override fun update(studyTableDTO: StudyTableDTO): StudyTableDTO = run {
         val studyTable = studyTableRepository.findByIdOrNull(studyTableDTO.studyTableId)
             ?: throw NoSuchElementException("StudyTable with ID ${studyTableDTO.studyTableId} not found")
         with(studyTable) {
-            this.studyTime = studyTableDTO.studyTime
-            this.completed = studyTableDTO.completed
+            this.studyTime += studyTableDTO.studyTime
+            this.completed += studyTableDTO.completed
         }
         StudyTableDTO(studyTable)
     }
 
+    @Transactional
     override fun delete(studyTableDTO: StudyTableDTO) =
         studyTableRepository.delete(
             studyTableRepository.findByIdOrNull(studyTableDTO.studyTableId) ?: throw NoSuchElementException("StudyTable with ID ${studyTableDTO.studyTableId} not found")
