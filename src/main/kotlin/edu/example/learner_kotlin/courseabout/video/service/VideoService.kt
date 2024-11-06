@@ -10,7 +10,6 @@ import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.courseabout.video.dto.VideoDTO
 import edu.example.learner_kotlin.courseabout.video.dto.VideoUpdateDTO
 import edu.example.learner_kotlin.courseabout.video.entity.Video
-import edu.example.learner_kotlin.courseabout.video.exception.VideoException
 import edu.example.learner_kotlin.courseabout.video.repository.VideoRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service

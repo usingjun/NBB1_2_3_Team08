@@ -37,7 +37,7 @@ export const handlePlayClick = async (courseId, video, navigate, setError, membe
 
         // USER 역할일 경우 구매 여부 확인
         if (role === "ROLE_USER") {
-            const purchaseResponse = await axios.get(`http://localhost:8080/course/${courseId}/purchase?memberId=${memberId}`, { withCredentials: true });
+            const purchaseResponse = await axios.get(`/course/${courseId}/purchase?memberId=${memberId}`, { withCredentials: true });
             const purchased = purchaseResponse.data;
 
             if (typeof purchased === 'boolean') {
