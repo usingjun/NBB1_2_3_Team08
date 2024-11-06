@@ -59,7 +59,7 @@ const VideoList = () => {
                 const responses = await Promise.all(
                     videos.map(async (video) => {
                         const response = await axiosInstance.get(`/member-video/${video.videoId}/average`);
-                        return response.data;
+                        return (response.data).toFixed(1);
                     })
                 );
                 setAverages(responses);
