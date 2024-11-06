@@ -31,7 +31,7 @@ class MemberRestController(
     @Operation(summary = "이미지 업로드", description = "사진 파일을 받아 프로필 사진을 변경합니다.")
     @ApiResponses(
         value = [ApiResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "프로필 변경에 성공하였습니다."
         ), ApiResponse(
             responseCode = "404",
@@ -44,7 +44,7 @@ class MemberRestController(
     )
     fun memberUploadImage(
         @RequestParam("file") file: MultipartFile,
-        @PathVariable memberId: Long?
+        @PathVariable memberId: Long
     ): ResponseEntity<String> {
         log.info("--- memberUploadImage()")
         //파일 크기 제한
@@ -83,7 +83,7 @@ class MemberRestController(
             )]
         )]
     )
-    fun deleteMember(@PathVariable memberId: Long?): ResponseEntity<String> {
+    fun deleteMember(@PathVariable memberId: Long): ResponseEntity<String> {
         log.info("--- memberDelete()")
         memberService.removeImage(memberId)
 
@@ -106,7 +106,7 @@ class MemberRestController(
             )]
         )]
     )
-    fun myPageRead(@PathVariable memberId: Long?): ResponseEntity<MemberDTO> {
+    fun myPageRead(@PathVariable memberId: Long): ResponseEntity<MemberDTO> {
         log.info("--- myPageRead()")
         log.info(memberId)
         log.info(memberService.getMemberInfo(memberId))
@@ -184,7 +184,7 @@ class MemberRestController(
 
     //강사 이름으로 조회
     @GetMapping("/instructor/{nickname}")
-    fun getInstructorByNickname(@PathVariable nickname: String?): ResponseEntity<MemberDTO> {
+    fun getInstructorByNickname(@PathVariable nickname: String): ResponseEntity<MemberDTO> {
         log.info(nickname)
         return ResponseEntity.ok(memberService.getMemberInfoNickName(nickname))
     }
