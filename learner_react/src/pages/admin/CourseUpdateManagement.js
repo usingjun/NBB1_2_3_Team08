@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axiosInstance from "../axiosInstance";
+import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 
 const Course_Url = "http://localhost:8080/course";
 
-const CourseUpdate = () => {
+const CourseUpdateManagement = () => {
     const { courseId } = useParams();
     const [courseName, setCourseName] = useState("");
     const [courseLevel, setCourseLevel] = useState("1"); // 초기값을 1로 설정
@@ -20,7 +20,7 @@ const CourseUpdate = () => {
     useEffect(() => {
         const fetchCourse = async () => {
             try {
-                const response = await axiosInstance.get(`course/${courseId}`, { withCredentials: true });
+                const response = await axios.get(`${Course_Url}/${courseId}`, { withCredentials: true });
                 const { courseName, courseLevel, coursePrice, courseDescription, memberNickname } = response.data;
                 setCourseName(courseName);
                 setCourseLevel(courseLevel);
@@ -37,7 +37,7 @@ const CourseUpdate = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.put(`course/${courseId}`, {
+            await axios.put(`${Course_Url}/${courseId}`, {
                 courseName,
                 courseLevel,
                 coursePrice,
@@ -54,8 +54,8 @@ const CourseUpdate = () => {
 
             setSuccessMessage("수정에 성공하였습니다."); // 성공 메시지 설정
             setTimeout(() => {
-                navigate("/courses"); // 리디렉션
-            }, 2000); // 2초 후에 리디렉션
+                navigate("/admin/courses-management"); // 리디렉션
+            }, 1000); // 2초 후에 리디렉션
         } catch (err) {
             setError("강좌 수정에 실패했습니다.");
         }
@@ -99,7 +99,7 @@ const CourseUpdate = () => {
     );
 };
 
-export default CourseUpdate;
+export default CourseUpdateManagement;
 
 const Container = styled.div`
     max-width: 400px;

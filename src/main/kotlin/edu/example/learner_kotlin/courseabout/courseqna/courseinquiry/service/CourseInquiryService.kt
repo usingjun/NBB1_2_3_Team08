@@ -4,6 +4,7 @@ import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.dto.Course
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.entity.CourseInquiry
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.exception.CourseInquiryException
 import edu.example.learner_kotlin.courseabout.courseqna.courseinquiry.repository.CourseInquiryRepository
+import edu.example.learner_kotlin.qna.inquiry.entity.Inquiry
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,6 +28,12 @@ class CourseInquiryService(
         val courseInquiries = courseInquiryRepository.getCourseInquirys(courseId) ?: emptyList()
         return courseInquiries.map { modelMapper.map(it, CourseInquiryDTO::class.java) }
     }
+
+    fun readSortedInquiry(courseId: Long): List<CourseInquiryDTO> {
+        val courseInquiries = courseInquiryRepository.findAllOrderByStatus(courseId) ?: emptyList()
+        return courseInquiries.map { modelMapper.map(it, CourseInquiryDTO::class.java) }
+    }
+
 
     // 강의 문의 조회
     fun read(inquiryId: Long): CourseInquiryDTO {

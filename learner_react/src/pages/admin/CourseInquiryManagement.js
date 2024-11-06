@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 import styled from "styled-components";
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../axiosInstance";
 
-const CourseInquiryList = ({ courseId }) => {
+const CourseInquiryList = () => {
+    const { courseId } = useParams(); // URL에서 courseId 파라미터 가져오기
     const navigate = useNavigate();
     const [inquiries, setInquiries] = useState([]);
     const [selectedInquiry, setSelectedInquiry] = useState(null);
@@ -15,7 +17,6 @@ const CourseInquiryList = ({ courseId }) => {
     const [editAnswerId, setEditAnswerId] = useState(null);
     const [updatedAnswer, setUpdatedAnswer] = useState("");
     const [inquiryStatus, setInquiryStatus] = useState("PENDING");
-
     const [userRole, setUserRole] = useState(null); // 사용자 역할 저장
     const [userId, setUserId] = useState(null); // 사용자 ID 저장
 
@@ -23,7 +24,7 @@ const CourseInquiryList = ({ courseId }) => {
     useEffect(() => {
         setLoading(true);
         axios
-            .get(`http://localhost:8080/course/${courseId}/course-inquiry`, { withCredentials: true })
+            .get(`http://localhost:8080/course/${courseId}/course-inquiry/sorted`, { withCredentials: true })
             .then((response) => {
                 setInquiries(response.data);
                 setLoading(false);
@@ -31,16 +32,16 @@ const CourseInquiryList = ({ courseId }) => {
                 // 문의 목록을 불러온 후 사용자 정보 요청
                 return fetchUserRoleAndId();
             }).then((userData) => {
-                setUserRole(userData.role);   // 사용자 역할 설정
-                setUserId(userData.mid);      // 사용자 ID 설정
-                //console.log(userData.role);
-                //console.log(userData.mid);
-            })
+            setUserRole(userData.role);   // 사용자 역할 설정
+            setUserId(userData.mid);      // 사용자 ID 설정
+            //console.log(userData.role);
+            //console.log(userData.mid);
+        })
             .catch((error) => {
                 console.error("Error fetching the course inquiries:", error);
                 setLoading(false);
             });
-    }, [courseId]);
+    }, [courseId, selectedInquiry]);
 
     // JWT 토큰에서 사용자 역할과 ID를 추출
     const fetchUserRoleAndId = async () => {
@@ -73,12 +74,11 @@ const CourseInquiryList = ({ courseId }) => {
         }
     };
 
-
     // 문의 클릭 시 상세 정보 불러오기
     const handleInquiryClick = (inquiryId) => {
         setLoadingDetail(true);
         axios
-            .get(`http://localhost:8080/course/${courseId}/course-inquiry`,
+            .get(`http://localhost:8080/course/${courseId}/course-inquiry/sorted`,
                 {
                     withCredentials: true,
                 })
@@ -98,8 +98,6 @@ const CourseInquiryList = ({ courseId }) => {
                 // 답변이 없을 경우 상태 업데이트
                 setLoadingDetail(false);
 
-                console.log(userRole);
-                console.log(userId);
             })
             .catch((error) => {
                 console.error("Error fetching inquiry details or answers:", error);
@@ -282,7 +280,7 @@ const CourseInquiryList = ({ courseId }) => {
         : "http://localhost:8080/images/default_profile.jpg";
 
     return (
-        <>
+        <PageContainer>
             {loading ? (
                 <p>로딩 중...</p>
             ) : (
@@ -295,10 +293,10 @@ const CourseInquiryList = ({ courseId }) => {
                                     <DeleteInquiryButton onClick={() => handleDeleteInquiry(selectedInquiry.inquiryId)}>
                                         문의 삭제
                                     </DeleteInquiryButton>
-                                    )}
-                                </>
-                            ) : (
-                                <WriteButton onClick={() => navigate(`/courses/${courseId}/post`, { state: { mid: userId, role: userRole } })}>글 작성하기</WriteButton>
+                                )}
+                            </>
+                        ) : (
+                            <WriteButton onClick={() => navigate(`/admin/courses-management`)}>이전</WriteButton>
                         )}
                     </ButtonContainer>
 
@@ -404,7 +402,7 @@ const CourseInquiryList = ({ courseId }) => {
                                 <AnswerForm>
                                 <textarea
                                     style={{
-                                        width: "100%",
+                                        width: "98%",
                                         height: "150px",
                                         fontSize: "1rem",
                                     }}
@@ -442,6 +440,7 @@ const CourseInquiryList = ({ courseId }) => {
                                                 작성자: {inquiry.memberNickname || '알 수 없음'}
                                             </span>
                                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 작성일: {new Date(inquiry.createdDate).toLocaleDateString()}
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 문의 상태: {inquiry.inquiryStatus}
                                             </p>
                                         </InquiryItem>
                                     );
@@ -453,17 +452,21 @@ const CourseInquiryList = ({ courseId }) => {
                     )}
                 </>
             )}
-        </>
+        </PageContainer>
     );
-    }
+}
 
 
-    export default CourseInquiryList;
+export default CourseInquiryList;
 
-// 스타일 컴포넌트들...
+const PageContainer = styled.div`
+    margin-left: 10rem;
+`;
+
 
 const InquiryList = styled.div`
     margin-top: 1rem;
+    overflow: auto;
 `;
 
 const InquiryItem = styled.div`
@@ -506,6 +509,7 @@ const AnswerForm = styled.div`
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    border: 1px solid #ddd;
 `;
 
 const SubmitButton = styled.button`

@@ -111,6 +111,11 @@ const Header = ({ openModal }) => {
                                 <SubMenuItem onClick={handleLogout}>로그아웃</SubMenuItem>
                             </SubMenu>
                         )}
+                        {role === "ROLE_ADMIN" && (
+                            <NavItem onClick={() => navigate('/admin/courses-management')}>
+                                관리자 페이지
+                            </NavItem>
+                        )}
                     </>
                 ) : (
                     <Menu>

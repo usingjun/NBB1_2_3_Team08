@@ -34,6 +34,7 @@ import axios from "axios";
 import AttendanceCheck from "./components/attendance/AttendanceCheck";
 import Chat from "./components/Chat";
 import AlarmRoutes from "./AlarmRoutes";
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 axios.defaults.withCredentials = true;
 
@@ -86,6 +87,7 @@ function App() {
                 <Route path="/alarm/display" element={<NotificationDisplay/>}/>
                 <Route path="/chat" element={<Chat/>}/>
                 <Route path="/alarm/*" element={<AlarmRoutes />}/>
+                <Route path="/admin/*" element={<AdminDashboard />} />
             </Routes>
         </Router>
         </NotificationProvider>

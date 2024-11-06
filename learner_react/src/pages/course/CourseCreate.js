@@ -84,7 +84,15 @@ const CourseCreate = () => {
                         required
                     />
                 </Label>
-
+                <Label>
+                    강사 이름:
+                    <Input
+                        type="text"
+                        value={memberNickname}
+                        onChange={(e) => setMemberNickname(e.target.value)}
+                        required
+                    />
+                </Label>
                 <Label>
                     강좌 설명:
                     <Input
