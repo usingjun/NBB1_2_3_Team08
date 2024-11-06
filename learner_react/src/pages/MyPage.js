@@ -3,29 +3,36 @@ import styled from "styled-components";
 import WeeklyStudyTable from "../components/study-table/WeeklyStudyTable";
 import YearlyStudyTable from "../components/study-table/YearlyStudyTable";
 import axiosInstance from './axiosInstance'; // axiosInstance import
-import Cookies from 'js-cookie';
 import axios from "axios"; // js-cookie 패키지 import
 
 const MyPage = () => {
     const [userInfo, setUserInfo] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
     const [isHover, setIsHover] = useState(false);
     const [attendanceDays, setAttendanceDays] = useState(0);
+    const [mid, setMid] = useState(null);
 
     useEffect(() => {
-        const memberId = localStorage.getItem("memberId");
+        // /token/decode API 호출로 mid와 role 가져오기
+        axiosInstance.get('/token/decode')
+            .then(response => {
+                const { mid } = response.data;
+                setMid(mid)
 
-        // 첫 번째 메서드 실행
-        fetchUserInfo(memberId);
+                // 첫 번째 메서드 실행
+                fetchUserInfo(mid);
 
-        // 0.3초 후에 두 번째 메서드 실행
-        const timer = setTimeout(() => {
-            fetchAttendanceDays(memberId);
-        }, 300); // 300 밀리초 = 0.3초
+                // 0.3초 후에 두 번째 메서드 실행
+                const timer = setTimeout(() => {
+                    fetchAttendanceDays(mid);
+                }, 300);
 
-        // cleanup function to clear the timer if the component unmounts
-        return () => clearTimeout(timer);
+                // 컴포넌트가 언마운트될 때 타이머 정리
+                return () => clearTimeout(timer);
+            })
+            .catch(error => {
+                console.error("Failed to decode token:", error);
+            });
     }, []);
 
     const fetchUserInfo = async (memberId) => {
@@ -47,7 +54,7 @@ const MyPage = () => {
     const fetchAttendanceDays = async (memberId) => {
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await axios.get(`http://localhost:8080/attendances/${memberId}/continuous`,{headers: {'Authorization' : `Bearer ${token}`}});
+            const response = await axiosInstance.get(`http://localhost:8080/attendances/${memberId}/continuous`);
             if (response.status === 200) {
                 setAttendanceDays(response.data.continuous);
             } else {
@@ -70,7 +77,6 @@ const MyPage = () => {
                 .then(() => {
                     // 로컬 저장소에서 액세스 토큰 및 회원 ID 제거
                     localStorage.removeItem("accessToken");
-                    localStorage.removeItem("memberId");
 
                     // 메인 페이지로 이동
                     window.location.href = "/";
@@ -88,19 +94,17 @@ const MyPage = () => {
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            setSelectedFile(file);
             await uploadProfileImage(file);
         }
     };
 
     const uploadProfileImage = async (file) => {
-        const memberId = localStorage.getItem("memberId");
         const formData = new FormData();
         formData.append("file", file);
 
         try {
-            const response = await axiosInstance.put(`/members/${memberId}/image`, formData);
-            if (response.ok) {
+            const response = await axiosInstance.put(`/members/${mid}/image`, formData);
+            if (response.status === 201) { // 수정
                 setUserInfo((prev) => ({...prev, profileImage: response.data.profileImage})); // 수정
                 alert(response.data.message || "이미지 업로드 성공!");
                 window.location.reload();
@@ -117,11 +121,10 @@ const MyPage = () => {
     };
 
     const handleDeleteImage = async () => {
-        const memberId = localStorage.getItem("memberId");
         try {
-            const response = await axiosInstance.delete(`/members/${memberId}/image`);
+            const response = await axiosInstance.delete(`/members/${mid}/image`);
 
-            if (response.ok) {
+            if (response.status === 201) {
                 setUserInfo((prev) => ({...prev, profileImage: null}));
                 alert("이미지가 성공적으로 삭제되었습니다.");
                 window.location.reload();
@@ -134,9 +137,8 @@ const MyPage = () => {
     };
 
     const handleWithdraw = async () => {
-        const memberId = localStorage.getItem("memberId");
         try {
-            const response = await axiosInstance.delete(`/members/${memberId}`);
+            const response = await axiosInstance.delete(`/members/${mid}`);
 
             // 응답 상태가 200인 경우에만 처리
             if (response.status === 200) {

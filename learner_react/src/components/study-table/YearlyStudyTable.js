@@ -10,11 +10,20 @@ const YearlyStudyTable = () => {
     const [attendanceData, setAttendanceData] = useState([]);
     const [memberId, setMemberId] = useState(null);
 
-    useEffect(() => {
-        const storedMemberId = localStorage.getItem('memberId');
-        if (storedMemberId) {
-            setMemberId(storedMemberId);
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
         }
+    };
+
+    useEffect(() => {
+        getInfoFromToken();
     }, []);
 
     const fetchData = useCallback(async (year) => {

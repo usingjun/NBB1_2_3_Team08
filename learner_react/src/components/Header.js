@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import axiosInstance from "../pages/axiosInstance";
+    import axiosInstance from "../pages/axiosInstance";
 
 const Header = ({ openModal }) => {
     const navigate = useNavigate();
@@ -12,17 +12,17 @@ const Header = ({ openModal }) => {
     const [searchId, setSearchId] = useState("");
     const [role, setRole] = useState("");
 
-    const checkLoginStatus = () => {
+    const checkLoginStatus = async () => {
         const token = localStorage.getItem("accessToken"); // 로컬 저장소에서 액세스 토큰 가져오기
 
         if (token) {
             setIsLoggedIn(true);
             try {
-                const decodedToken = jwtDecode(token);
-                setRole(decodedToken.role);
-                console.log("what is role:",decodedToken.role)
-            } catch (decodeError) {
-                console.error("토큰 디코딩 실패:", decodeError);
+                const response = await axiosInstance.get('/token/decode');
+                const { role } = response.data; // 응답에서 역할 가져오기
+                setRole(role);
+            } catch (error) {
+                console.error("토큰 디코딩 요청 실패:", error);
                 handleLogout(); // 로그아웃 처리
             }
         } else {
@@ -59,6 +59,7 @@ const Header = ({ openModal }) => {
             alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
         }
     };
+
 
 
     const handleSearch = () => {

@@ -23,7 +23,7 @@ object VideoMapper {
     }
     fun toDTO(video: Video) :VideoDTO{
         return VideoDTO(
-            videoId = video.video_Id,
+            videoId = video.videoId,
             title = video.title,
             url = video.url,
             description = video.description,

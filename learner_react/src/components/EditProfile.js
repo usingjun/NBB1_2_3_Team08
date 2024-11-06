@@ -15,39 +15,40 @@ const EditProfile = () => {
     const [successMessage, setSuccessMessage] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+    const [mid, setMid] = useState(null);
 
     useEffect(() => {
-        const memberId = localStorage.getItem("memberId");
-
-        const fetchUserInfo = async () => {
-            if (!memberId) {
-                console.error("회원 ID가 없습니다.");
-                return;
-            }
+        const fetchUserData = async () => {
             try {
-                const response = await axiosInstance.get(`/members/${memberId}`);
+                const response = await axiosInstance.get('/token/decode');
+                const { mid } = response.data;
+                setMid(mid);
+
+                if (!mid) {
+                    console.error("회원 ID가 없습니다.");
+                    return;
+                }
+
+                const userInfoResponse = await axiosInstance.get(`/members/${mid}`);
 
                 // 성공적으로 데이터를 가져온 경우
-                if (response.status === 200) {
-                    const data = response.data; // 응답 데이터
+                if (userInfoResponse.status === 200) {
+                    const data = userInfoResponse.data; // 응답 데이터
                     setUserInfo(data);
 
                     // OAuth 사용자 확인
-                    if (data.password.includes("naver") || data.password.includes("google")) {
-                        setIsOAuthUser(true);
-                    } else {
-                        setIsOAuthUser(false);
-                    }
+                    setIsOAuthUser(data.password.includes("naver") || data.password.includes("google"));
                 } else {
-                    console.error("사용자 정보 로드 실패:", response.status);
+                    console.error("사용자 정보 로드 실패:", userInfoResponse.status);
                 }
             } catch (error) {
                 console.error("API 호출 중 오류 발생:", error);
             }
         };
 
-        fetchUserInfo();
-    }, []); // 빈 배열을 의존성으로 전달하여 컴포넌트 마운트 시 한 번만 실행
+        fetchUserData();
+    }, []);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
