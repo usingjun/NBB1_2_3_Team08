@@ -92,11 +92,13 @@ class CourseServiceImpl(
 
     //수강중인 강의 목록
     override fun getMemberCoursesByMemberId(memberId: Long): List<MemberCourseDTO> {
-        val memberCourseList = memberCourseRepo.getMemberCourse(memberId)
-        return memberCourseRepo.getMemberCourse(memberId).ifEmpty {
-            throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
-        }.map { MemberCourseDTO(it) }.also {
-            log.info("memberCourses: $it")
+        try {
+            return memberCourseRepo.getMemberCourse(memberId)
+                .map { MemberCourseDTO(it) }.also {
+                    log.info("memberCourses: $it")
+                }
+        }catch (e:Exception){
+            throw CourseException.COURSE_NOT_FOUND.courseException
         }
     }
 

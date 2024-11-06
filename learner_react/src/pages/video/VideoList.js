@@ -20,18 +20,21 @@ const VideoList = () => {
     const [memberNickname, setMemberNickName] = useState(); // 사용자 ID 상태 추가
 
     const getInfoFromToken = async () => {
-        const accessToken = localStorage.getItem("accessToken");
-        if (accessToken) {
-            try {
-                const response = await axiosInstance.get('/token/decode');
-                setMemberId(response.data.mid);
-                setRole(response.data.role);
-                setMemberNickName(response.data.username);
-            } catch (error) {
-                console.error('Failed to get role:', error);
-            }
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) return; // accessToken이 없으면 함수 종료
+
+            const response = await axiosInstance.get('/token/decode');
+            const { mid, role, username } = response.data;
+
+            setMemberId(mid);
+            setRole(role);
+            setMemberNickName(username);
+        } catch (error) {
+            console.error('Failed to get role:', error);
         }
     };
+
 
     useEffect(() => {
         // 사용자 정보 먼저 가져오기
@@ -78,7 +81,7 @@ const VideoList = () => {
                 videos.map((video, index) => (
                     <VideoItem
                         key={video.videoId}
-                        onClick={() => handlePlayClick(courseId, video, navigate, setError, role, memberNickname)}
+                        onClick={() => handlePlayClick(courseId, video, navigate, setError, role)}
                     >
                         <VideoInfo>
                             <Title>{index + 1}. {video.description}</Title>

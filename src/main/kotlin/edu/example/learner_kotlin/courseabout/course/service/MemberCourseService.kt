@@ -8,6 +8,7 @@ import edu.example.learner_kotlin.courseabout.course.repository.MemberCourseRepo
 import edu.example.learner_kotlin.courseabout.exception.CourseException
 import edu.example.learner_kotlin.courseabout.exception.CourseTaskException
 import edu.example.learner_kotlin.courseabout.exception.MemberException
+import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.repository.MemberRepository
 import org.springframework.stereotype.Service
@@ -22,16 +23,22 @@ class MemberCourseService (
             private val memberRepository: MemberRepository,
 ){
     // 구매 여부 확인
-    fun checkPurchase(courseId: Long?, memberId: Long?): Boolean {
-        // 구매 기록이 있는지 확인
-        val purchase = memberCourseRepository.findByCourseIdAndMember_Id(courseId!!, memberId!!)
+    fun checkPurchase(courseId: Long, memberId: Long): Boolean {
+        try {
+            val purchase = memberCourseRepository.findByCourseIdAndMember_Id(courseId, memberId)
 
-        // 만약 구매가 없으면 예외를 던짐
-        if (purchase == null) {
-            throw CourseTaskException("Course not purchased for courseId: $courseId and memberId: $memberId", 404)
+            log.info("success")
+
+            // 만약 구매가 없으면 예외를 던짐
+            if (purchase == null) {
+                throw CourseTaskException("Course not purchased for courseId: $courseId and memberId: $memberId", 404)
+            }
+            return true
+        } catch ( e: Exception) {
+            throw CourseException.MEMBER_COURSE_NOT_FOUND.courseException
         }
-        return true
     }
+
 
     @Transactional
     fun purchaseCourse(memberId: Long, courseId: Long): MemberCourse {
