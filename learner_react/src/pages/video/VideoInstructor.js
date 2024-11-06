@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../axiosInstance";
 import styled from "styled-components";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
@@ -69,11 +69,9 @@ const VideoList = () => {
     return (
         <Container>
             <Header>비디오 목록</Header>
-            {role === "INSTRUCTOR" && (
                 <Link to={`/video/create/${courseId}`}>
                     <StyledButton>비디오 추가</StyledButton>
                 </Link>
-            )}
             {videos.length > 0 ? (
                 videos.map((video, index) => (
                     <VideoItem key={video.videoId}>
