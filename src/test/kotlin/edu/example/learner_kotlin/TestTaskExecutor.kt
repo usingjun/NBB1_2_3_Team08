@@ -2,9 +2,15 @@ package edu.example.learner_kotlin
 
 import edu.example.learner_kotlin.attendance.entity.Attendance
 import edu.example.learner_kotlin.attendance.repository.AttendanceRepository
+import edu.example.learner_kotlin.courseabout.course.entity.Course
+import edu.example.learner_kotlin.courseabout.course.repository.CourseRepository
+import edu.example.learner_kotlin.courseabout.video.entity.Video
+import edu.example.learner_kotlin.courseabout.video.repository.VideoRepository
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.entity.Role
 import edu.example.learner_kotlin.member.repository.MemberRepository
+import edu.example.learner_kotlin.member_video.entity.MemberVideo
+import edu.example.learner_kotlin.member_video.repository.MemberVideoRepository
 import edu.example.learner_kotlin.qna.answer.entity.Answer
 import edu.example.learner_kotlin.qna.answer.repository.AnswerRepository
 import edu.example.learner_kotlin.qna.faq.entity.FAQ
@@ -26,7 +32,10 @@ class TestTaskExecutor(
     val faqRepository: FAQRepository,
     val answerRepository: AnswerRepository,
     val studyTableRepository: StudyTableRepository,
-    val attendanceRepository: AttendanceRepository
+    val attendanceRepository: AttendanceRepository,
+    val memberVideoRepository : MemberVideoRepository,
+    val videoRepository: VideoRepository,
+    val courseRepository: CourseRepository,
 ) :
     ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
@@ -102,5 +111,42 @@ class TestTaskExecutor(
             this.member = Member().apply { memberId = 1L }
         }
         attendanceRepository.save(attendance)
+
+        val course = Course().apply {
+            this.courseName = "test"
+            this.courseDescription = "test"
+            this.member = Member().apply { memberId = 3L}
+            this.coursePrice = 10000L
+            this.courseLevel = 1
+        }
+        courseRepository.save(course)
+
+        for (i in 1..2L) {
+            val video = Video().apply {
+                this.course = Course().apply {this.courseId = 1L}
+            }
+            videoRepository.save(video)
+        }
+
+        val memberVideo1 = MemberVideo().apply {
+            this.studyTime = 20
+            this.member = Member().apply { memberId = 1L }
+            this.video = Video().apply { videoId = 1L }
+        }
+        memberVideoRepository.save(memberVideo1)
+        val memberVideo2 = MemberVideo().apply {
+            this.studyTime = 30
+            this.watched = true
+            this.member = Member().apply { memberId = 1L }
+            this.video = Video().apply { videoId = 2L }
+        }
+        memberVideoRepository.save(memberVideo2)
+        val memberVideo3 = MemberVideo().apply {
+            this.studyTime = 40
+            this.watched = true
+            this.member = Member().apply { memberId = 2L }
+            this.video = Video().apply { videoId = 1L }
+        }
+        memberVideoRepository.save(memberVideo3)
     }
 }
