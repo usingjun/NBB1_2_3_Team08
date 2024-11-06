@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.studytable.controller
 
+import edu.example.learner_kotlin.log
 import edu.example.learner_kotlin.studytable.dto.StudyTableDTO
 import edu.example.learner_kotlin.studytable.service.StudyTableService
 import org.springframework.format.annotation.DateTimeFormat
@@ -33,13 +34,15 @@ class StudyTableController(val studyTableService: StudyTableService) {
     }
 
     @PostMapping
-    fun register(@Validated @RequestBody studyTableDTO: StudyTableDTO) =
-        if (studyTableService.readByDate(studyTableDTO.studyTableId!!)) ResponseEntity.ok(studyTableDTO)
+    fun register(@Validated @RequestBody studyTableDTO: StudyTableDTO) = run {
+        if (studyTableService.readByDate(studyTableDTO.memberId!!)) ResponseEntity.ok(studyTableDTO)
         else ResponseEntity.ok(studyTableService.register(studyTableDTO))
+    }
 
     @PutMapping("/{studyTableId}")
-    fun update(@PathVariable("studyTableId") studyTableId: Long, @Validated @RequestBody studyTableDTO: StudyTableDTO) =
+    fun update(@PathVariable("studyTableId") studyTableId: Long, @Validated @RequestBody studyTableDTO: StudyTableDTO) = run {
         ResponseEntity.ok(studyTableService.update(studyTableDTO.apply { this.studyTableId = studyTableDTO.studyTableId }))
+    }
 
     @PutMapping("/today")
     fun updateWithDate(@RequestBody studyTableDTO: StudyTableDTO) = run {

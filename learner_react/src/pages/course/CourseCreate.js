@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import axios from "../axiosInstance";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
+import axiosInstance from "../axiosInstance"; // axiosInstance import 추가
 
 const Course_Url = "http://localhost:8080/course";
 
@@ -11,26 +11,45 @@ const CourseCreate = () => {
     const [courseDescription, setCourseDescription] = useState("");
     const [coursePrice, setCoursePrice] = useState(0);
     const [courseLevel, setCourseLevel] = useState(1); // 기본값 1
-    const [courseAttribute, setCourtAttribute] = useState("");
+    const [courseAttribute, setCourseAttribute] = useState("");
+    const [memberNickname, setMemberNickname] = useState(null); // memberNickname 상태 추가
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+
+    // 사용자 역할 및 memberNickname 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                console.log("서버 응답:", response.data); // 응답 로그 추가
+                setMemberNickname(response.data.username); // memberNickname 설정
+            } else {
+                console.error("토큰이 존재하지 않습니다.");
+                setError("로그인이 필요합니다.");
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+            setError("사용자 정보를 가져오는 데 실패했습니다.");
+        }
+    };
+
+    // 컴포넌트가 마운트될 때 사용자 역할 확인
+    useEffect(() => {
+        checkUserRole();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 쿠키에서 Authorization 토큰을 가져오는 로직
-            const token = document.cookie
-                .split("; ")
-                .find(row => row.startsWith("Authorization="))
-                ?.split("=")[1];
-
-            if (!token) {
-                throw new Error("Authorization 토큰이 없습니다.");
+            if (!memberNickname) {
+                throw new Error("회원 닉네임이 설정되어 있지 않습니다.");
             }
-
-            // JWT 디코딩하여 mid 추출
-            const decodedToken = jwtDecode(token);
-            const memberNickname = decodedToken.mid;
 
             const payload = {
                 courseName,
@@ -38,14 +57,14 @@ const CourseCreate = () => {
                 coursePrice,
                 courseLevel,
                 courseAttribute,
-                memberNickname,
+                memberNickname, // memberNickname 사용
             };
 
             await axios.post(Course_Url, payload, { withCredentials: true });
 
             // 성공 메시지와 페이지 리디렉션
-            alert("강의 생성에 성공하였습니다."); // alert 추가
-            navigate("/courses/list"); // 상대 경로로 수정
+            alert("강의 생성에 성공하였습니다.");
+            navigate("/courses/list");
         } catch (err) {
             setError("강좌 생성에 실패했습니다.");
         }
@@ -65,7 +84,15 @@ const CourseCreate = () => {
                         required
                     />
                 </Label>
-
+                <Label>
+                    강사 이름:
+                    <Input
+                        type="text"
+                        value={memberNickname}
+                        onChange={(e) => setMemberNickname(e.target.value)}
+                        required
+                    />
+                </Label>
                 <Label>
                     강좌 설명:
                     <Input
@@ -102,7 +129,7 @@ const CourseCreate = () => {
                     <Input
                         type="text"
                         value={courseAttribute}
-                        onChange={(e) => setCourtAttribute((e.target.value))}
+                        onChange={(e) => setCourseAttribute(e.target.value)}
                         required
                     />
                 </Label>

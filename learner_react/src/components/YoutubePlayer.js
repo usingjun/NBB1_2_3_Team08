@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import {useEffect, useRef, useState} from 'react';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import styled from 'styled-components';
+import axiosInstance from "../pages/axiosInstance";
 
 const YoutubePlayer = () => {
-    const { videoId } = useParams();
+    const {videoId} = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const playerRef = useRef(null);
@@ -13,9 +13,11 @@ const YoutubePlayer = () => {
     const [courseVideos, setCourseVideos] = useState([]);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(-1);
     const [isLoading, setIsLoading] = useState(true);
-    const [memberId] = useState(localStorage.getItem('memberId'));
+    const [memberId, setMemberId] = useState(null);
+    const [isMemberIdReady, setIsMemberIdReady] = useState(false);
     const hasPosted = useRef(false);
-
+    const [isMemberVideoExist, setIsMemberVideoExist] = useState()
+    const [isWatched, setIsWatched] = useState()
     const videoEntityId = location.state?.videoEntityId;
     const youtubeId = location.state?.youtubeId;
     const courseId = location.state?.courseId;
@@ -23,42 +25,117 @@ const YoutubePlayer = () => {
     const embedUrl = `https://www.youtube.com/embed/${youtubeId}?enablejsapi=1`;
 
     useEffect(() => {
-        const createStudyTable = async () => {
-            if (hasPosted.current) return;
-            hasPosted.current = true;
-            try {
-                await axios.post('http://localhost:8080/study-tables', {
-                    memberId: memberId,
-                    studyTime: 0,
-                    completed: 0,
-                }, { withCredentials: true });
-            } catch (error) {
-                console.error('데이터 생성 중 에러:', error);
+        const getInfoFromToken = async () => {
+            const accessToken = localStorage.getItem("accessToken");
+            if (accessToken) {
+                try {
+                    const response = await axiosInstance.get('/token/decode');
+                    setMemberId(response.data.mid)
+                } catch (error) {
+                    console.error('Failed to get role:', error);
+                }
             }
         };
-
-        createStudyTable();
-    }, [memberId]);
+        getInfoFromToken();
+    }, []);
 
     const updateStudyTable = async (studyTime, completed) => {
         try {
-            await axios.put('http://localhost:8080/study-tables/today', {
+            await axiosInstance.put('/study-tables/today', {
                 memberId: memberId,
                 studyTime: studyTime,
                 completed: completed,
-            }, { withCredentials: true });
+            });
         } catch (error) {
             console.error('데이터 업데이트 중 에러:', error);
         }
     };
+    const updateMemberVideo = async (studyTime, watched) => {
+        try {
+            await axiosInstance.put(`/member-video/${memberId}/${videoId}`, {
+                studyTime: studyTime,
+                watched: watched,
+                memberId: memberId,
+                videoId: videoId,
+            });
+        } catch (e) {
+            console.error('member video update error: ', e);
+        }
+    }
+    useEffect(() => {
+        if (memberId !== null && isMemberVideoExist) {
+            setIsMemberIdReady(true);
+            const timer = setInterval(() => {
+                updateStudyTable(1, 0);
+                updateMemberVideo(1, false);
+            }, 60000);
+            return () => clearInterval(timer);
+        }
+    }, [memberId, isMemberVideoExist]);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            updateStudyTable(1, 0); // 1분마다 1분 추가
-        }, 60000);
+        if (isMemberIdReady) {
+            const createStudyTable = async () => {
+                if (hasPosted.current) return;
+                hasPosted.current = true;
+                try {
+                    await axiosInstance.post('/study-tables', {
+                        memberId: memberId,
+                        studyTime: 0,
+                        completed: 0,
+                    });
+                } catch (error) {
+                    console.error('데이터 생성 중 에러:', error);
+                }
+            };
+            createStudyTable();
+        }
+    }, [isMemberIdReady]);
 
-        return () => clearInterval(timer);
-    }, [memberId]);
+    useEffect(() => {
+        const getMemberVideoInfo = async () => {
+            try {
+                const response = await axiosInstance.get(`/member-video/${memberId}/${videoId}`);
+                setIsMemberVideoExist(response.data)
+            } catch (e) {
+                console.error("member_video 정보 가져오기 실패: ", e);
+            }
+        }
+        if (memberId !== null && videoId !== null) {
+            getMemberVideoInfo();
+        }
+    }, [memberId, videoId]);
+
+    useEffect(() => {
+        const createMemberVideo = async () => {
+            try {
+                const response = await axiosInstance.post(`/member-video`, {
+                    memberId: memberId,
+                    videoId: videoId
+                });
+            } catch (e) {
+                console.error("member_video 정보 가져오기 실패: ", e);
+            }
+        }
+        if (memberId !== null && videoId !== null && isMemberVideoExist === false) {
+            createMemberVideo();
+            setIsMemberVideoExist(true);
+        }
+    }, [isMemberVideoExist]);
+
+    useEffect(() => {
+        const getWatched = async () => {
+            try {
+                const response = await axiosInstance.get(`/member-video/${memberId}/${videoId}/watched`);
+                setIsWatched(response.data)
+            } catch (e) {
+                console.error("member_video 정보 가져오기 실패: ", e);
+            }
+        }
+        if (memberId !== null && videoId !== null && isMemberVideoExist === true) {
+            getWatched();
+        }
+    }, [isMemberVideoExist, memberId]);
 
     useEffect(() => {
         const fetchCourseVideos = async () => {
@@ -69,7 +146,7 @@ const YoutubePlayer = () => {
 
             setIsLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8080/course/video/${courseId}`, { withCredentials: true });
+                const response = await axiosInstance.get(`http://localhost:8080/course/video/${courseId}`);
                 const videos = response.data;
                 setCourseVideos(videos);
                 const index = videos.findIndex(v => v.videoId === parseInt(videoId));
@@ -135,7 +212,6 @@ const YoutubePlayer = () => {
                 });
             });
         };
-
         if (!window.YT) {
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
@@ -145,7 +221,7 @@ const YoutubePlayer = () => {
         } else {
             loadYouTubePlayer();
         }
-    }, [youtubeId]);
+    }, [isWatched, memberId, youtubeId,]);
 
     const onPlayerReady = (event) => {
         console.log('플레이어가 준비되었습니다.');
@@ -154,7 +230,11 @@ const YoutubePlayer = () => {
     const onPlayerStateChange = async (event) => {
         if (event.data === window.YT.PlayerState.ENDED) {
             console.log('동영상이 종료되었습니다!');
-            await updateStudyTable(0, 1); // 학습 완료 여부를 서버에 업데이트
+            if (isWatched === false && memberId !== null && videoId !== null) {
+                await updateStudyTable(0, 1);
+                await updateMemberVideo(0, true);
+                setIsWatched(true);
+            }
         }
     };
 
@@ -235,7 +315,8 @@ const YoutubePlayer = () => {
                         {isLoading ? "로딩 중..." : `${currentVideoIndex + 1} / ${courseVideos.length}`}
                     </VideoProgress>
 
-                    <NavButton onClick={handleNextVideo} disabled={isLoading || currentVideoIndex >= courseVideos.length - 1}>
+                    <NavButton onClick={handleNextVideo}
+                               disabled={isLoading || currentVideoIndex >= courseVideos.length - 1}>
                         {isLoading ? "로딩 중..." : "다음 강의"}
                     </NavButton>
                 </NavigationContainer>

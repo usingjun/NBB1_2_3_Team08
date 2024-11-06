@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, {useEffect, useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
 import axiosInstance from '../axiosInstance'; // axiosInstance import
 
-const CourseReview = ({ courseId }) => {
+const CourseReview = ({courseId}) => {
     const navigate = useNavigate();
     const [reviewList, setReviewList] = useState([]);
     const [userNickname, setUserNickname] = useState('');
@@ -11,21 +10,25 @@ const CourseReview = ({ courseId }) => {
     const [writerId, setWriterId] = useState(null);
 
     useEffect(() => {
-        const storedMemberId = localStorage.getItem("memberId");
-        if (storedMemberId) {
-            setWriterId(storedMemberId);
-        }
+        // /token/decode API 호출로 mid 가져오기
+        axiosInstance.get('/token/decode')
+            .then(response => {
+                const {mid} = response.data;
+                setWriterId(mid);
+            })
+            .catch(error => {
+                console.error("Error decoding token:", error);
+            });
     }, []);
 
     useEffect(() => {
         const fetchMemberData = async () => {
-            const memberId = localStorage.getItem("memberId");
-            if (memberId && !userNickname && !userId) {
+            if (writerId && !userNickname && !userId) {
                 try {
-                    const res = await axiosInstance.get(`/members/${memberId}`);
+                    const res = await axiosInstance.get(`/members/${writerId}`);
                     console.log("사용자 정보:", res.data);
                     setUserNickname(res.data.nickname);
-                    setUserId(res.data.memberId);
+                    // setUserId(res.data.writerId);
                 } catch (err) {
                     console.error("사용자 정보 가져오기 실패:", err);
                 }
@@ -63,7 +66,7 @@ const CourseReview = ({ courseId }) => {
                     "Authorization": `Bearer ${token}`,
                 },
                 credentials: 'include',
-                body: JSON.stringify({ writerId })
+                body: JSON.stringify({writerId})
             })
                 .then(() => {
                     setReviewList(reviewList.filter(review => review.reviewId !== reviewId));
@@ -93,15 +96,21 @@ const CourseReview = ({ courseId }) => {
         return date.toLocaleString('ko-KR', options).replace(',', '');
     };
 
-    const handleMemberClick = (memberId) => {
-        console.log('memberId:', memberId);
+    const handleMemberClick = (writerId) => {
+        console.log('writerId:', writerId);
 
-        axios
-            .get(`http://localhost:8080/members/${memberId}`, { withCredentials: true })
+        const token = localStorage.getItem("accessToken");
+
+        axiosInstance.get(`/members/${writerId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            withCredentials: true,
+        })
             .then((response) => {
                 const memberData = response.data;
                 console.log("Member data:", memberData);
-                navigate(`/members/${memberId}`, { state: { memberData } });
+                navigate(`/members/${writerId}`, {state: {memberData}});
             })
             .catch((error) => {
                 console.error("Error fetching member details:", error);
@@ -109,13 +118,19 @@ const CourseReview = ({ courseId }) => {
     };
 
     const calculateRatingColor = (rating) => {
-        switch(rating) {
-            case 1: return "#ff4d4f"; // 빨간색
-            case 2: return "#ffa500"; // 주황색
-            case 3: return "#ffd700"; // 노란색
-            case 4: return "#28a745"; // 초록색
-            case 5: return "#1890ff"; // 파란색
-            default: return "#333";
+        switch (rating) {
+            case 1:
+                return "#ff4d4f"; // 빨간색
+            case 2:
+                return "#ffa500"; // 주황색
+            case 3:
+                return "#ffd700"; // 노란색
+            case 4:
+                return "#28a745"; // 초록색
+            case 5:
+                return "#1890ff"; // 파란색
+            default:
+                return "#333";
         }
     };
 
@@ -134,7 +149,7 @@ const CourseReview = ({ courseId }) => {
                             <p className="review-detail">{review.reviewDetail}</p>
                             <span
                                 className="review-rating"
-                                style={{ color: calculateRatingColor(review.rating) }}
+                                style={{color: calculateRatingColor(review.rating)}}
                             >
                                 평점: {review.rating} / 5
                             </span>
@@ -154,10 +169,12 @@ const CourseReview = ({ courseId }) => {
                             <p className="review-updatedDate"> 수정일 : {formatDate(review.reviewUpdatedDate)}</p>
                         </div>
                         <div className="button-group">
-                            {userId === review.writerId && (
+                            {String(writerId) === String(review.writerId) && (
                                 <>
-                                    <button onClick={() => handleDelete(review.reviewId)} className="delete-button">삭제</button>
-                                    <Link to={`/courses/${courseId}/reviews/${review.reviewId}`} className="edit-button">수정</Link>
+                                    <button onClick={() => handleDelete(review.reviewId)} className="delete-button">삭제
+                                    </button>
+                                    <Link to={`/courses/${courseId}/reviews/${review.reviewId}`}
+                                          className="edit-button">수정</Link>
                                 </>
                             )}
                         </div>

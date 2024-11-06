@@ -12,4 +12,7 @@ interface FollowRepository : JpaRepository<Follow?, Long?> {
     fun findByFollower(follower: Member?): List<Follow?>?
 
     fun findByFollowing(following: Member?): List<Follow?>?
+    fun countByFollowing(following: Member): Long
+    fun countByFollower(follower: Member): Long
+
 }

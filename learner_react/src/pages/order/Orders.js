@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../axiosInstance";
 import styled from "styled-components";
 
 const Order_Url = "http://localhost:8080/order";
@@ -9,36 +9,67 @@ const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const memberId = localStorage.getItem("memberId");
     const navigate = useNavigate();
+    const [userRole, setUserRole] = useState(null);
+    const [memberId, setMemberId] = useState(null);
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            setLoading(true);
-            if (!memberId) {
-                setError("로그인이 필요합니다.");
-                setLoading(false);
-                return;
+
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                // Authorization 헤더에 JWT 토큰 추가
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                // 서버 응답에서 사용자 역할 및 이름 설정
+                setUserRole(response.data.role);  // role 설정
+                setMemberId(response.data.mid);    // memberId 설정
             }
-            try {
-                const response = await axios.get(`${Order_Url}/list/${memberId}`, { withCredentials: true });
-                if (Array.isArray(response.data)) {
-                    setOrders(response.data);
-                } else {
-                    console.error('주문 응답이 배열이 아닙니다:', response.data);
-                    setError("주문 목록을 가져오는 데 실패했습니다.");
-                    setOrders([]);
-                }
-            } catch (error) {
-                console.error("주문 가져오는 중 오류 발생:", error);
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+        }
+    };
+
+    // 주문 목록 가져오기
+    const fetchOrders = async () => {
+        if (!memberId) {
+            setError("로그인이 필요합니다.");
+            return;
+        }
+        setLoading(true); // 로딩 시작
+        try {
+            const response = await axiosInstance.get(`/order/list/${memberId}`, { withCredentials: true });
+            if (Array.isArray(response.data)) {
+                setOrders(response.data);
+            } else {
+                console.error('주문 응답이 배열이 아닙니다:', response.data);
                 setError("주문 목록을 가져오는 데 실패했습니다.");
                 setOrders([]);
-            } finally {
-                setLoading(false);
             }
-        };
-        fetchOrders();
-    }, [memberId]);
+        } catch (error) {
+            console.error("주문 가져오는 중 오류 발생:", error);
+            setError("주문 목록을 가져오는 데 실패했습니다.");
+            setOrders([]);
+        } finally {
+            setLoading(false); // 로딩 종료
+        }
+    };
+
+    useEffect(() => {
+        checkUserRole(); // 사용자 역할 및 memberId 확인
+    }, []); // 컴포넌트가 마운트될 때 한 번만 호출
+
+    useEffect(() => {
+        if (memberId) {
+            fetchOrders(); // memberId가 설정되면 주문 목록 가져오기
+        }
+    }, [memberId]); // memberId가 변경될 때마다 호출
 
     const handleUpdateClick = (orderId) => {
         navigate(`/orders/update/${orderId}`);
@@ -51,12 +82,11 @@ const Orders = () => {
     };
 
     const handlePurchase = async (orderId) => {
-        const memberId = localStorage.getItem("memberId");
         try {
-            const response = await axios.post(`${Order_Url}/purchase/${orderId}`, { orderId, memberId }, { withCredentials: true });
+            const response = await axiosInstance.post(`order/purchase/${orderId}`, { orderId, memberId }, { withCredentials: true });
             alert("결제가 완료되었습니다. 주문 ID: " + response.data.orderId);
             // 성공적으로 결제 후 해당 주문 제거
-            await axios.delete(`${Order_Url}/${orderId}`, { withCredentials: true });
+            await axiosInstance.delete(`order/${orderId}`, { withCredentials: true });
             window.location.reload();
         } catch (error) {
             console.error("결제 중 오류 발생:", error);
@@ -148,7 +178,7 @@ const StyledButton = styled.button`
                                     props.update ? "#ffc107" : "#6c757d"
     };
     color: ${props => props.purchase ? "white" : "white"};
-    border: ${props => props.purchase ? "none" : "none"};
+    border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;

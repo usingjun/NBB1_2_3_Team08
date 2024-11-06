@@ -1,56 +1,61 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom"; // useParams 추가
+import React, { useState, useEffect } from "react";
+import axios from "../axiosInstance";
+import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
 
-
-const Video_Url = "http://localhost:8080/video";
-
-const AddVideo = ( ) => {
+const AddVideo = () => {
     const { courseId } = useParams();
     const [title, setTitle] = useState("");
     const [url, setUrl] = useState("");
     const [description, setDescription] = useState("");
-    const navigate = useNavigate();
+    const [memberId, setMemberId] = useState(null);
+    const [role, setRole] = useState(null);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                const response = await axios.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setMemberId(response.data.mid);
+                setRole(response.data.role);
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+        }
+    };
+
+    useEffect(() => {
+        checkUserRole();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 쿠키에서 Authorization 토큰을 가져오는 로직
-            const token = document.cookie
-                .split("; ")
-                .find(row => row.startsWith("Authorization="))
-                ?.split("=")[1];
-
-            if (!token) {
-                throw new Error("Authorization 토큰이 없습니다.");
-            }
-
-            // JWT 디코딩하여 mid 추출
-            const decodedToken = jwtDecode(token);
-            const memberNickname = decodedToken.mid;
-            const role = decodedToken.role;
-
             const payload = {
                 courseId: courseId,
                 title,
                 url,
                 description,
+                memberId,  // memberId 포함
+                role       // role 포함
             };
-            console.log("courseId :",courseId)
+
             await axios.post('http://localhost:8080/video', payload, { withCredentials: true });
 
-            // 성공 메시지와 페이지 리디렉션
-            alert("강의 생성에 성공하였습니다."); // alert 추가
-            navigate("/courses/list"); // 상대 경로로 수정
+            alert("강의 생성에 성공하였습니다.");
+            navigate("/courses/list");
         } catch (err) {
             setError("강좌 생성에 실패했습니다.");
+            console.error("강좌 생성 중 오류:", err);
         }
     };
-
 
     return (
         <FormContainer>
@@ -68,6 +73,7 @@ const AddVideo = ( ) => {
                     설명:
                     <Input type="text" value={description} onChange={(e) => setDescription(e.target.value)} />
                 </Label>
+                {error && <p style={{ color: "red" }}>{error}</p>}
                 <Button type="submit">추가</Button>
             </form>
         </FormContainer>

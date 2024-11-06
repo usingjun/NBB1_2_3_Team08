@@ -41,6 +41,22 @@ class CourseInquiryController(
         return ResponseEntity.ok(courseInquiryDTOS)
     }
 
+    // 강의 문의 리스트 조회 - 상태 순으로 정렬
+    @GetMapping("/sorted")
+    @Operation(summary = "상태 순으로 정렬된 강의 문의 리스트 조회", description = "해당 강의에 대한 문의를 상태로 정렬하여 리스트 조회를 합니다.")
+    fun getSortedList(@PathVariable("courseId") courseId: Long): ResponseEntity<List<CourseInquiryDTO>> {
+        val courseInquiries = courseInquiryService.readSortedInquiry(courseId)
+        val courseInquiryDTOS = courseInquiries?.map { modelMapper.map(it, CourseInquiryDTO::class.java) } ?: emptyList()
+
+        // 필수 필드만 로깅
+        courseInquiryDTOS.forEach { inquiry ->
+            log.info("CourseInquiry: inquiryId={}, inquiryTitle={}, memberNickname={}",
+                inquiry.inquiryId, inquiry.inquiryTitle, inquiry.memberNickname)
+        }
+
+        return ResponseEntity.ok(courseInquiryDTOS)
+    }
+
     // 강의 문의 조회
     @GetMapping("/{inquiryId}")
     @Operation(summary = "강의 문의 조회", description = "강의 문의에 대한 내용을 조회합니다.")

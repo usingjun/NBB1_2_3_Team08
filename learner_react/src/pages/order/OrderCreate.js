@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../axiosInstance";
 
 const OrderCreate = () => {
     const [orderItems, setOrderItems] = useState([{ courseId: "", price: "" }]);
@@ -9,41 +9,84 @@ const OrderCreate = () => {
     const [purchasedCourses, setPurchasedCourses] = useState({});
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const [userRole, setUserRole] = useState(null);
+    const [memberId, setMemberId] = useState(null);
 
-    const memberId = localStorage.getItem("memberId");
+    // 사용자 역할 및 memberId 확인 (서버로 요청)
+    const checkUserRole = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                const response = await axiosInstance.get('/token/decode', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setUserRole(response.data.role);
+                setMemberId(response.data.mid);
+            }
+        } catch (error) {
+            console.error("토큰 확인 중 오류 발생:", error);
+            if (error.response && error.response.status === 401) {
+                // 401 에러 처리: 로그인 페이지로 리디렉션
+                navigate('/login'); // 로그인 페이지로 리디렉션
+            }
+        }
+    };
+
+
+
+    useEffect(() => {
+        checkUserRole(); // 사용자 역할 및 memberId 확인
+    }, []); // 컴포넌트가 마운트될 때 한 번만 호출
 
     useEffect(() => {
         const fetchCourses = async () => {
+            if (!memberId) return; // memberId가 없을 경우 호출하지 않음
             try {
-                const response = await axios.get('http://localhost:8080/course/list',{withCredentials: true});
+                const response = await axiosInstance.get('http://localhost:8080/course/list', { withCredentials: true });
                 setCourses(response.data);
             } catch (error) {
-                console.error("Error fetching courses:", error);
-                setError("강의 목록을 가져오는 데 실패했습니다.");
+                if (error.response && error.response.status === 401) {
+                    console.error("강의 목록을 가져오는 중 401 에러 발생. 로그인 페이지로 리디렉션합니다.");
+                    navigate("/login");
+                } else {
+                    console.error("Error fetching courses:", error);
+                    setError("강의 목록을 가져오는 데 실패했습니다.");
+                }
             }
         };
 
         fetchCourses();
-    }, [memberId]);
+    }, [memberId]); // memberId가 변경될 때만 호출
 
-    useEffect(() => {
-        const checkPurchasedCourses = async () => {
-            const purchasedStatus = {};
-            for (const course of courses) {
-                try {
-                    const response = await axios.get(`http://localhost:8080/course/${course.courseId}/purchase?memberId=${memberId}`, { withCredentials: true });
-                    purchasedStatus[course.courseId] = response.data; // boolean 값 저장
-                } catch (error) {
-                    console.error(`Error checking purchase for course ${course.courseId}:`, error);
-                }
-            }
-            setPurchasedCourses(purchasedStatus);
-        };
+    // useEffect(() => {
+    //     const checkPurchasedCourses = async () => {
+    //         // 구매 상태가 이미 체크되었거나 memberId가 없으면 조기 반환
+    //         if (courses.length === 0 || !memberId) return;
+    //
+    //         const purchasedStatus = {};
+    //         await Promise.all(courses.map(async (course) => {
+    //             try {
+    //                 const response = await axiosInstance.get(`http://localhost:8080/course/${course.courseId}/purchase?memberId=${memberId}`, { withCredentials: true });
+    //                 purchasedStatus[course.courseId] = response.data; // boolean 값 저장
+    //             } catch (error) {
+    //                 console.error(`Error checking purchase for course ${course.courseId}:`, error);
+    //             }
+    //         }));
+    //
+    //         // purchasedCourses가 빈 객체일 때만 업데이트
+    //         if (Object.keys(purchasedCourses).length === 0) {
+    //             setPurchasedCourses(purchasedStatus);
+    //         }
+    //     };
+    //
+    //     checkPurchasedCourses();
+    // }, [courses, memberId]); // purchasedCourses 삭제
 
-        if (courses.length > 0) {
-            checkPurchasedCourses();
-        }
-    }, [courses, memberId]);
+
+
 
     const handleChange = (index, event) => {
         const values = [...orderItems];
@@ -53,13 +96,10 @@ const OrderCreate = () => {
             values[index].price = selectedCourse.coursePrice; // 가격 설정
         }
         setOrderItems(values);
-        console.log("Updated orderItems:", values); // 확인용 로그
     };
-
 
     const handleAddItem = () => {
         setOrderItems([...orderItems, { courseId: "", price: "" }]);
-        console.log(orderItems);
     };
 
     const handleRemoveItem = (index) => {
@@ -71,7 +111,7 @@ const OrderCreate = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post(`http://localhost:8080/order/${memberId}`, {
+            const response = await axiosInstance.post(`http://localhost:8080/order/${memberId}`, {
                 orderItemDTOList: orderItems,
                 memberId: memberId,
             }, { withCredentials: true });
@@ -102,13 +142,7 @@ const OrderCreate = () => {
                         <Select
                             name="courseId"
                             value={item.courseId}
-                            onChange={(event) => {
-                                handleChange(index, event);
-                                const selectedCourse = courses.find(course => course.courseId === event.target.value);
-                                if (selectedCourse) {
-                                    item.price = selectedCourse.coursePrice;
-                                }
-                            }}
+                            onChange={(event) => handleChange(index, event)}
                             required
                         >
                             <option value="">강의 선택</option>
@@ -137,7 +171,7 @@ const OrderCreate = () => {
 
 export default OrderCreate;
 
-
+// 스타일 컴포넌트는 그대로 유지
 const OrderCreateContainer = styled.div`
     max-width: 600px;
     margin: 0 auto;

@@ -52,6 +52,8 @@ class JWTCheckFilter(
                     requestURI.matches("/course/\\d+/news".toRegex()) ||
                     requestURI.matches("/members/find/.*".toRegex()) ||
                     decodedURI.matches("/members/instructor/[\\w가-힣]+/reviews/list".toRegex()) ||
+                    decodedURI.matches("/members/[\\w가-힣]+/following".toRegex()) ||
+                    decodedURI.matches("/members/[\\w가-힣]+/follower".toRegex()) ||
                     requestURI.matches("/inquiries".toRegex()) ||
                     requestURI.matches("/course/\\d+/reviews/list".toRegex()) ||
                     requestURI.matches("/course/\\d+/course-inquiry/\\d+".toRegex()) ||
@@ -77,7 +79,6 @@ class JWTCheckFilter(
 
         // Authorization 헤더에서 accessToken 추출
         val authorizationHeader = request.getHeader("Authorization")
-        log.info("Authorization header : $authorizationHeader")
         val accessToken = authorizationHeader?.removePrefix("Bearer ")
 
         // 토큰이 없다면 다음 필터로 넘김
@@ -136,8 +137,6 @@ class JWTCheckFilter(
             val authToken = UsernamePasswordAuthenticationToken(
                 customUserPrincipal, null, customUserPrincipal.authorities
             )
-
-            log.info("authToken : $authToken")
 
             // SecurityContext에 인증/인가 정보 저장
             log.info("SecurityContext에 인증/인가 정보 저장")

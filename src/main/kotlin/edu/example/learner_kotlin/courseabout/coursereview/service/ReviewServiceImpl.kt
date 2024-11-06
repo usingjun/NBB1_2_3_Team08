@@ -1,5 +1,6 @@
 package edu.example.learner_kotlin.courseabout.coursereview.service
 
+import edu.example.learner_kotlin.alarm.service.AlarmService
 import edu.example.learner_kotlin.courseabout.course.entity.Course
 import edu.example.learner_kotlin.courseabout.course.entity.CourseAttribute
 import edu.example.learner_kotlin.courseabout.course.entity.QCourse.course
@@ -27,6 +28,7 @@ class ReviewServiceImpl(
     private val reviewRepository: ReviewRepository,
     private val courseRepository: CourseRepository,
     private val memberRepository: MemberRepository,
+    private val alarmService: AlarmService,
     private val modelMapper: ModelMapper,
 ) : ReviewService {
 
@@ -57,6 +59,12 @@ class ReviewServiceImpl(
             )
 
             log.info("Review to be saved: $review")
+
+            val courseOwner = course.member // 강의 소유주
+            val alarmContent = "${member.nickname}님이 귀하의 강의 '${course.courseName}'에 리뷰를 남겼습니다."
+            val alarmTitle = "새 리뷰 알림"
+
+            alarmService.createAlarm(courseOwner!!.memberId!!, alarmContent, alarmTitle)
 
             // 리뷰 저장
             reviewRepository.save(review)

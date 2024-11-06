@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../axiosInstance";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 
@@ -20,7 +20,7 @@ const CourseUpdate = () => {
     useEffect(() => {
         const fetchCourse = async () => {
             try {
-                const response = await axios.get(`${Course_Url}/${courseId}`, { withCredentials: true });
+                const response = await axiosInstance.get(`course/${courseId}`, { withCredentials: true });
                 const { courseName, courseLevel, coursePrice, courseDescription, memberNickname } = response.data;
                 setCourseName(courseName);
                 setCourseLevel(courseLevel);
@@ -37,18 +37,24 @@ const CourseUpdate = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`${Course_Url}/${courseId}`, {
+            await axiosInstance.put(`course/${courseId}`, {
                 courseName,
                 courseLevel,
                 coursePrice,
                 courseDescription,
                 courseAttribute,
                 memberNickname // 수정이 필요 없는 데이터도 함께 전송
-            }, { withCredentials: true });
+            }, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+
+            });
 
             setSuccessMessage("수정에 성공하였습니다."); // 성공 메시지 설정
             setTimeout(() => {
-                navigate("/courses/list"); // 리디렉션
+                navigate("/courses"); // 리디렉션
             }, 2000); // 2초 후에 리디렉션
         } catch (err) {
             setError("강좌 수정에 실패했습니다.");
