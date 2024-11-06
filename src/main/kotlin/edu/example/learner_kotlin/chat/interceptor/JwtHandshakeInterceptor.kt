@@ -35,8 +35,10 @@ class JwtHandshakeInterceptor(
                     ?: return false.also { log.warn("사용자 정보가 없습니다") }
 
                 // 토큰과 사용자 정보를 세션 속성에 저장
+                log.info("Handshake - 사용자 연결: $username")
                 attributes["token"] = token
                 attributes["username"] = username
+
                 return true
             } catch (e: Exception) {
                 log.error("토큰 검증 실패: ${e.message}")
