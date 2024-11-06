@@ -4,42 +4,41 @@ import axios from "axios";
 import styled from "styled-components";
 import { jwtDecode } from "jwt-decode"; // named import
 import Cookies from "js-cookie"; // 쿠키 관리 라이브러리 추가
-import { handlePlayClick } from "./HandlePlayClick"; // HandlePlayClick 함수 가져오기
+import { handlePlayClick } from "./HandlePlayClick";
+import axiosInstance from "../axiosInstance"; // HandlePlayClick 함수 가져오기
 
 const Course_Url = "http://localhost:8080/course";
 
 const VideoList = () => {
     const { courseId } = useParams();
     const [videos, setVideos] = useState([]);
+    const [averages, setAverages] = useState([])
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const [role, setRole] = useState(null); // 사용자 역할 상태 추가
-    const [memberNickname, setMemberNickName] = useState(null); // 사용자 ID 상태 추가
+    const [role, setRole] = useState(); // 사용자 역할 상태 추가
+    const [memberId, setMemberId] = useState()
+    const [memberNickname, setMemberNickName] = useState(); // 사용자 ID 상태 추가
+
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid);
+                setRole(response.data.role);
+                setMemberNickName(response.data.username)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
+        }
+    };
 
     useEffect(() => {
-        // JWT 디코딩 함수
-        const decodeJwt = (token) => {
-            try {
-                return jwtDecode(token); // named import로 변경
-            } catch (error) {
-                console.error("JWT 디코딩 오류:", error);
-                return null;
-            }
-        };
-
-        // 사용자 역할과 ID 가져오기
-        const token = Cookies.get("Authorization"); // 쿠키에서 토큰 가져오기
-        if (token) {
-            const decodedToken = decodeJwt(token);
-            setRole(decodedToken?.role); // 사용자 역할 설정
-            setMemberNickName(decodedToken?.mid); // 사용자 ID 설정
-        }
-
         const fetchVideos = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${Course_Url}/video/${courseId}`,{ withCredentials: true });
+                const response = await axiosInstance.get(`/course/video/${courseId}`);
                 setVideos(response.data);
             } catch (error) {
                 console.error("비디오 목록 가져오는 중 오류 발생:", error.response ? error.response.data : error.message);
@@ -49,8 +48,24 @@ const VideoList = () => {
             }
         };
 
+        getInfoFromToken()
         fetchVideos();
     }, [courseId]);
+
+    useEffect(() => {
+        if (videos.length > 0) {
+            const fetchAverages = async () => {
+                const responses = await Promise.all(
+                    videos.map(async (video) => {
+                        const response = await axiosInstance.get(`/member-video/${video.videoId}/average`);
+                        return response.data
+                    })
+                );
+                setAverages(responses);
+            }
+            fetchAverages();
+        }
+    }, [videos]);
 
     if (loading) return <Message>로딩 중...</Message>;
     if (error) return <Message $error>{error}</Message>;
@@ -66,6 +81,7 @@ const VideoList = () => {
                     >
                         <VideoInfo>
                             <Title>{index + 1}. {video.description}</Title>
+                            <Title>평균 학습 시간 : {averages[index]}분</Title>
                         </VideoInfo>
                     </VideoItem>
                 ))
@@ -114,7 +130,10 @@ const VideoItem = styled.div`
 `;
 
 const VideoInfo = styled.div`
-    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 `;
 
 const Title = styled.h3`

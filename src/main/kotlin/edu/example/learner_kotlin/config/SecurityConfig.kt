@@ -127,10 +127,18 @@ class SecurityConfig(
                 // 스터디 테이블 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/weekly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
                 it.requestMatchers(HttpMethod.GET, "/study-tables/{memberId}/yearly-summary").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.POST, "/study-tables").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.PUT, "/study-tables/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 출석 체크 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/attendances/**").permitAll()
                 it.requestMatchers(HttpMethod.POST, "/attendances").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // member_video 권한 설정
+                it.requestMatchers(HttpMethod.GET, "/member-video/**").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.PUT, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.DELETE, "/member-video/**").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 토큰 디코딩 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/token/decode").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
@@ -145,6 +153,8 @@ class SecurityConfig(
                 it.requestMatchers(HttpMethod.GET, "/members/list").hasRole("ADMIN") // 회원 목록 조회 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/members/instructor/**").permitAll() // 강사 관련 프로필 GET 요청 허용
                 it.requestMatchers(HttpMethod.GET, "/members/{memberId}/courses").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.POST, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+                it.requestMatchers(HttpMethod.DELETE, "/members/follow/{friendName}").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
 
                 // 강의 권한 설정
                 it.requestMatchers(HttpMethod.GET, "/course/**").permitAll() // GET 요청 course 모두 허용
@@ -169,6 +179,9 @@ class SecurityConfig(
                 it.requestMatchers("/members/find/**").permitAll() // 비밀번호 찾기 및 아이디 찾기 모두 허용
                 it.requestMatchers("/join/**").permitAll()
                 it.requestMatchers(HttpMethod.GET,"/token/decodee").hasAnyRole("USER", "INSTRUCTOR", "ADMIN")
+
+                // 채팅 권한 설정
+                it.requestMatchers("/ws/**").permitAll()
 
                 it.anyRequest().authenticated()
         }

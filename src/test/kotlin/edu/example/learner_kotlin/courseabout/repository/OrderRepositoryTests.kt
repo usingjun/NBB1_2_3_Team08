@@ -12,7 +12,7 @@ import edu.example.learner_kotlin.courseabout.order.repository.OrderRepository
 import edu.example.learner_kotlin.member.entity.Member
 import edu.example.learner_kotlin.member.entity.Role
 import edu.example.learner_kotlin.member.repository.MemberRepository
-import edu.leranermig.order.exception.OrderException
+import edu.example.learner_kotlin.courseabout.order.exception.OrderException
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

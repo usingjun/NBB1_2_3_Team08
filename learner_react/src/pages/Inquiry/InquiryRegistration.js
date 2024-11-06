@@ -1,4 +1,4 @@
-import React, {useState} from 'react'; // React 및 훅스 가져오기
+import React, {useEffect, useState} from 'react'; // React 및 훅스 가져오기
 import {useNavigate} from 'react-router-dom'; // 페이지 이동을 위한 useNavigate 훅 가져오기
 import './Style/InquiryRegistration.css'
 import axiosInstance from "../axiosInstance";
@@ -7,16 +7,30 @@ const InquiryRegistration = () => {
     const [inquiryTitle, setInquiryTitle] = useState(''); // 문의 제목 상태
     const [inquiryContent, setInquiryContent] = useState(''); // 문의 내용 상태
     const navigate = useNavigate(); // 페이지 이동을 위한 navigate 함수 생성
+    const [memberId, setMemberId] = useState(null);
+
+    const getInfoFromToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const response = await axiosInstance.get('/token/decode');
+                setMemberId(response.data.mid)
+            } catch (error) {
+                console.error('Failed to get role:', error);
+            }
+        }
+    };
+
+    useEffect(() => {
+        getInfoFromToken();
+    }, []);
 
     // 문의 작성 요청을 처리하는 비동기 함수
     const handleSubmit = async (e) => {
         e.preventDefault(); // 기본 폼 제출 동작 방지
 
-        // LocalStorage에서 memberId 가져오기
-        const memberId = localStorage.getItem('memberId');
-
         // memberId가 존재하지 않을 경우 경고 후 이동
-        if (!memberId) {
+        if (memberId === null) {
             alert('로그인이 필요합니다.'); // 로그인이 필요하다는 경고 메시지
             navigate('/login'); // 로그인 페이지로 이동
             return;

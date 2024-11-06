@@ -11,6 +11,7 @@ export default function CourseNews() {
     const [liked, setLiked] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [userName, setUserName] = useState(null);
+    const [userId, setUserId] = useState(null);
     const [instructorName, setInstructorName] = useState(null);
     const [isLoading, setIsLoading] = useState(true); // Loading state
 
@@ -40,7 +41,7 @@ export default function CourseNews() {
 
             if (token) {
                 // Authorization 헤더에 JWT 토큰 추가
-                const response = await axiosInstance.get('/auth/user-info', {
+                const response = await axiosInstance.get('/token/decode', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -48,7 +49,8 @@ export default function CourseNews() {
 
                 // 서버 응답에서 사용자 역할 및 이름 설정
                 setUserRole(response.data.role);  // role 설정
-                setUserName(response.data.mid);   // 사용자 ID 설정
+                setUserName(response.data.username);   // 사용자 ID 설정
+                setUserId(response.data.mid);
                 // console.log("User Role:", response.data.role);
                 // console.log("User Name:", response.data.mid);
             }
@@ -59,10 +61,10 @@ export default function CourseNews() {
 
 
     const checkLikeStatus = async () => {
-        const memberId = localStorage.getItem('memberId');
+        // const memberId = localStorage.getItem('memberId');
         try {
             const response = await axiosInstance.get(`/course/${courseId}/news/${newsId}/like`, {
-                params: { memberId }
+                params: { userId }
             });
             setLiked(response.data);
         } catch (err) {
@@ -85,15 +87,15 @@ export default function CourseNews() {
 
 
     const likeNews = async () => {
-        const memberId = localStorage.getItem('memberId');
+        // const memberId = localStorage.getItem('memberId');
 
-        if (!memberId) {
+        if (!userId) {
             alert('로그인 후 시도해주세요.');
             return;
         }
 
         const requestData = {
-            memberId: parseInt(memberId),
+            memberId: parseInt(userId),
             newsId: parseInt(newsId)
         };
 
