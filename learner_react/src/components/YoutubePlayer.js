@@ -262,20 +262,20 @@ const NavigationContainer = styled.div`
 
 const NavButton = styled.button`
     padding: 10px;
-    background-color: #3cb371;
+    background-color: #3f51b5;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-
     &:disabled {
-        background-color: grey;
+        background-color: gray;
         cursor: not-allowed;
     }
 `;
 
-const VideoProgress = styled.div`
-    font-weight: bold;
+const VideoProgress = styled.span`
+    font-size: 1rem;
+    margin: 0 10px;
 `;
 
 export default YoutubePlayer;
