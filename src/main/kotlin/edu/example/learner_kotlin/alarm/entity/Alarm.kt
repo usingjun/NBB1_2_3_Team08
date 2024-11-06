@@ -32,7 +32,7 @@ data class Alarm (
     var priority: Priority? = null,
 
     @CreatedDate
-    val createdAt: LocalDate? = null,
+    var createdAt: LocalDate? = null,
 
     var alarmStatus: Boolean = false
 ){

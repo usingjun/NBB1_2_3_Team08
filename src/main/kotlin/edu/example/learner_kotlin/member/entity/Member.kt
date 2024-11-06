@@ -52,7 +52,7 @@ data class Member (
     var introduction: String? = null,
 
     @CreatedDate
-    val createDate: LocalDateTime? = null
+    var createDate: LocalDateTime? = null
 ){
     @OneToMany(mappedBy = "member", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     private val heartNewsList: List<HeartNews> = ArrayList<HeartNews>()
