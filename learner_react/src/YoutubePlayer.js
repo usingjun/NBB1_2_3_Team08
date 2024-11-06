@@ -129,16 +129,13 @@ const YoutubePlayer = () => {
         const getWatched = async () => {
             try {
                 const response = await axiosInstance.get(`/member-video/${memberId}/${videoId}/watched`);
-                console.log(`컨트롤러에서 watched 가져오기 : ${response.data.toString()}`)
                 setIsWatched(response.data)
             } catch (e) {
                 console.error("member_video 정보 가져오기 실패: ", e);
             }
         }
-        console.log(`getWatched 실행`)
         if (memberId !== null && videoId !== null && isMemberVideoExist === true) {
             getWatched();
-            console.log(`getWatched if문 통과`)
         }
     }, [isMemberVideoExist, memberId]);
 
@@ -206,7 +203,6 @@ const YoutubePlayer = () => {
     };
 
     useEffect(() => {
-        console.log("플레이어 로딩")
         const loadYouTubePlayer = () => {
             window.YT.ready(() => {
                 new window.YT.Player(playerRef.current, {
@@ -227,7 +223,6 @@ const YoutubePlayer = () => {
         } else {
             loadYouTubePlayer();
         }
-        console.log("플레이어 로딩 완료")
     }, [isWatched, memberId, youtubeId,]);
 
     const onPlayerReady = (event) => {
@@ -237,7 +232,6 @@ const YoutubePlayer = () => {
     const onPlayerStateChange = async (event) => {
         if (event.data === window.YT.PlayerState.ENDED) {
             console.log('동영상이 종료되었습니다!');
-            console.log(`memberID: ${memberId}, videoId : ${videoId}, watched : ${isWatched}`)
             if (isWatched === false && memberId !== null && videoId !== null) {
                 await updateStudyTable(0, 1);
                 await updateMemberVideo(0, true);
