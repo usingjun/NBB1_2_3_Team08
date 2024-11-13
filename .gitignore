@@ -42,3 +42,6 @@ out/
 .caches/
 .daemon/
 .native/
+
+# application.properties 제외
+src/main/resources/application.properties
